@@ -1,0 +1,2 @@
+- 応答は全て日本語で行うこと
+- GitのコミットはConventional Commitsの仕様に従うこと

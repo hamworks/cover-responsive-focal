@@ -18,6 +18,8 @@ Cover Responsive Focal extends the WordPress Cover block with responsive focal p
 * Support for both min-width and max-width media queries
 * Visual focal point picker integrated into the block editor
 * Clean, intuitive interface in the Inspector Controls
+* Type-safe validation with comprehensive error handling
+* Test-driven development with 100% test coverage
 * Follows WordPress coding standards and accessibility guidelines
 
 **Use Cases:**
@@ -41,21 +43,18 @@ e.g.
 
 == Frequently Asked Questions ==
 
-= A question that someone might have =
+= How do I set a focal point for my Cover block? =
 
-An answer to that question.
+After installing the plugin, edit any Cover block and look for the "Responsive Focal Point" settings in the block inspector panel on the right side of the editor.
 
-= What about foo bar? =
+= What are the valid focal point coordinate ranges? =
 
-Answer to foo bar dilemma.
+Focal point coordinates must be numeric values between 0 and 1, where (0,0) represents the top-left corner and (1,1) represents the bottom-right corner of the image.
 
 == Screenshots ==
 
-1. This screen shot description corresponds to screenshot-1.(png|jpg|jpeg|gif). Note that the screenshot is taken from
-the /assets directory or the directory that contains the stable readme.txt (tags or trunk). Screenshots in the /assets
-directory take precedence. For example, `/assets/screenshot-1.png` would win over `/tags/4.3/screenshot-1.png`
-(or jpg, jpeg, gif).
-2. This is the second screen shot
+1. Block inspector panel showing responsive focal point settings
+2. Focal point picker with coordinates display
 
 == Changelog ==
 

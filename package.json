@@ -24,14 +24,14 @@
 	"devDependencies": {
 		"@types/jest": "^29.5.14",
 		"@types/wordpress__block-editor": "^11.5.0",
-		"@types/wordpress__blocks": "^12.5.0",
+		"@types/wordpress__blocks": "^12.5.17",
 		"@types/wordpress__components": "^23.0.0",
 		"@types/wordpress__element": "^2.4.0",
 		"@wordpress/env": "^10.27.0",
 		"@wordpress/scripts": "^30.20.0",
-		"jest": "^29.5.0",
+		"jest": "^30.0.5",
 		"ts-jest": "^29.4.0",
-		"typescript": "^5.0.0"
+		"typescript": "^5.8.3"
 	},
 	"dependencies": {
 		"@wordpress/block-editor": "^15.0.0",

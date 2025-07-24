@@ -23,6 +23,11 @@ export const MEDIA_QUERY_TYPES = [
 ] as const;
 
 /**
+ * Media query type union
+ */
+export type MediaQueryType = ( typeof MEDIA_QUERY_TYPES )[ number ][ 'value' ];
+
+/**
  * Default values
  */
 export const DEFAULTS = {

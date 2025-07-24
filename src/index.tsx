@@ -3,17 +3,12 @@
  */
 
 import { addFilter } from '@wordpress/hooks';
-import type { BlockConfiguration } from '@wordpress/blocks';
+import type { BlockConfiguration, BlockEditProps } from '@wordpress/blocks';
 import { createHigherOrderComponent } from '@wordpress/compose';
 import { InspectorControls } from '@wordpress/block-editor';
 
 import { ResponsiveFocalControls } from './inspector-controls';
-import type {
-	CoverBlockAttributes,
-	WPBlockType,
-	WPSaveElement,
-	WPBlockEditProps,
-} from './types';
+import type { CoverBlockAttributes, WPBlockType, WPSaveElement } from './types';
 import './editor.scss';
 
 /**
@@ -49,21 +44,15 @@ addFilter(
  */
 const withResponsiveFocalControls = createHigherOrderComponent(
 	( BlockEdit ) => {
-		return ( props: WPBlockEditProps ) => {
-			const { name, attributes, setAttributes } = props;
-
-			if ( name !== 'core/cover' ) {
-				return <BlockEdit { ...props } />;
-			}
+		return ( props: BlockEditProps< CoverBlockAttributes > ) => {
+			const { attributes, setAttributes } = props;
 
 			return (
 				<>
 					<BlockEdit { ...props } />
 					<InspectorControls>
 						<ResponsiveFocalControls
-							attributes={
-								attributes as unknown as CoverBlockAttributes
-							}
+							attributes={ attributes }
 							setAttributes={ setAttributes }
 						/>
 					</InspectorControls>
@@ -77,7 +66,12 @@ const withResponsiveFocalControls = createHigherOrderComponent(
 addFilter(
 	'editor.BlockEdit',
 	'crf/with-responsive-focal-controls',
-	withResponsiveFocalControls
+	( BlockEdit: React.ComponentType, blockType: { name: string } ) => {
+		if ( blockType.name !== 'core/cover' ) {
+			return BlockEdit;
+		}
+		return withResponsiveFocalControls( BlockEdit );
+	}
 );
 
 /**

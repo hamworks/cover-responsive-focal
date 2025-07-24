@@ -1,13 +1,26 @@
 module.exports = {
 	preset: '@wordpress/jest-preset-default',
 	testEnvironment: 'jsdom',
+	setupFilesAfterEnv: [ '<rootDir>/tests/setup.ts' ],
 	roots: [ '<rootDir>/src', '<rootDir>/tests' ],
 	testMatch: [
 		'**/__tests__/**/*.(ts|tsx|js)',
 		'**/?(*.)+(spec|test).(ts|tsx|js)',
 	],
 	transform: {
-		'^.+\\.(ts|tsx)$': 'ts-jest',
+		'^.+\\.(ts|tsx)$': [
+			'ts-jest',
+			{
+				useESM: false,
+				isolatedModules: true,
+				tsconfig: {
+					jsx: 'react',
+					esModuleInterop: true,
+					allowSyntheticDefaultImports: true,
+				},
+			},
+		],
+		'^.+\\.(js|jsx)$': 'babel-jest',
 	},
 	moduleFileExtensions: [ 'ts', 'tsx', 'js', 'jsx', 'json', 'node' ],
 	moduleNameMapper: {

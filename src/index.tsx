@@ -45,6 +45,10 @@ addFilter(
 const withResponsiveFocalControls = createHigherOrderComponent(
 	( BlockEdit ) => {
 		return ( props: BlockEditProps< CoverBlockAttributes > ) => {
+			if ( ! props || ! props.attributes || ! props.setAttributes ) {
+				return <BlockEdit { ...props } />;
+			}
+
 			const { attributes, setAttributes } = props;
 
 			return (
@@ -67,7 +71,7 @@ addFilter(
 	'editor.BlockEdit',
 	'crf/with-responsive-focal-controls',
 	( BlockEdit: React.ComponentType, blockType: { name: string } ) => {
-		if ( blockType.name !== 'core/cover' ) {
+		if ( ! blockType || blockType.name !== 'core/cover' ) {
 			return BlockEdit;
 		}
 		return withResponsiveFocalControls( BlockEdit );
@@ -92,7 +96,7 @@ addFilter(
 		const { responsiveFocal } = attributes;
 
 		// Standard cover block behavior when responsiveFocal is empty
-		if ( ! responsiveFocal || responsiveFocal.length === 0 ) {
+		if ( ! responsiveFocal || ! Array.isArray( responsiveFocal ) || responsiveFocal.length === 0 ) {
 			return element;
 		}
 

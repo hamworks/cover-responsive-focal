@@ -14,7 +14,7 @@ import type {
 	ResponsiveFocalControlsProps,
 	ResponsiveFocalPoint,
 } from './types';
-import { MEDIA_QUERY_TYPES, DEFAULTS } from './constants';
+import { MEDIA_QUERY_TYPES, DEFAULTS, type MediaQueryType } from './constants';
 
 /**
  * Responsive focal point settings UI
@@ -101,12 +101,10 @@ export const ResponsiveFocalControls: React.FC<
 									'cover-responsive-focal'
 								) }
 								value={ focal.mediaType }
-								options={ [ ...MEDIA_QUERY_TYPES ] }
+								options={ MEDIA_QUERY_TYPES as any }
 								onChange={ ( mediaType ) =>
 									updateFocalPoint( index, {
-										mediaType: mediaType as
-											| 'min-width'
-											| 'max-width',
+										mediaType: mediaType as MediaQueryType,
 									} )
 								}
 							/>
@@ -118,21 +116,20 @@ export const ResponsiveFocalControls: React.FC<
 								) }
 								type="number"
 								value={ focal.breakpoint.toString() }
-								onChange={ ( value ) => {
-									const numValue = parseInt(
-										value || '0',
-										10
-									);
-									if (
-										! isNaN( numValue ) &&
-										numValue >= 1 &&
-										numValue <= 9999
-									) {
-										updateFocalPoint( index, {
-											breakpoint: numValue,
-										} );
-									}
-								} }
+								onChange={ ( value ) =>
+									updateFocalPoint( index, {
+										breakpoint: Math.max(
+											1,
+											Math.min(
+												9999,
+												parseInt(
+													value || '768',
+													10
+												) || 768
+											)
+										),
+									} )
+								}
 								min="1"
 								max="9999"
 							/>

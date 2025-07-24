@@ -14,13 +14,12 @@ module.exports = {
 				useESM: false,
 				isolatedModules: true,
 				tsconfig: {
-					jsx: 'react',
+					jsx: 'react-jsx',
 					esModuleInterop: true,
 					allowSyntheticDefaultImports: true,
 				},
 			},
 		],
-		'^.+\\.(js|jsx)$': 'babel-jest',
 	},
 	moduleFileExtensions: [ 'ts', 'tsx', 'js', 'jsx', 'json', 'node' ],
 	moduleNameMapper: {

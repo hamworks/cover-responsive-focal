@@ -3,6 +3,13 @@
  */
 
 import type { ComponentType } from 'react';
+import type { FocalPointPicker } from '@wordpress/components';
+import type { Element } from '@wordpress/element';
+
+// Extract FocalPoint type from FocalPointPicker component props
+type FocalPoint = NonNullable<
+	React.ComponentProps< typeof FocalPointPicker >[ 'value' ]
+>;
 
 /**
  * WordPress Block Type definition
@@ -38,15 +45,7 @@ export interface ResponsiveFocalPoint {
 	y: number;
 }
 
-/**
- * Focal point coordinates
- */
-export interface FocalPoint {
-	/** X coordinate (0-1 range) */
-	x: number;
-	/** Y coordinate (0-1 range) */
-	y: number;
-}
+// Using @wordpress/components FocalPoint type instead of custom definition
 
 /**
  * Cover block attributes (extended version including existing attributes)
@@ -110,27 +109,9 @@ export interface BreakpointPreset {
 }
 
 /**
- * WordPress Block Editor Props
- */
-export interface WPBlockEditProps {
-	/** Block name */
-	name: string;
-	/** Block attributes */
-	attributes: Record< string, unknown >;
-	/** Function to update attributes */
-	setAttributes: ( attributes: Partial< Record< string, unknown > > ) => void;
-	/** Whether block is selected */
-	isSelected?: boolean;
-	/** Client ID */
-	clientId?: string;
-	/** Other props */
-	[ key: string ]: unknown;
-}
-
-/**
  * WordPress getSaveElement filter types
  */
-export type WPSaveElement = JSX.Element | null;
+export type WPSaveElement = Element | null;
 
 /**
  * Validation function type definitions

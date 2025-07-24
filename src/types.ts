@@ -83,7 +83,7 @@ export interface CoverBlockAttributes {
 
 	// New attributes
 	/** Array of responsive focal points */
-	responsiveFocal: ResponsiveFocalPoint[];
+	responsiveFocal?: ResponsiveFocalPoint[];
 	/** Unique ID for CSS identification */
 	dataFpId?: string;
 }

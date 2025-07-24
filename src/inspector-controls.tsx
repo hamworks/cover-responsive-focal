@@ -12,6 +12,8 @@ import {
 	FocalPointPicker,
 	ButtonGroup,
 } from '@wordpress/components';
+import { dragHandle, chevronUp, chevronDown } from '@wordpress/icons';
+import { useState, useCallback } from '@wordpress/element';
 import type {
 	ResponsiveFocalControlsProps,
 	ResponsiveFocalPoint,
@@ -34,6 +36,7 @@ export const ResponsiveFocalControls: React.FC<
 	ResponsiveFocalControlsProps
 > = ( { attributes, setAttributes } ) => {
 	const { responsiveFocal = [] } = attributes;
+	const [ draggedItem, setDraggedItem ] = useState< number | null >( null );
 
 	/**
 	 * Add new focal point row
@@ -74,6 +77,101 @@ export const ResponsiveFocalControls: React.FC<
 		setAttributes( { responsiveFocal: updatedFocals } );
 	};
 
+	/**
+	 * Move focal point up in the list
+	 * @param index
+	 */
+	const moveFocalPointUp = useCallback(
+		( index: number ) => {
+			if ( index <= 0 ) {
+				return;
+			}
+
+			const updatedFocals = [ ...responsiveFocal ];
+			const temp = updatedFocals[ index ];
+			updatedFocals[ index ] = updatedFocals[ index - 1 ];
+			updatedFocals[ index - 1 ] = temp;
+
+			setAttributes( { responsiveFocal: updatedFocals } );
+		},
+		[ responsiveFocal, setAttributes ]
+	);
+
+	/**
+	 * Move focal point down in the list
+	 * @param index
+	 */
+	const moveFocalPointDown = useCallback(
+		( index: number ) => {
+			if ( index >= responsiveFocal.length - 1 ) {
+				return;
+			}
+
+			const updatedFocals = [ ...responsiveFocal ];
+			const temp = updatedFocals[ index ];
+			updatedFocals[ index ] = updatedFocals[ index + 1 ];
+			updatedFocals[ index + 1 ] = temp;
+
+			setAttributes( { responsiveFocal: updatedFocals } );
+		},
+		[ responsiveFocal, setAttributes ]
+	);
+
+	/**
+	 * Handle drag start
+	 * @param event
+	 * @param index
+	 */
+	const handleDragStart = useCallback(
+		( event: React.DragEvent, index: number ) => {
+			setDraggedItem( index );
+			// Add dragging class to the item
+			const item = ( event.target as HTMLElement ).closest(
+				'.crf-focal-point-item'
+			);
+			if ( item ) {
+				item.classList.add( 'is-dragging' );
+			}
+		},
+		[]
+	);
+
+	/**
+	 * Handle drag end
+	 */
+	const handleDragEnd = useCallback( ( event: React.DragEvent ) => {
+		setDraggedItem( null );
+		// Remove dragging class from the item
+		const item = ( event.target as HTMLElement ).closest(
+			'.crf-focal-point-item'
+		);
+		if ( item ) {
+			item.classList.remove( 'is-dragging' );
+		}
+	}, [] );
+
+	/**
+	 * Handle keyboard navigation for drag handles
+	 * @param event
+	 * @param index
+	 */
+	const handleDragHandleKeyDown = useCallback(
+		( event: React.KeyboardEvent, index: number ) => {
+			if ( event.key === 'Enter' ) {
+				event.preventDefault();
+				setDraggedItem( index );
+				( event.target as HTMLElement ).classList.add( 'is-dragging' );
+			} else if ( event.key === 'Escape' ) {
+				event.preventDefault();
+				setDraggedItem( null );
+				( event.target as HTMLElement ).classList.remove(
+					'is-dragging'
+				);
+			}
+		},
+		[]
+	);
+
 	return (
 		<PanelBody
 			title={ __( 'Responsive Focal Points', 'cover-responsive-focal' ) }
@@ -89,8 +187,79 @@ export const ResponsiveFocalControls: React.FC<
 			) : (
 				<div className="crf-focal-points-list">
 					{ responsiveFocal.map( ( focal, index ) => (
-						<div key={ index } className="crf-focal-point-item">
+						<div
+							key={ index }
+							className={ `crf-focal-point-item${
+								draggedItem === index ? ' is-dragging' : ''
+							}` }
+						>
 							<div className="crf-focal-point-header">
+								<div className="crf-focal-point-controls">
+									{ responsiveFocal.length > 1 && (
+										<>
+											<div
+												className="crf-drag-handle"
+												draggable
+												onDragStart={ ( e ) =>
+													handleDragStart( e, index )
+												}
+												onDragEnd={ handleDragEnd }
+												onKeyDown={ ( e ) =>
+													handleDragHandleKeyDown(
+														e,
+														index
+													)
+												}
+												role="button"
+												tabIndex={ 0 }
+												aria-label={ __(
+													'Drag to reorder focal point',
+													'cover-responsive-focal'
+												) }
+											>
+												{ dragHandle }
+											</div>
+											<div className="crf-move-buttons">
+												{ index > 0 && (
+													<Button
+														className="crf-move-up"
+														isSmall
+														onClick={ () =>
+															moveFocalPointUp(
+																index
+															)
+														}
+														aria-label={ __(
+															'Move focal point up',
+															'cover-responsive-focal'
+														) }
+													>
+														{ chevronUp }
+													</Button>
+												) }
+												{ index <
+													responsiveFocal.length -
+														1 && (
+													<Button
+														className="crf-move-down"
+														isSmall
+														onClick={ () =>
+															moveFocalPointDown(
+																index
+															)
+														}
+														aria-label={ __(
+															'Move focal point down',
+															'cover-responsive-focal'
+														) }
+													>
+														{ chevronDown }
+													</Button>
+												) }
+											</div>
+										</>
+									) }
+								</div>
 								<span>{ `${ focal.mediaType }: ${ focal.breakpoint }px` }</span>
 								<Button
 									isDestructive

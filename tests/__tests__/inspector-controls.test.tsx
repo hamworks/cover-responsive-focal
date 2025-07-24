@@ -23,6 +23,8 @@ jest.mock( '@wordpress/components', () => ( {
 		isDestructive,
 		isSmall,
 		className,
+		disabled,
+		'aria-label': ariaLabel,
 	}: any ) => (
 		<button
 			onClick={ onClick }
@@ -30,6 +32,8 @@ jest.mock( '@wordpress/components', () => ( {
 			data-destructive={ isDestructive }
 			data-small={ isSmall }
 			className={ className }
+			disabled={ disabled }
+			aria-label={ ariaLabel }
 		>
 			{ children }
 		</button>
@@ -104,6 +108,38 @@ jest.mock( '@wordpress/components', () => ( {
 			</div>
 		);
 	},
+} ) );
+
+// Mock WordPress icons
+jest.mock( '@wordpress/icons', () => ( {
+	dragHandle: (
+		<svg className="drag-handle-icon">
+			<title>Drag Handle</title>
+		</svg>
+	),
+	chevronUp: (
+		<svg className="chevron-up-icon">
+			<title>Move Up</title>
+		</svg>
+	),
+	chevronDown: (
+		<svg className="chevron-down-icon">
+			<title>Move Down</title>
+		</svg>
+	),
+} ) );
+
+// Mock WordPress element
+jest.mock( '@wordpress/element', () => ( {
+	useState: ( initialValue: any ) => {
+		let value = initialValue;
+		const setValue = ( newValue: any ) => {
+			value =
+				typeof newValue === 'function' ? newValue( value ) : newValue;
+		};
+		return [ value, setValue ];
+	},
+	useCallback: ( fn: any ) => fn,
 } ) );
 
 // Mock WordPress i18n
@@ -588,6 +624,185 @@ describe( 'ResponsiveFocalControls - Basic UI Components (TDD)', () => {
 					},
 				],
 			} );
+		} );
+	} );
+
+	describe( 'drag and drop reordering functionality', () => {
+		const propsWithMultipleFocalPoints = {
+			...defaultProps,
+			attributes: {
+				responsiveFocal: [
+					{
+						mediaType: 'max-width' as const,
+						breakpoint: 320,
+						x: 0.2,
+						y: 0.3,
+					},
+					{
+						mediaType: 'max-width' as const,
+						breakpoint: 768,
+						x: 0.5,
+						y: 0.5,
+					},
+					{
+						mediaType: 'min-width' as const,
+						breakpoint: 1024,
+						x: 0.8,
+						y: 0.7,
+					},
+				],
+			} as CoverBlockAttributes,
+		};
+
+		test( 'should render drag handles for each focal point', () => {
+			render(
+				<ResponsiveFocalControls { ...propsWithMultipleFocalPoints } />
+			);
+
+			const dragHandles = document.querySelectorAll( '.crf-drag-handle' );
+			expect( dragHandles ).toHaveLength( 3 );
+
+			// Each drag handle should have proper accessibility attributes
+			dragHandles.forEach( ( handle ) => {
+				expect( handle ).toHaveAttribute( 'role', 'button' );
+				expect( handle ).toHaveAttribute( 'tabindex', '0' );
+				expect( handle ).toHaveAttribute( 'aria-label' );
+			} );
+		} );
+
+		test( 'should render move up button for items that can move up', () => {
+			render(
+				<ResponsiveFocalControls { ...propsWithMultipleFocalPoints } />
+			);
+
+			// First item should not have move up button
+			const firstItem = document.querySelector( '.crf-focal-point-item' );
+			expect(
+				firstItem?.querySelector( '.crf-move-up' )
+			).not.toBeInTheDocument();
+
+			// Second and third items should have move up buttons
+			const moveUpButtons = document.querySelectorAll( '.crf-move-up' );
+			expect( moveUpButtons ).toHaveLength( 2 );
+		} );
+
+		test( 'should render move down button for items that can move down', () => {
+			render(
+				<ResponsiveFocalControls { ...propsWithMultipleFocalPoints } />
+			);
+
+			// First and second items should have move down buttons
+			const moveDownButtons =
+				document.querySelectorAll( '.crf-move-down' );
+			expect( moveDownButtons ).toHaveLength( 2 );
+
+			// Last item should not have move down button
+			const allItems = document.querySelectorAll(
+				'.crf-focal-point-item'
+			);
+			const lastItem = allItems[ allItems.length - 1 ];
+			expect(
+				lastItem?.querySelector( '.crf-move-down' )
+			).not.toBeInTheDocument();
+		} );
+
+		test( 'should move item up when move up button clicked', () => {
+			render(
+				<ResponsiveFocalControls { ...propsWithMultipleFocalPoints } />
+			);
+
+			// Click move up button on second item (index 1)
+			const moveUpButtons = document.querySelectorAll( '.crf-move-up' );
+			fireEvent.click( moveUpButtons[ 0 ] );
+
+			expect( mockSetAttributes ).toHaveBeenCalledWith( {
+				responsiveFocal: [
+					{
+						mediaType: 'max-width',
+						breakpoint: 768,
+						x: 0.5,
+						y: 0.5,
+					},
+					{
+						mediaType: 'max-width',
+						breakpoint: 320,
+						x: 0.2,
+						y: 0.3,
+					},
+					{
+						mediaType: 'min-width',
+						breakpoint: 1024,
+						x: 0.8,
+						y: 0.7,
+					},
+				],
+			} );
+		} );
+
+		test( 'should move item down when move down button clicked', () => {
+			render(
+				<ResponsiveFocalControls { ...propsWithMultipleFocalPoints } />
+			);
+
+			// Click move down button on first item (index 0)
+			const moveDownButtons =
+				document.querySelectorAll( '.crf-move-down' );
+			fireEvent.click( moveDownButtons[ 0 ] );
+
+			expect( mockSetAttributes ).toHaveBeenCalledWith( {
+				responsiveFocal: [
+					{
+						mediaType: 'max-width',
+						breakpoint: 768,
+						x: 0.5,
+						y: 0.5,
+					},
+					{
+						mediaType: 'max-width',
+						breakpoint: 320,
+						x: 0.2,
+						y: 0.3,
+					},
+					{
+						mediaType: 'min-width',
+						breakpoint: 1024,
+						x: 0.8,
+						y: 0.7,
+					},
+				],
+			} );
+		} );
+
+		test( 'should handle keyboard navigation for drag handle', () => {
+			render(
+				<ResponsiveFocalControls { ...propsWithMultipleFocalPoints } />
+			);
+
+			const firstDragHandle =
+				document.querySelector( '.crf-drag-handle' );
+
+			// Should handle Enter key
+			fireEvent.keyDown( firstDragHandle!, { key: 'Enter' } );
+			// Test that focus management or drag mode is activated
+			expect( firstDragHandle ).toHaveClass( 'is-dragging' );
+
+			// Should handle Escape key to cancel drag
+			fireEvent.keyDown( firstDragHandle!, { key: 'Escape' } );
+			expect( firstDragHandle ).not.toHaveClass( 'is-dragging' );
+		} );
+
+		test( 'should provide visual feedback during drag operation', () => {
+			render(
+				<ResponsiveFocalControls { ...propsWithMultipleFocalPoints } />
+			);
+
+			const firstItem = document.querySelector( '.crf-focal-point-item' );
+			const dragHandle = firstItem?.querySelector( '.crf-drag-handle' );
+
+			// Simulate drag start
+			fireEvent.dragStart( dragHandle! );
+
+			expect( firstItem ).toHaveClass( 'is-dragging' );
 		} );
 	} );
 

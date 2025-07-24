@@ -6,9 +6,9 @@ import {
 	validateFocalPoint,
 	validateMediaType,
 	validateBreakpoint,
-	createResponsiveFocalPoint,
-	generateMediaQuery,
-} from '../../src/validation';
+} from '../../src/validation/validators';
+import { createResponsiveFocalPoint } from '../../src/validation/factory';
+import { generateMediaQuery } from '../../src/validation/media-query';
 
 // RED: First, write failing tests before implementation
 describe( 'Focal Point Validation (TDD)', () => {

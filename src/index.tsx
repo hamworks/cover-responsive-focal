@@ -96,7 +96,11 @@ addFilter(
 		const { responsiveFocal } = attributes;
 
 		// Standard cover block behavior when responsiveFocal is empty
-		if ( ! responsiveFocal || ! Array.isArray( responsiveFocal ) || responsiveFocal.length === 0 ) {
+		if (
+			! responsiveFocal ||
+			! Array.isArray( responsiveFocal ) ||
+			responsiveFocal.length === 0
+		) {
 			return element;
 		}
 

@@ -109,20 +109,24 @@ describe( 'Block Save Extension (TDD)', () => {
 				],
 			};
 
-			// Mock Date.now for predictable ID
+			// Mock Date.now and Math.random for predictable ID
 			const mockNow = jest
 				.spyOn( Date, 'now' )
 				.mockReturnValue( 123456789 );
+			const mockRandom = jest
+				.spyOn( Math, 'random' )
+				.mockReturnValue( 0.5 );
 
 			extendCoverBlockSave( element, blockType, attributes );
 
 			expect( mockCreateElement ).toHaveBeenCalledWith(
 				'div',
-				{ 'data-fp-id': 'crf-123456789' },
+				{ 'data-fp-id': 'crf-123456789-5000' },
 				element
 			);
 
 			mockNow.mockRestore();
+			mockRandom.mockRestore();
 		} );
 
 		test( 'should handle null/undefined gracefully', () => {

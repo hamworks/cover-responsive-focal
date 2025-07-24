@@ -5,6 +5,13 @@
 
 import { addFilter } from '@wordpress/hooks';
 
+// Global type declarations for WordPress environment
+declare global {
+	const React: {
+		createElement: ( type: string, props: any, ...children: any[] ) => any;
+	};
+}
+
 // Interface for block type
 interface BlockType {
 	name?: string;
@@ -60,14 +67,17 @@ const extendCoverBlockSave = (
 	}
 
 	// Generate or use existing dataFpId
-	const fpId = dataFpId || `crf-${ Date.now() }`;
+	// Using WordPress-style unique ID generation similar to instance IDs
+	const fpId =
+		dataFpId ||
+		`crf-${ Date.now() }-${ Math.floor( Math.random() * 10000 ) }`;
 
 	// Get existing props from element
 	const existingProps = element?.props || {};
 
 	// Create new element with data-fp-id attribute
 	// Using React.createElement globally available in WordPress
-	return ( global as any ).React.createElement(
+	return React.createElement(
 		'div',
 		{
 			...existingProps,

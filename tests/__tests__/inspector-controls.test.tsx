@@ -55,22 +55,35 @@ jest.mock( '@wordpress/components', () => ( {
 			</div>
 		);
 	},
-	TextControl: ( { label, value, onChange, type, min, max }: any ) => {
-		const id = `input-${ Math.random() }`;
+	__experimentalNumberControl: ( {
+		label,
+		value,
+		onChange,
+		min,
+		max,
+		step,
+	}: any ) => {
+		const id = `numbercontrol-${ Math.random() }`;
 		return (
 			<div>
 				<label htmlFor={ id }>{ label }</label>
 				<input
 					id={ id }
-					type={ type }
+					type="number"
 					value={ value }
-					onChange={ ( e ) => onChange( e.target.value ) }
+					onChange={ ( e ) =>
+						onChange( parseInt( e.target.value, 10 ) )
+					}
 					min={ min }
 					max={ max }
+					step={ step }
 				/>
 			</div>
 		);
 	},
+	ButtonGroup: ( { children }: any ) => (
+		<div className="components-button-group">{ children }</div>
+	),
 	FocalPointPicker: ( { label, url, value, onChange }: any ) => {
 		const id = `focal-${ Math.random() }`;
 		return (
@@ -359,10 +372,10 @@ describe( 'ResponsiveFocalControls - Basic UI Components (TDD)', () => {
 			} );
 		} );
 
-		test( 'should update breakpoint when changed', () => {
+		test( 'should update breakpoint when NumberControl changed', () => {
 			render( <ResponsiveFocalControls { ...propsWithFocalPoint } /> );
 
-			const breakpointInput = screen.getByDisplayValue( '767' );
+			const breakpointInput = screen.getByDisplayValue( 767 );
 			fireEvent.change( breakpointInput, { target: { value: '1024' } } );
 
 			expect( mockSetAttributes ).toHaveBeenCalledWith( {
@@ -380,7 +393,7 @@ describe( 'ResponsiveFocalControls - Basic UI Components (TDD)', () => {
 		test( 'should handle empty breakpoint value', () => {
 			render( <ResponsiveFocalControls { ...propsWithFocalPoint } /> );
 
-			const breakpointInput = screen.getByDisplayValue( '767' );
+			const breakpointInput = screen.getByDisplayValue( 767 );
 			mockSetAttributes.mockClear();
 
 			fireEvent.change( breakpointInput, { target: { value: '' } } );
@@ -399,7 +412,7 @@ describe( 'ResponsiveFocalControls - Basic UI Components (TDD)', () => {
 		test( 'should handle breakpoint value too high', () => {
 			render( <ResponsiveFocalControls { ...propsWithFocalPoint } /> );
 
-			const breakpointInput = screen.getByDisplayValue( '767' );
+			const breakpointInput = screen.getByDisplayValue( 767 );
 			mockSetAttributes.mockClear();
 
 			fireEvent.change( breakpointInput, { target: { value: '10000' } } );
@@ -418,7 +431,7 @@ describe( 'ResponsiveFocalControls - Basic UI Components (TDD)', () => {
 		test( 'should handle breakpoint value too low (0 treated as invalid)', () => {
 			render( <ResponsiveFocalControls { ...propsWithFocalPoint } /> );
 
-			const breakpointInput = screen.getByDisplayValue( '767' );
+			const breakpointInput = screen.getByDisplayValue( 767 );
 			mockSetAttributes.mockClear();
 
 			fireEvent.change( breakpointInput, { target: { value: '0' } } );
@@ -433,6 +446,82 @@ describe( 'ResponsiveFocalControls - Basic UI Components (TDD)', () => {
 					},
 				],
 			} );
+		} );
+	} );
+
+	describe( 'preset breakpoints functionality', () => {
+		const propsWithFocalPoint = {
+			...defaultProps,
+			attributes: {
+				responsiveFocal: [
+					{
+						mediaType: 'max-width' as const,
+						breakpoint: 767,
+						x: 0.6,
+						y: 0.4,
+					},
+				],
+			} as CoverBlockAttributes,
+		};
+
+		test( 'should render preset buttons with correct labels', () => {
+			render( <ResponsiveFocalControls { ...propsWithFocalPoint } /> );
+
+			expect( screen.getByText( '320px' ) ).toBeInTheDocument();
+			expect( screen.getByText( '768px' ) ).toBeInTheDocument();
+			expect( screen.getByText( '1024px' ) ).toBeInTheDocument();
+			expect( screen.getByText( '1200px' ) ).toBeInTheDocument();
+		} );
+
+		test( 'should highlight active preset button', () => {
+			const propsWithPreset = {
+				...defaultProps,
+				attributes: {
+					responsiveFocal: [
+						{
+							mediaType: 'max-width' as const,
+							breakpoint: 768,
+							x: 0.6,
+							y: 0.4,
+						},
+					],
+				} as CoverBlockAttributes,
+			};
+
+			render( <ResponsiveFocalControls { ...propsWithPreset } /> );
+
+			const activeButton = screen.getByText( '768px' );
+			expect( activeButton ).toHaveAttribute( 'data-variant', 'primary' );
+
+			const inactiveButton = screen.getByText( '320px' );
+			expect( inactiveButton ).toHaveAttribute(
+				'data-variant',
+				'secondary'
+			);
+		} );
+
+		test( 'should update breakpoint when preset button clicked', () => {
+			render( <ResponsiveFocalControls { ...propsWithFocalPoint } /> );
+
+			const presetButton = screen.getByText( '1024px' );
+			fireEvent.click( presetButton );
+
+			expect( mockSetAttributes ).toHaveBeenCalledWith( {
+				responsiveFocal: [
+					{
+						mediaType: 'max-width',
+						breakpoint: 1024,
+						x: 0.6,
+						y: 0.4,
+					},
+				],
+			} );
+		} );
+
+		test( 'should render presets label', () => {
+			render( <ResponsiveFocalControls { ...propsWithFocalPoint } /> );
+
+			expect( screen.getByText( 'Presets:' ) ).toBeInTheDocument();
 		} );
 	} );
 
@@ -566,7 +655,7 @@ describe( 'ResponsiveFocalControls - Basic UI Components (TDD)', () => {
 			expect( screen.getByText( 'Breakpoint (px)' ) ).toBeInTheDocument();
 
 			// Check inputs have proper attributes
-			const breakpointInput = screen.getByDisplayValue( '767' );
+			const breakpointInput = screen.getByDisplayValue( 767 );
 			expect( breakpointInput ).toHaveAttribute( 'type', 'number' );
 			expect( breakpointInput ).toHaveAttribute( 'min', '1' );
 			expect( breakpointInput ).toHaveAttribute( 'max', '9999' );

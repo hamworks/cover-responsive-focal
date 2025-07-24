@@ -48,6 +48,16 @@ export interface ResponsiveFocalPoint {
 // Using @wordpress/components FocalPoint type instead of custom definition
 
 /**
+ * SelectControl option type
+ */
+export interface SelectOption {
+	/** The label shown to the user */
+	label: string;
+	/** The internal value */
+	value: string;
+}
+
+/**
  * Cover block attributes (extended version including existing attributes)
  */
 export interface CoverBlockAttributes {

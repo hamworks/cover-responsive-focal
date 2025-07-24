@@ -101,7 +101,7 @@ export const ResponsiveFocalControls: React.FC<
 									'cover-responsive-focal'
 								) }
 								value={ focal.mediaType }
-								options={ MEDIA_QUERY_TYPES as any }
+								options={ [ ...MEDIA_QUERY_TYPES ] }
 								onChange={ ( mediaType ) =>
 									updateFocalPoint( index, {
 										mediaType: mediaType as MediaQueryType,

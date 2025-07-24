@@ -2,6 +2,28 @@
  * Cover Responsive Focal - Type Definitions
  */
 
+import type { ComponentType } from 'react';
+
+/**
+ * WordPress Block Type definition
+ */
+export interface WPBlockType {
+	/** Block name (e.g., 'core/cover') */
+	name: string;
+	/** Block title */
+	title: string;
+	/** Block category */
+	category?: string;
+	/** Block icon */
+	icon?: string | ComponentType;
+	/** Block keywords */
+	keywords?: string[];
+	/** Block supports */
+	supports?: Record< string, unknown >;
+	/** Block attributes definition */
+	attributes?: Record< string, unknown >;
+}
+
 /**
  * Responsive focal point settings
  */
@@ -86,6 +108,29 @@ export interface BreakpointPreset {
 	/** Value in pixels */
 	value: number;
 }
+
+/**
+ * WordPress Block Editor Props
+ */
+export interface WPBlockEditProps {
+	/** Block name */
+	name: string;
+	/** Block attributes */
+	attributes: Record< string, unknown >;
+	/** Function to update attributes */
+	setAttributes: ( attributes: Partial< Record< string, unknown > > ) => void;
+	/** Whether block is selected */
+	isSelected?: boolean;
+	/** Client ID */
+	clientId?: string;
+	/** Other props */
+	[ key: string ]: unknown;
+}
+
+/**
+ * WordPress getSaveElement filter types
+ */
+export type WPSaveElement = JSX.Element | null;
 
 /**
  * Validation function type definitions

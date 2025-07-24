@@ -8,7 +8,12 @@ import { createHigherOrderComponent } from '@wordpress/compose';
 import { InspectorControls } from '@wordpress/block-editor';
 
 import { ResponsiveFocalControls } from './inspector-controls';
-import type { CoverBlockAttributes } from './types';
+import type {
+	CoverBlockAttributes,
+	WPBlockType,
+	WPSaveElement,
+	WPBlockEditProps,
+} from './types';
 import './editor.scss';
 
 /**
@@ -44,7 +49,7 @@ addFilter(
  */
 const withResponsiveFocalControls = createHigherOrderComponent(
 	( BlockEdit ) => {
-		return ( props: any ) => {
+		return ( props: WPBlockEditProps ) => {
 			const { name, attributes, setAttributes } = props;
 
 			if ( name !== 'core/cover' ) {
@@ -56,7 +61,9 @@ const withResponsiveFocalControls = createHigherOrderComponent(
 					<BlockEdit { ...props } />
 					<InspectorControls>
 						<ResponsiveFocalControls
-							attributes={ attributes as CoverBlockAttributes }
+							attributes={
+								attributes as unknown as CoverBlockAttributes
+							}
 							setAttributes={ setAttributes }
 						/>
 					</InspectorControls>
@@ -79,7 +86,11 @@ addFilter(
 addFilter(
 	'blocks.getSaveElement',
 	'crf/extend-save',
-	( element: any, blockType: any, attributes: CoverBlockAttributes ) => {
+	(
+		element: WPSaveElement,
+		blockType: WPBlockType,
+		attributes: CoverBlockAttributes
+	) => {
 		if ( blockType.name !== 'core/cover' ) {
 			return element;
 		}

@@ -3,41 +3,14 @@
  */
 
 import { addFilter } from '@wordpress/hooks';
-import type { BlockConfiguration, BlockEditProps } from '@wordpress/blocks';
+import type { BlockEditProps } from '@wordpress/blocks';
 import { createHigherOrderComponent } from '@wordpress/compose';
 import { InspectorControls } from '@wordpress/block-editor';
 
 import { ResponsiveFocalControls } from './inspector-controls';
 import type { CoverBlockAttributes, WPBlockType, WPSaveElement } from './types';
+import './block-attributes'; // Load block attributes extension
 import './editor.scss';
-
-/**
- * Extend cover block attributes
- */
-addFilter(
-	'blocks.registerBlockType',
-	'crf/extend-cover-block',
-	( settings: BlockConfiguration, name: string ) => {
-		if ( name !== 'core/cover' ) {
-			return settings;
-		}
-
-		// Add new attributes
-		return {
-			...settings,
-			attributes: {
-				...settings.attributes,
-				responsiveFocal: {
-					type: 'array',
-					default: [],
-				},
-				dataFpId: {
-					type: 'string',
-				},
-			},
-		} as BlockConfiguration;
-	}
-);
 
 /**
  * Extend cover block editor UI

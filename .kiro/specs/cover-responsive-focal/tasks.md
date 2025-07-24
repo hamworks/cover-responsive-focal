@@ -22,7 +22,7 @@
     - テストを通す実装を作成
     - _要件: 1.3, 2.2_
 
-  - [ ] 2.3 ResponsiveFocalPoint 作成関数を TDD で実装
+  - [x] 2.3 ResponsiveFocalPoint 作成関数を TDD で実装
     - createResponsiveFocalPoint 関数のテストを先に作成
     - generateMediaQuery 関数のテストを先に作成
     - テストを通す実装を作成

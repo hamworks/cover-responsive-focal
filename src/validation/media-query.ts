@@ -16,9 +16,7 @@ export const generateMediaQuery: GenerateMediaQuery = (
 	mediaType: string,
 	breakpoint: number
 ): string => {
-	// Convert to string and remove unnecessary decimal zeros
-	const breakpointValue = Number.isInteger( breakpoint )
-		? breakpoint
-		: breakpoint;
+	// Convert to integer for CSS px values
+	const breakpointValue = Math.floor( breakpoint );
 	return `(${ mediaType }: ${ breakpointValue }px)`;
 };

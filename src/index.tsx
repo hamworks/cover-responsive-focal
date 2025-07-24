@@ -18,6 +18,11 @@ import './editor.scss';
 const withResponsiveFocalControls = createHigherOrderComponent(
 	( BlockEdit ) => {
 		return ( props: BlockEditProps< CoverBlockAttributes > ) => {
+			// Check if this is a cover block by checking props.name
+			if ( props.name !== 'core/cover' ) {
+				return <BlockEdit { ...props } />;
+			}
+
 			if ( ! props || ! props.attributes || ! props.setAttributes ) {
 				return <BlockEdit { ...props } />;
 			}
@@ -43,12 +48,7 @@ const withResponsiveFocalControls = createHigherOrderComponent(
 addFilter(
 	'editor.BlockEdit',
 	'crf/with-responsive-focal-controls',
-	( BlockEdit: React.ComponentType, blockType: { name: string } ) => {
-		if ( ! blockType || blockType.name !== 'core/cover' ) {
-			return BlockEdit;
-		}
-		return withResponsiveFocalControls( BlockEdit );
-	}
+	withResponsiveFocalControls
 );
 
 /**

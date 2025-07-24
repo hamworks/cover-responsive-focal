@@ -94,10 +94,10 @@ export const validateBreakpoint: ValidateBreakpoint = (
  * Create a ResponsiveFocalPoint object
  * Validates all inputs and returns null if any validation fails
  *
- * @param mediaType - Media query type
+ * @param mediaType  - Media query type
  * @param breakpoint - Breakpoint value
- * @param x - X coordinate
- * @param y - Y coordinate
+ * @param x          - X coordinate
+ * @param y          - Y coordinate
  * @return ResponsiveFocalPoint object or null if invalid
  */
 export const createResponsiveFocalPoint: CreateResponsiveFocalPoint = (
@@ -134,7 +134,7 @@ export const createResponsiveFocalPoint: CreateResponsiveFocalPoint = (
  * Generate media query string
  * Creates a CSS media query from media type and breakpoint
  *
- * @param mediaType - Media query type
+ * @param mediaType  - Media query type
  * @param breakpoint - Breakpoint value
  * @return Formatted media query string
  */
@@ -143,6 +143,8 @@ export const generateMediaQuery: GenerateMediaQuery = (
 	breakpoint: number
 ): string => {
 	// Convert to string and remove unnecessary decimal zeros
-	const breakpointValue = breakpoint % 1 === 0 ? Math.floor( breakpoint ) : breakpoint;
+	const breakpointValue = Number.isInteger( breakpoint )
+		? breakpoint
+		: breakpoint;
 	return `(${ mediaType }: ${ breakpointValue }px)`;
 };

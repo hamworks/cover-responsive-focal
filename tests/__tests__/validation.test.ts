@@ -236,8 +236,13 @@ describe( 'Focal Point Validation (TDD)', () => {
 	// RED Phase: createResponsiveFocalPoint function tests (functions don't exist yet)
 	describe( 'createResponsiveFocalPoint function', () => {
 		test( 'creates valid ResponsiveFocalPoint object with valid inputs', () => {
-			const result = createResponsiveFocalPoint( 'max-width', 767, 0.6, 0.4 );
-			
+			const result = createResponsiveFocalPoint(
+				'max-width',
+				767,
+				0.6,
+				0.4
+			);
+
 			expect( result ).toEqual( {
 				mediaType: 'max-width',
 				breakpoint: 767,
@@ -247,8 +252,13 @@ describe( 'Focal Point Validation (TDD)', () => {
 		} );
 
 		test( 'creates ResponsiveFocalPoint with min-width', () => {
-			const result = createResponsiveFocalPoint( 'min-width', 768, 0.3, 0.7 );
-			
+			const result = createResponsiveFocalPoint(
+				'min-width',
+				768,
+				0.3,
+				0.7
+			);
+
 			expect( result ).toEqual( {
 				mediaType: 'min-width',
 				breakpoint: 768,
@@ -258,33 +268,63 @@ describe( 'Focal Point Validation (TDD)', () => {
 		} );
 
 		test( 'returns null for invalid focal point coordinates', () => {
-			const result = createResponsiveFocalPoint( 'max-width', 767, -0.1, 0.4 );
+			const result = createResponsiveFocalPoint(
+				'max-width',
+				767,
+				-0.1,
+				0.4
+			);
 			expect( result ).toBeNull();
 		} );
 
 		test( 'returns null for invalid focal point Y coordinate', () => {
-			const result = createResponsiveFocalPoint( 'max-width', 767, 0.6, 1.1 );
+			const result = createResponsiveFocalPoint(
+				'max-width',
+				767,
+				0.6,
+				1.1
+			);
 			expect( result ).toBeNull();
 		} );
 
 		test( 'returns null for invalid media type', () => {
-			const result = createResponsiveFocalPoint( 'invalid-type', 767, 0.6, 0.4 );
+			const result = createResponsiveFocalPoint(
+				'invalid-type',
+				767,
+				0.6,
+				0.4
+			);
 			expect( result ).toBeNull();
 		} );
 
 		test( 'returns null for invalid breakpoint (out of range)', () => {
-			const result = createResponsiveFocalPoint( 'max-width', 0, 0.6, 0.4 );
+			const result = createResponsiveFocalPoint(
+				'max-width',
+				0,
+				0.6,
+				0.4
+			);
 			expect( result ).toBeNull();
 		} );
 
 		test( 'returns null for invalid breakpoint (too large)', () => {
-			const result = createResponsiveFocalPoint( 'max-width', 10000, 0.6, 0.4 );
+			const result = createResponsiveFocalPoint(
+				'max-width',
+				10000,
+				0.6,
+				0.4
+			);
 			expect( result ).toBeNull();
 		} );
 
 		test( 'handles boundary values correctly', () => {
-			const result = createResponsiveFocalPoint( 'min-width', 1, 0.0, 1.0 );
-			
+			const result = createResponsiveFocalPoint(
+				'min-width',
+				1,
+				0.0,
+				1.0
+			);
+
 			expect( result ).toEqual( {
 				mediaType: 'min-width',
 				breakpoint: 1,
@@ -294,8 +334,13 @@ describe( 'Focal Point Validation (TDD)', () => {
 		} );
 
 		test( 'handles maximum boundary values correctly', () => {
-			const result = createResponsiveFocalPoint( 'max-width', 9999, 1.0, 0.0 );
-			
+			const result = createResponsiveFocalPoint(
+				'max-width',
+				9999,
+				1.0,
+				0.0
+			);
+
 			expect( result ).toEqual( {
 				mediaType: 'max-width',
 				breakpoint: 9999,
@@ -305,18 +350,33 @@ describe( 'Focal Point Validation (TDD)', () => {
 		} );
 
 		test( 'returns null for NaN focal point values', () => {
-			const result = createResponsiveFocalPoint( 'max-width', 767, NaN, 0.4 );
+			const result = createResponsiveFocalPoint(
+				'max-width',
+				767,
+				NaN,
+				0.4
+			);
 			expect( result ).toBeNull();
 		} );
 
 		test( 'returns null for Infinity focal point values', () => {
-			const result = createResponsiveFocalPoint( 'max-width', 767, 0.6, Infinity );
+			const result = createResponsiveFocalPoint(
+				'max-width',
+				767,
+				0.6,
+				Infinity
+			);
 			expect( result ).toBeNull();
 		} );
 
 		test( 'accepts floating point breakpoint values', () => {
-			const result = createResponsiveFocalPoint( 'max-width', 767.5, 0.5, 0.5 );
-			
+			const result = createResponsiveFocalPoint(
+				'max-width',
+				767.5,
+				0.5,
+				0.5
+			);
+
 			expect( result ).toEqual( {
 				mediaType: 'max-width',
 				breakpoint: 767.5,
@@ -326,12 +386,22 @@ describe( 'Focal Point Validation (TDD)', () => {
 		} );
 
 		test( 'returns null for NaN breakpoint', () => {
-			const result = createResponsiveFocalPoint( 'max-width', NaN, 0.6, 0.4 );
+			const result = createResponsiveFocalPoint(
+				'max-width',
+				NaN,
+				0.6,
+				0.4
+			);
 			expect( result ).toBeNull();
 		} );
 
 		test( 'returns null for negative breakpoint', () => {
-			const result = createResponsiveFocalPoint( 'max-width', -100, 0.6, 0.4 );
+			const result = createResponsiveFocalPoint(
+				'max-width',
+				-100,
+				0.6,
+				0.4
+			);
 			expect( result ).toBeNull();
 		} );
 	} );
@@ -356,7 +426,7 @@ describe( 'Focal Point Validation (TDD)', () => {
 		test( 'handles boundary values correctly', () => {
 			const result1 = generateMediaQuery( 'min-width', 1 );
 			const result2 = generateMediaQuery( 'max-width', 9999 );
-			
+
 			expect( result1 ).toBe( '(min-width: 1px)' );
 			expect( result2 ).toBe( '(max-width: 9999px)' );
 		} );
@@ -370,7 +440,7 @@ describe( 'Focal Point Validation (TDD)', () => {
 			const mobile = generateMediaQuery( 'max-width', 767 );
 			const tablet = generateMediaQuery( 'min-width', 768 );
 			const desktop = generateMediaQuery( 'min-width', 1024 );
-			
+
 			expect( mobile ).toBe( '(max-width: 767px)' );
 			expect( tablet ).toBe( '(min-width: 768px)' );
 			expect( desktop ).toBe( '(min-width: 1024px)' );

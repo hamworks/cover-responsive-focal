@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Build
+build/
+dist/
+
+# Development
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Testing
+coverage/
+.phpunit.result.cache
+
+# WordPress
+.wp-env.json
+
+# Environment
+.env
+.env.local
+
+# TypeScript
+*.tsbuildinfo
+
+# Package files
+*.zip

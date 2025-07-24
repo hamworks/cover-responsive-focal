@@ -1,0 +1,46 @@
+/**
+ * Cover Responsive Focal - Editor Styles
+ */
+
+.crf-focal-points-list {
+	margin-bottom: 1rem;
+}
+
+.crf-focal-point-item {
+	border: 1px solid var(--wp--preset--color--light-gray-500, #ddd);
+	border-radius: 4px;
+	padding: 12px;
+	margin-bottom: 12px;
+	background-color: var(--wp--preset--color--light-gray-100, #f9f9f9);
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+
+.crf-focal-point-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 12px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid var(--wp--preset--color--light-gray-300, #e0e0e0);
+
+	span {
+		font-weight: 600;
+		color: var(--wp--preset--color--contrast, #333);
+	}
+}
+
+.crf-focal-point-picker {
+	margin-top: 12px;
+
+	.components-focal-point-picker-wrapper {
+		margin: 0;
+	}
+}
+
+.crf-add-focal-point {
+	width: 100%;
+	justify-content: center;
+}

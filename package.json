@@ -1,0 +1,43 @@
+{
+	"name": "cover-responsive-focal",
+	"version": "0.1.0",
+	"description": "WordPress plugin to add responsive focal point settings to the Cover block",
+	"author": "The WordPress Contributors",
+	"license": "GPL-2.0-or-later",
+	"main": "build/index.js",
+	"scripts": {
+		"build": "wp-scripts build --webpack-copy-php --blocks-manifest",
+		"format": "wp-scripts format",
+		"lint": "npm run lint:js && npm run lint:css",
+		"lint:css": "wp-scripts lint-style",
+		"lint:js": "wp-scripts lint-js",
+		"packages-update": "wp-scripts packages-update",
+		"plugin-zip": "wp-scripts plugin-zip",
+		"start": "wp-scripts start --webpack-copy-php --blocks-manifest",
+		"env": "wp-env",
+		"test": "jest",
+		"test:watch": "jest --watch",
+		"test:e2e": "playwright test",
+		"test:php": "phpunit",
+		"type-check": "tsc --noEmit"
+	},
+	"devDependencies": {
+		"@types/jest": "^29.5.0",
+		"@types/wordpress__block-editor": "^11.5.0",
+		"@types/wordpress__blocks": "^12.5.0",
+		"@types/wordpress__components": "^23.0.0",
+		"@types/wordpress__element": "^2.4.0",
+		"@wordpress/env": "^10.27.0",
+		"@wordpress/scripts": "^30.20.0",
+		"jest": "^29.5.0",
+		"typescript": "^5.0.0"
+	},
+	"dependencies": {
+		"@wordpress/block-editor": "^15.0.0",
+		"@wordpress/blocks": "^15.0.0",
+		"@wordpress/components": "^30.0.0",
+		"@wordpress/element": "^6.27.0",
+		"@wordpress/hooks": "^4.27.0",
+		"@wordpress/i18n": "^6.0.0"
+	}
+}

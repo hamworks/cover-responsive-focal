@@ -118,34 +118,43 @@ export const ResponsiveFocalControls: React.FC<
 								) }
 								type="number"
 								value={ focal.breakpoint.toString() }
-								onChange={ ( value ) =>
-									updateFocalPoint( index, {
-										breakpoint: parseInt(
-											value || '0',
-											10
-										),
-									} )
-								}
+								onChange={ ( value ) => {
+									const numValue = parseInt(
+										value || '0',
+										10
+									);
+									if (
+										! isNaN( numValue ) &&
+										numValue >= 1 &&
+										numValue <= 9999
+									) {
+										updateFocalPoint( index, {
+											breakpoint: numValue,
+										} );
+									}
+								} }
 								min="1"
 								max="9999"
 							/>
 
-							<div className="crf-focal-point-picker">
-								<FocalPointPicker
-									label={ __(
-										'Focal Point',
-										'cover-responsive-focal'
-									) }
-									url={ attributes.url || '' }
-									value={ { x: focal.x, y: focal.y } }
-									onChange={ ( focalPoint ) =>
-										updateFocalPoint( index, {
-											x: focalPoint.x,
-											y: focalPoint.y,
-										} )
-									}
-								/>
-							</div>
+							{ attributes.url && (
+								<div className="crf-focal-point-picker">
+									<FocalPointPicker
+										label={ __(
+											'Focal Point',
+											'cover-responsive-focal'
+										) }
+										url={ attributes.url }
+										value={ { x: focal.x, y: focal.y } }
+										onChange={ ( focalPoint ) =>
+											updateFocalPoint( index, {
+												x: focalPoint.x,
+												y: focalPoint.y,
+											} )
+										}
+									/>
+								</div>
+							) }
 						</div>
 					) ) }
 				</div>

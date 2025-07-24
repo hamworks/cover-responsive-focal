@@ -6,6 +6,8 @@ import {
 	validateFocalPoint,
 	validateMediaType,
 	validateBreakpoint,
+	createResponsiveFocalPoint,
+	generateMediaQuery,
 } from '../../src/validation';
 
 // RED: First, write failing tests before implementation
@@ -228,6 +230,160 @@ describe( 'Focal Point Validation (TDD)', () => {
 		test( 'slightly outside boundary is invalid', () => {
 			expect( validateBreakpoint( 0.9999 ) ).toBe( false );
 			expect( validateBreakpoint( 9999.0001 ) ).toBe( false );
+		} );
+	} );
+
+	// RED Phase: createResponsiveFocalPoint function tests (functions don't exist yet)
+	describe( 'createResponsiveFocalPoint function', () => {
+		test( 'creates valid ResponsiveFocalPoint object with valid inputs', () => {
+			const result = createResponsiveFocalPoint( 'max-width', 767, 0.6, 0.4 );
+			
+			expect( result ).toEqual( {
+				mediaType: 'max-width',
+				breakpoint: 767,
+				x: 0.6,
+				y: 0.4,
+			} );
+		} );
+
+		test( 'creates ResponsiveFocalPoint with min-width', () => {
+			const result = createResponsiveFocalPoint( 'min-width', 768, 0.3, 0.7 );
+			
+			expect( result ).toEqual( {
+				mediaType: 'min-width',
+				breakpoint: 768,
+				x: 0.3,
+				y: 0.7,
+			} );
+		} );
+
+		test( 'returns null for invalid focal point coordinates', () => {
+			const result = createResponsiveFocalPoint( 'max-width', 767, -0.1, 0.4 );
+			expect( result ).toBeNull();
+		} );
+
+		test( 'returns null for invalid focal point Y coordinate', () => {
+			const result = createResponsiveFocalPoint( 'max-width', 767, 0.6, 1.1 );
+			expect( result ).toBeNull();
+		} );
+
+		test( 'returns null for invalid media type', () => {
+			const result = createResponsiveFocalPoint( 'invalid-type', 767, 0.6, 0.4 );
+			expect( result ).toBeNull();
+		} );
+
+		test( 'returns null for invalid breakpoint (out of range)', () => {
+			const result = createResponsiveFocalPoint( 'max-width', 0, 0.6, 0.4 );
+			expect( result ).toBeNull();
+		} );
+
+		test( 'returns null for invalid breakpoint (too large)', () => {
+			const result = createResponsiveFocalPoint( 'max-width', 10000, 0.6, 0.4 );
+			expect( result ).toBeNull();
+		} );
+
+		test( 'handles boundary values correctly', () => {
+			const result = createResponsiveFocalPoint( 'min-width', 1, 0.0, 1.0 );
+			
+			expect( result ).toEqual( {
+				mediaType: 'min-width',
+				breakpoint: 1,
+				x: 0.0,
+				y: 1.0,
+			} );
+		} );
+
+		test( 'handles maximum boundary values correctly', () => {
+			const result = createResponsiveFocalPoint( 'max-width', 9999, 1.0, 0.0 );
+			
+			expect( result ).toEqual( {
+				mediaType: 'max-width',
+				breakpoint: 9999,
+				x: 1.0,
+				y: 0.0,
+			} );
+		} );
+
+		test( 'returns null for NaN focal point values', () => {
+			const result = createResponsiveFocalPoint( 'max-width', 767, NaN, 0.4 );
+			expect( result ).toBeNull();
+		} );
+
+		test( 'returns null for Infinity focal point values', () => {
+			const result = createResponsiveFocalPoint( 'max-width', 767, 0.6, Infinity );
+			expect( result ).toBeNull();
+		} );
+
+		test( 'accepts floating point breakpoint values', () => {
+			const result = createResponsiveFocalPoint( 'max-width', 767.5, 0.5, 0.5 );
+			
+			expect( result ).toEqual( {
+				mediaType: 'max-width',
+				breakpoint: 767.5,
+				x: 0.5,
+				y: 0.5,
+			} );
+		} );
+
+		test( 'returns null for NaN breakpoint', () => {
+			const result = createResponsiveFocalPoint( 'max-width', NaN, 0.6, 0.4 );
+			expect( result ).toBeNull();
+		} );
+
+		test( 'returns null for negative breakpoint', () => {
+			const result = createResponsiveFocalPoint( 'max-width', -100, 0.6, 0.4 );
+			expect( result ).toBeNull();
+		} );
+	} );
+
+	// RED Phase: generateMediaQuery function tests (functions don't exist yet)
+	describe( 'generateMediaQuery function', () => {
+		test( 'generates correct max-width media query', () => {
+			const result = generateMediaQuery( 'max-width', 767 );
+			expect( result ).toBe( '(max-width: 767px)' );
+		} );
+
+		test( 'generates correct min-width media query', () => {
+			const result = generateMediaQuery( 'min-width', 768 );
+			expect( result ).toBe( '(min-width: 768px)' );
+		} );
+
+		test( 'handles floating point breakpoints', () => {
+			const result = generateMediaQuery( 'max-width', 767.5 );
+			expect( result ).toBe( '(max-width: 767.5px)' );
+		} );
+
+		test( 'handles boundary values correctly', () => {
+			const result1 = generateMediaQuery( 'min-width', 1 );
+			const result2 = generateMediaQuery( 'max-width', 9999 );
+			
+			expect( result1 ).toBe( '(min-width: 1px)' );
+			expect( result2 ).toBe( '(max-width: 9999px)' );
+		} );
+
+		test( 'handles large numbers correctly', () => {
+			const result = generateMediaQuery( 'min-width', 1920 );
+			expect( result ).toBe( '(min-width: 1920px)' );
+		} );
+
+		test( 'generates query for common breakpoints', () => {
+			const mobile = generateMediaQuery( 'max-width', 767 );
+			const tablet = generateMediaQuery( 'min-width', 768 );
+			const desktop = generateMediaQuery( 'min-width', 1024 );
+			
+			expect( mobile ).toBe( '(max-width: 767px)' );
+			expect( tablet ).toBe( '(min-width: 768px)' );
+			expect( desktop ).toBe( '(min-width: 1024px)' );
+		} );
+
+		test( 'preserves decimal precision', () => {
+			const result = generateMediaQuery( 'max-width', 767.25 );
+			expect( result ).toBe( '(max-width: 767.25px)' );
+		} );
+
+		test( 'handles zero decimal correctly', () => {
+			const result = generateMediaQuery( 'min-width', 768.0 );
+			expect( result ).toBe( '(min-width: 768px)' );
 		} );
 	} );
 } );

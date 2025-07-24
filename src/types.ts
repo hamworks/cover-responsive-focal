@@ -125,6 +125,7 @@ export type WPSaveElement = Element | null;
 
 /**
  * Validation function type definitions
+ * Note: These types are used in validation modules, keep them here for centralized type management
  */
 export type ValidateFocalPoint = ( x: unknown, y: unknown ) => boolean;
 export type ValidateMediaType = ( mediaType: unknown ) => boolean;

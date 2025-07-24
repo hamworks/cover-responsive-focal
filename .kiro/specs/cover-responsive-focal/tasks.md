@@ -7,7 +7,7 @@
   - 定数定義ファイル（constants.ts）を作成
   - _要件: 1.1, 2.1_
 
-- [ ] 2. バリデーション関数の実装（TDD）
+- [x] 2. バリデーション関数の実装（TDD）
 
   - [x] 2.1 フォーカルポイント検証関数を TDD で実装
 
@@ -15,14 +15,14 @@
     - テストを通す最小限の実装を作成
     - _要件: 1.2, 3.1_
 
-  - [ ] 2.2 メディアクエリ検証関数を TDD で実装
+  - [x] 2.2 メディアクエリ検証関数を TDD で実装
 
     - validateMediaType 関数のテストを先に作成
     - validateBreakpoint 関数のテストを先に作成
     - テストを通す実装を作成
     - _要件: 1.3, 2.2_
 
-  - [ ] 2.3 ResponsiveFocalPoint 作成関数を TDD で実装
+  - [x] 2.3 ResponsiveFocalPoint 作成関数を TDD で実装
     - createResponsiveFocalPoint 関数のテストを先に作成
     - generateMediaQuery 関数のテストを先に作成
     - テストを通す実装を作成

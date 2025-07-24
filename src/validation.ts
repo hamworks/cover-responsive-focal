@@ -6,6 +6,9 @@ import type {
 	ValidateFocalPoint,
 	ValidateMediaType,
 	ValidateBreakpoint,
+	CreateResponsiveFocalPoint,
+	GenerateMediaQuery,
+	ResponsiveFocalPoint,
 } from './types';
 import { VALIDATION } from './constants';
 
@@ -85,4 +88,63 @@ export const validateBreakpoint: ValidateBreakpoint = (
 		breakpoint >= VALIDATION.MIN_BREAKPOINT &&
 		breakpoint <= VALIDATION.MAX_BREAKPOINT
 	);
+};
+
+/**
+ * Create a ResponsiveFocalPoint object
+ * Validates all inputs and returns null if any validation fails
+ *
+ * @param mediaType  - Media query type
+ * @param breakpoint - Breakpoint value
+ * @param x          - X coordinate
+ * @param y          - Y coordinate
+ * @return ResponsiveFocalPoint object or null if invalid
+ */
+export const createResponsiveFocalPoint: CreateResponsiveFocalPoint = (
+	mediaType: string,
+	breakpoint: number,
+	x: number,
+	y: number
+): ResponsiveFocalPoint | null => {
+	// Validate media type
+	if ( ! validateMediaType( mediaType ) ) {
+		return null;
+	}
+
+	// Validate breakpoint
+	if ( ! validateBreakpoint( breakpoint ) ) {
+		return null;
+	}
+
+	// Validate focal point
+	if ( ! validateFocalPoint( x, y ) ) {
+		return null;
+	}
+
+	// All validations passed, create the object
+	return {
+		mediaType: mediaType as 'min-width' | 'max-width',
+		breakpoint,
+		x,
+		y,
+	};
+};
+
+/**
+ * Generate media query string
+ * Creates a CSS media query from media type and breakpoint
+ *
+ * @param mediaType  - Media query type
+ * @param breakpoint - Breakpoint value
+ * @return Formatted media query string
+ */
+export const generateMediaQuery: GenerateMediaQuery = (
+	mediaType: string,
+	breakpoint: number
+): string => {
+	// Convert to string and remove unnecessary decimal zeros
+	const breakpointValue = Number.isInteger( breakpoint )
+		? breakpoint
+		: breakpoint;
+	return `(${ mediaType }: ${ breakpointValue }px)`;
 };

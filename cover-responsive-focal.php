@@ -55,11 +55,11 @@ function crf_enqueue_block_editor_assets() {
 }
 
 /**
- * CSS生成関数 - TDD GREEN段階（テストを通す最小限の実装）
+ * Generate CSS rules for responsive focal points
  *
- * @param array  $responsive_focal レスポンシブフォーカルポイントの配列
- * @param string $fp_id CSS識別用の一意ID
- * @return string 生成されたCSS
+ * @param array  $responsive_focal Array of responsive focal points
+ * @param string $fp_id Unique ID for CSS targeting
+ * @return string Generated CSS rules
  */
 function crf_generate_css_rules( $responsive_focal, $fp_id ) {
 	if ( empty( $responsive_focal ) ) {
@@ -69,7 +69,7 @@ function crf_generate_css_rules( $responsive_focal, $fp_id ) {
 	$rules = '';
 
 	foreach ( $responsive_focal as $focal_point ) {
-		// バリデーション - 無効な値はスキップ
+		// Validation - skip invalid values
 		if ( ! crf_validate_media_type( $focal_point['mediaType'] ) ||
 			 ! crf_validate_breakpoint( $focal_point['breakpoint'] ) ||
 			 ! crf_validate_focal_point_value( $focal_point['x'] ) ||
@@ -82,7 +82,7 @@ function crf_generate_css_rules( $responsive_focal, $fp_id ) {
 		$x = floatval( $focal_point['x'] ) * 100;
 		$y = floatval( $focal_point['y'] ) * 100;
 
-		// メディアクエリ生成
+		// Generate media query
 		$media_query = sprintf( '(%s: %dpx)', $media_type, $breakpoint );
 
 		$rules .= sprintf(
@@ -99,40 +99,40 @@ function crf_generate_css_rules( $responsive_focal, $fp_id ) {
 }
 
 /**
- * メディアタイプの検証
+ * Validate media type
  *
- * @param string $media_type メディアタイプ
- * @return bool 有効かどうか
+ * @param string $media_type Media type to validate
+ * @return bool Whether the media type is valid
  */
 function crf_validate_media_type( $media_type ) {
 	return in_array( $media_type, array( 'min-width', 'max-width' ), true );
 }
 
 /**
- * ブレークポイントの検証
+ * Validate breakpoint value
  *
- * @param mixed $breakpoint ブレークポイント
- * @return bool 有効かどうか
+ * @param mixed $breakpoint Breakpoint value to validate
+ * @return bool Whether the breakpoint is valid
  */
 function crf_validate_breakpoint( $breakpoint ) {
 	return is_numeric( $breakpoint ) && $breakpoint > 0 && $breakpoint <= 9999;
 }
 
 /**
- * フォーカルポイント値の検証
+ * Validate focal point value
  *
- * @param mixed $value フォーカルポイント値
- * @return bool 有効かどうか
+ * @param mixed $value Focal point value to validate
+ * @return bool Whether the value is valid
  */
 function crf_validate_focal_point_value( $value ) {
 	return is_numeric( $value ) && $value >= 0 && $value <= 1;
 }
 
 /**
- * フォーカルポイントデータのサニタイゼーション - TDD GREEN段階
+ * Sanitize focal point data
  *
- * @param array $input フォーカルポイントデータ
- * @return array サニタイズされたデータ
+ * @param array $input Focal point data to sanitize
+ * @return array Sanitized focal point data
  */
 function crf_sanitize_focal_point( $input ) {
 	$defaults = array(
@@ -142,29 +142,29 @@ function crf_sanitize_focal_point( $input ) {
 		'y' => 0.5
 	);
 
-	// 入力値を取得（デフォルト値でフォールバック）
+	// Get input values with defaults
 	$media_type = isset( $input['mediaType'] ) ? $input['mediaType'] : $defaults['mediaType'];
 	$breakpoint = isset( $input['breakpoint'] ) ? $input['breakpoint'] : $defaults['breakpoint'];
 	$x = isset( $input['x'] ) ? $input['x'] : $defaults['x'];
 	$y = isset( $input['y'] ) ? $input['y'] : $defaults['y'];
 
-	// メディアタイプのサニタイゼーション
+	// Sanitize media type
 	$media_type = sanitize_text_field( $media_type );
 	if ( ! crf_validate_media_type( $media_type ) ) {
 		$media_type = $defaults['mediaType'];
 	}
 
-	// ブレークポイントのサニタイゼーション
+	// Sanitize breakpoint
 	$breakpoint = intval( $breakpoint );
 	if ( ! crf_validate_breakpoint( $breakpoint ) ) {
 		$breakpoint = $defaults['breakpoint'];
 	}
 
-	// フォーカルポイント値のサニタイゼーション
+	// Sanitize focal point values
 	$x = floatval( $x );
 	$y = floatval( $y );
 
-	// 数値でない場合はデフォルト値を使用
+	// Use default if not numeric
 	if ( ! is_numeric( $input['x'] ?? '' ) ) {
 		$x = $defaults['x'];
 	}
@@ -172,7 +172,7 @@ function crf_sanitize_focal_point( $input ) {
 		$y = $defaults['y'];
 	}
 
-	// 範囲外の値を正規化
+	// Normalize out-of-range values
 	$x = max( 0.0, min( 1.0, $x ) );
 	$y = max( 0.0, min( 1.0, $y ) );
 
@@ -185,10 +185,10 @@ function crf_sanitize_focal_point( $input ) {
 }
 
 /**
- * レスポンシブフォーカルポイント配列のサニタイゼーション
+ * Sanitize responsive focal point array
  *
- * @param array $input レスポンシブフォーカルポイント配列
- * @return array サニタイズされた配列
+ * @param array $input Responsive focal point array to sanitize
+ * @return array Sanitized array
  */
 function crf_sanitize_responsive_focal_array( $input ) {
 	if ( ! is_array( $input ) ) {
@@ -207,14 +207,14 @@ function crf_sanitize_responsive_focal_array( $input ) {
 }
 
 /**
- * render_blockフィルター - TDD GREEN段階
+ * Filter block rendering to add responsive focal point CSS
  *
- * @param string $content ブロックコンテンツ
- * @param array  $block ブロック情報
- * @return string 処理されたコンテンツ
+ * @param string $content Block content
+ * @param array  $block Block information
+ * @return string Processed content
  */
 function crf_render_block( $content, $block ) {
-	// カバーブロック以外は何もしない
+	// Skip non-cover blocks
 	if ( 'core/cover' !== $block['blockName'] ) {
 		return $content;
 	}
@@ -222,24 +222,24 @@ function crf_render_block( $content, $block ) {
 	$attrs = $block['attrs'] ?? array();
 	$responsive_focal = $attrs['responsiveFocal'] ?? array();
 
-	// 空の場合は何も処理しない（標準動作を維持）
+	// Skip empty array (maintain standard behavior)
 	if ( empty( $responsive_focal ) ) {
 		return $content;
 	}
 
-	// data-fp-id を取得または生成
+	// Get or generate data-fp-id
 	$fp_id = $attrs['dataFpId'] ?? crf_generate_unique_fp_id();
 
-	// data-fp-id属性をカバーブロックに追加
+	// Add data-fp-id attribute to cover block
 	$content = crf_add_fp_id_to_content( $content, $fp_id );
 
-	// レスポンシブフォーカルポイントのサニタイゼーション
+	// Sanitize responsive focal points
 	$sanitized_focal = crf_sanitize_responsive_focal_array( $responsive_focal );
 
-	// CSS生成
+	// Generate CSS
 	$css_rules = crf_generate_css_rules( $sanitized_focal, $fp_id );
 
-	// インラインスタイルを追加
+	// Add inline style
 	if ( ! empty( $css_rules ) ) {
 		$content .= sprintf( '<style id="%s">%s</style>', esc_attr( $fp_id ), $css_rules );
 	}
@@ -248,16 +248,16 @@ function crf_render_block( $content, $block ) {
 }
 
 /**
- * data-fp-id属性をコンテンツに追加
+ * Add data-fp-id attribute to content
  *
- * @param string $content コンテンツ
- * @param string $fp_id フォーカルポイントID
- * @return string 処理されたコンテンツ
+ * @param string $content Content to process
+ * @param string $fp_id Focal point ID
+ * @return string Processed content
  */
 function crf_add_fp_id_to_content( $content, $fp_id ) {
-	// wp-block-coverクラスを持つ要素にdata-fp-id属性を追加
+	// Add data-fp-id attribute to elements with wp-block-cover class
 	return preg_replace_callback(
-		// data-fp-id 属性が未設定の wp-block-cover 要素のみ
+		// Only target wp-block-cover elements without existing data-fp-id
 		'/<[^>]*class="[^"]*wp-block-cover[^"]*"(?:(?!data-fp-id)[^>])*?>/i',
 		function( $matches ) use ( $fp_id ) {
 			$tag = $matches[0];
@@ -268,9 +268,9 @@ function crf_add_fp_id_to_content( $content, $fp_id ) {
 }
 
 /**
- * 一意のフォーカルポイントIDを生成
+ * Generate unique focal point ID
  *
- * @return string 一意ID
+ * @return string Unique ID
  */
 function crf_generate_unique_fp_id() {
 	return wp_unique_id( 'crf-' );

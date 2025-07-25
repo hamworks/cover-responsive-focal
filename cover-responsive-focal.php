@@ -1,43 +1,58 @@
 <?php
 /**
  * Plugin Name:       Cover Responsive Focal
- * Description:       Example block scaffolded with Create Block tool.
+ * Description:       Adds responsive focal point capability to WordPress Cover blocks for enhanced mobile experience.
  * Version:           0.1.0
- * Requires at least: 6.7
+ * Requires at least: 6.1
  * Requires PHP:      7.4
- * Author:            The WordPress Contributors
+ * Author:            mel_cha
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       cover-responsive-focal
  *
- * @package CreateBlock
+ * @package CoverResponsiveFocal
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
+
+// Define plugin constants
+define( 'CRF_VERSION', '0.1.0' );
+define( 'CRF_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'CRF_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'CRF_TEXT_DOMAIN', 'cover-responsive-focal' );
+
+/**
+ * Initialize the plugin
+ */
+function crf_init() {
+	// Register hooks
+	add_action( 'enqueue_block_editor_assets', 'crf_enqueue_block_editor_assets' );
+	add_filter( 'render_block', 'crf_render_block', 10, 2 );
+}
+add_action( 'init', 'crf_init' );
 /**
  * Enqueue the block editor assets for extending the Cover block.
  */
-function create_block_cover_responsive_focal_block_init() {
+function crf_enqueue_block_editor_assets() {
 	// Enqueue the block editor script
 	wp_enqueue_script(
 		'cover-responsive-focal-editor',
-		plugin_dir_url( __FILE__ ) . 'build/index.js',
+		CRF_PLUGIN_URL . 'build/index.js',
 		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-components', 'wp-compose', 'wp-block-editor', 'wp-hooks' ),
-		filemtime( plugin_dir_path( __FILE__ ) . 'build/index.js' ),
+		CRF_VERSION,
 		true
 	);
 
 	// Enqueue the block editor styles
 	wp_enqueue_style(
 		'cover-responsive-focal-editor',
-		plugin_dir_url( __FILE__ ) . 'build/index.css',
+		CRF_PLUGIN_URL . 'build/index.css',
 		array( 'wp-edit-blocks' ),
-		filemtime( plugin_dir_path( __FILE__ ) . 'build/index.css' )
+		CRF_VERSION
 	);
 }
-add_action( 'enqueue_block_editor_assets', 'create_block_cover_responsive_focal_block_init' );
 
 /**
  * CSS生成関数 - TDD GREEN段階（テストを通す最小限の実装）
@@ -50,9 +65,9 @@ function crf_generate_css_rules( $responsive_focal, $fp_id ) {
 	if ( empty( $responsive_focal ) ) {
 		return '';
 	}
-	
+
 	$rules = '';
-	
+
 	foreach ( $responsive_focal as $focal_point ) {
 		// バリデーション - 無効な値はスキップ
 		if ( ! crf_validate_media_type( $focal_point['mediaType'] ) ||
@@ -61,15 +76,15 @@ function crf_generate_css_rules( $responsive_focal, $fp_id ) {
 			 ! crf_validate_focal_point_value( $focal_point['y'] ) ) {
 			continue;
 		}
-		
+
 		$media_type = sanitize_text_field( $focal_point['mediaType'] );
 		$breakpoint = intval( $focal_point['breakpoint'] );
 		$x = floatval( $focal_point['x'] ) * 100;
 		$y = floatval( $focal_point['y'] ) * 100;
-		
+
 		// メディアクエリ生成
 		$media_query = sprintf( '(%s: %dpx)', $media_type, $breakpoint );
-		
+
 		$rules .= sprintf(
 			'@media %s { [data-fp-id="%s"] .wp-block-cover__image-background, [data-fp-id="%s"] .wp-block-cover__video-background { object-position: %s%% %s%%; } }',
 			$media_query,
@@ -79,7 +94,7 @@ function crf_generate_css_rules( $responsive_focal, $fp_id ) {
 			$y
 		);
 	}
-	
+
 	return $rules;
 }
 
@@ -126,29 +141,29 @@ function crf_sanitize_focal_point( $input ) {
 		'x' => 0.5,
 		'y' => 0.5
 	);
-	
+
 	// 入力値を取得（デフォルト値でフォールバック）
 	$media_type = isset( $input['mediaType'] ) ? $input['mediaType'] : $defaults['mediaType'];
 	$breakpoint = isset( $input['breakpoint'] ) ? $input['breakpoint'] : $defaults['breakpoint'];
 	$x = isset( $input['x'] ) ? $input['x'] : $defaults['x'];
 	$y = isset( $input['y'] ) ? $input['y'] : $defaults['y'];
-	
+
 	// メディアタイプのサニタイゼーション
 	$media_type = sanitize_text_field( $media_type );
 	if ( ! crf_validate_media_type( $media_type ) ) {
 		$media_type = $defaults['mediaType'];
 	}
-	
+
 	// ブレークポイントのサニタイゼーション
 	$breakpoint = intval( $breakpoint );
 	if ( ! crf_validate_breakpoint( $breakpoint ) ) {
 		$breakpoint = $defaults['breakpoint'];
 	}
-	
+
 	// フォーカルポイント値のサニタイゼーション
 	$x = floatval( $x );
 	$y = floatval( $y );
-	
+
 	// 数値でない場合はデフォルト値を使用
 	if ( ! is_numeric( $input['x'] ?? '' ) ) {
 		$x = $defaults['x'];
@@ -156,11 +171,11 @@ function crf_sanitize_focal_point( $input ) {
 	if ( ! is_numeric( $input['y'] ?? '' ) ) {
 		$y = $defaults['y'];
 	}
-	
+
 	// 範囲外の値を正規化
 	$x = max( 0.0, min( 1.0, $x ) );
 	$y = max( 0.0, min( 1.0, $y ) );
-	
+
 	return array(
 		'mediaType' => $media_type,
 		'breakpoint' => $breakpoint,
@@ -179,15 +194,15 @@ function crf_sanitize_responsive_focal_array( $input ) {
 	if ( ! is_array( $input ) ) {
 		return array();
 	}
-	
+
 	$sanitized = array();
-	
+
 	foreach ( $input as $focal_point ) {
 		if ( is_array( $focal_point ) ) {
 			$sanitized[] = crf_sanitize_focal_point( $focal_point );
 		}
 	}
-	
+
 	return $sanitized;
 }
 
@@ -203,32 +218,32 @@ function crf_render_block( $content, $block ) {
 	if ( 'core/cover' !== $block['blockName'] ) {
 		return $content;
 	}
-	
+
 	$attrs = $block['attrs'] ?? array();
 	$responsive_focal = $attrs['responsiveFocal'] ?? array();
-	
+
 	// 空の場合は何も処理しない（標準動作を維持）
 	if ( empty( $responsive_focal ) ) {
 		return $content;
 	}
-	
+
 	// data-fp-id を取得または生成
 	$fp_id = $attrs['dataFpId'] ?? crf_generate_unique_fp_id();
-	
+
 	// data-fp-id属性をカバーブロックに追加
 	$content = crf_add_fp_id_to_content( $content, $fp_id );
-	
+
 	// レスポンシブフォーカルポイントのサニタイゼーション
 	$sanitized_focal = crf_sanitize_responsive_focal_array( $responsive_focal );
-	
+
 	// CSS生成
 	$css_rules = crf_generate_css_rules( $sanitized_focal, $fp_id );
-	
+
 	// インラインスタイルを追加
 	if ( ! empty( $css_rules ) ) {
 		$content .= sprintf( '<style id="%s">%s</style>', esc_attr( $fp_id ), $css_rules );
 	}
-	
+
 	return $content;
 }
 
@@ -261,5 +276,3 @@ function crf_generate_unique_fp_id() {
 	return wp_unique_id( 'crf-' );
 }
 
-// render_blockフィルターを登録
-add_filter( 'render_block', 'crf_render_block', 10, 2 );

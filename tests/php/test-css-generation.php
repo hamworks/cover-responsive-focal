@@ -23,7 +23,7 @@ class CRF_CSS_Generation_Test extends WP_UnitTestCase {
         $css = crf_generate_css_rules($responsive_focal, 'test-id');
         
         // 期待する出力を明確に定義
-        $expected_css = '@media (max-width: 767px) { [data-fp-id="test-id"] .wp-block-cover__image-background, [data-fp-id="test-id"] .wp-block-cover__video-background { object-position: 60% 40%; } }';
+        $expected_css = '@media (max-width: 767px) { [data-fp-id="test-id"] .wp-block-cover__image-background, [data-fp-id="test-id"] .wp-block-cover__video-background { object-position: 60% 40% !important; } }';
         
         $this->assertEquals($expected_css, $css);
     }

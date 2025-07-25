@@ -27,6 +27,13 @@ define( 'CRF_TEXT_DOMAIN', 'cover-responsive-focal' );
  * Initialize the plugin
  */
 function crf_init() {
+	// Load plugin text domain for internationalization
+	load_plugin_textdomain(
+		CRF_TEXT_DOMAIN,
+		false,
+		dirname( plugin_basename( __FILE__ ) ) . '/languages'
+	);
+	
 	// Register hooks
 	add_action( 'enqueue_block_editor_assets', 'crf_enqueue_block_editor_assets' );
 	add_filter( 'render_block', 'crf_render_block', 10, 2 );
@@ -36,22 +43,39 @@ add_action( 'init', 'crf_init' );
  * Enqueue the block editor assets for extending the Cover block.
  */
 function crf_enqueue_block_editor_assets() {
+	$script_path = CRF_PLUGIN_DIR . 'build/index.js';
+	$style_path = CRF_PLUGIN_DIR . 'build/index.css';
+	
+	// Check if build files exist
+	if ( ! file_exists( $script_path ) ) {
+		return;
+	}
+	
 	// Enqueue the block editor script
 	wp_enqueue_script(
 		'cover-responsive-focal-editor',
 		CRF_PLUGIN_URL . 'build/index.js',
 		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-components', 'wp-compose', 'wp-block-editor', 'wp-hooks' ),
-		CRF_VERSION,
+		filemtime( $script_path ),
 		true
 	);
-
-	// Enqueue the block editor styles
-	wp_enqueue_style(
+	
+	// Set up internationalization for JavaScript
+	wp_set_script_translations(
 		'cover-responsive-focal-editor',
-		CRF_PLUGIN_URL . 'build/index.css',
-		array( 'wp-edit-blocks' ),
-		CRF_VERSION
+		CRF_TEXT_DOMAIN,
+		CRF_PLUGIN_DIR . 'languages'
 	);
+
+	// Enqueue the block editor styles if they exist
+	if ( file_exists( $style_path ) ) {
+		wp_enqueue_style(
+			'cover-responsive-focal-editor',
+			CRF_PLUGIN_URL . 'build/index.css',
+			array( 'wp-edit-blocks' ),
+			filemtime( $style_path )
+		);
+	}
 }
 
 /**

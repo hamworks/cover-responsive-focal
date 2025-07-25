@@ -78,7 +78,7 @@ test.describe('ブロックエディタ - レスポンシブフォーカルポ�
       
       // デフォルト値が設定されていることを確認
       const mediaTypeSelect = page.locator('select').first();
-      await expect(mediaTypeSelect).toHaveValue('min-width');
+      await expect(mediaTypeSelect).toHaveValue('max-width');
       
       const breakpointInput = page.locator('input[type="number"]').first();
       await expect(breakpointInput).toHaveValue('768');
@@ -133,14 +133,14 @@ test.describe('ブロックエディタ - レスポンシブフォーカルポ�
       await expect(breakpointInput).toHaveValue('1024');
       
       // 最小値制限をテスト
-      await breakpointInput.fill('100');
+      await breakpointInput.fill('50');
       await breakpointInput.blur();
-      await expect(breakpointInput).toHaveValue('320'); // 最小値にクランプされる
+      await expect(breakpointInput).toHaveValue('100'); // 最小値にクランプされる
       
       // 最大値制限をテスト
       await breakpointInput.fill('5000');
       await breakpointInput.blur();
-      await expect(breakpointInput).toHaveValue('1920'); // 最大値にクランプされる
+      await expect(breakpointInput).toHaveValue('2000'); // 最大値にクランプされる
       
       // 無効な値のテスト
       await breakpointInput.fill('invalid');

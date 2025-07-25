@@ -69,13 +69,11 @@ test.describe('レスポンシブフォーカルポイント設定 - 詳細機�
       // 最小値より小さい値のテスト
       await breakpointInput.fill('50');
       await breakpointInput.blur();
-      await page.waitForTimeout(100);
       await expect(breakpointInput).toHaveValue('100'); // VALIDATION.MIN_BREAKPOINT
       
       // 最大値より大きい値のテスト
       await breakpointInput.fill('3000');
       await breakpointInput.blur();
-      await page.waitForTimeout(100);
       await expect(breakpointInput).toHaveValue('2000'); // VALIDATION.MAX_BREAKPOINT
       
       // 有効な値のテスト
@@ -86,7 +84,6 @@ test.describe('レスポンシブフォーカルポイント設定 - 詳細機�
       // 負の値のテスト
       await breakpointInput.fill('-100');
       await breakpointInput.blur();
-      await page.waitForTimeout(100);
       await expect(breakpointInput).toHaveValue('100'); // 最小値にクランプ
     }
   });
@@ -104,19 +101,16 @@ test.describe('レスポンシブフォーカルポイント設定 - 詳細機�
       // 文字列入力のテスト
       await breakpointInput.fill('invalid');
       await breakpointInput.blur();
-      await page.waitForTimeout(100);
       await expect(breakpointInput).toHaveValue('768'); // デフォルト値に戻る
       
       // 空文字のテスト
       await breakpointInput.fill('');
       await breakpointInput.blur();
-      await page.waitForTimeout(100);
       await expect(breakpointInput).toHaveValue('768'); // デフォルト値に戻る
       
       // 小数点のテスト
       await breakpointInput.fill('768.5');
       await breakpointInput.blur();
-      await page.waitForTimeout(100);
       await expect(breakpointInput).toHaveValue('768'); // 整数に丸められる
     }
   });
@@ -130,6 +124,7 @@ test.describe('レスポンシブフォーカルポイント設定 - 詳細機�
       await page.locator('button.crf-add-focal-point').click();
       
       const mediaTypeSelect = page.locator('select').first();
+      const breakpointInput = page.locator('input[type="number"]').first();
       
       // 利用可能な選択肢を確認
       const options = await mediaTypeSelect.locator('option').allTextContents();
@@ -328,7 +323,6 @@ test.describe('レスポンシブフォーカルポイント設定 - 詳細機�
       for (const test of boundaryTests) {
         await breakpointInput.fill(test.input);
         await breakpointInput.blur();
-        await page.waitForTimeout(100);
         await expect(breakpointInput).toHaveValue(test.expected);
       }
     }

@@ -222,7 +222,7 @@ test.describe('フロントエンド表示 - レスポンシブフォーカル�
         
         // デスクトップサイズで確認
         await previewPage.setViewportSize(TEST_VIEWPORTS.DESKTOP);
-        await previewPage.waitForTimeout(500);
+        await previewPage.waitForLoadState('networkidle');
         
         // デスクトップ用のCSSが適用されることを確認
         const desktopStyles = await previewPage.evaluate((fpId) => {
@@ -232,7 +232,7 @@ test.describe('フロントエンド表示 - レスポンシブフォーカル�
         
         // モバイルサイズで確認
         await previewPage.setViewportSize(TEST_VIEWPORTS.MOBILE);
-        await previewPage.waitForTimeout(500);
+        await previewPage.waitForLoadState('networkidle');
         
         const mobileStyles = await previewPage.evaluate((fpId) => {
           const element = document.querySelector(`[data-fp-id="${fpId}"] .wp-block-cover__image-background`);
@@ -402,7 +402,7 @@ test.describe('フロントエンド表示 - レスポンシブフォーカル�
         
         for (const test of viewportTests) {
           await previewPage.setViewportSize(test.viewport);
-          await previewPage.waitForTimeout(300);
+          await previewPage.waitForLoadState('networkidle');
           
           // メディアクエリがマッチすることを確認
           const mediaQueryMatches = await previewPage.evaluate((query) => {

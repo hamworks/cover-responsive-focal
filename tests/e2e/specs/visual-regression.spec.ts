@@ -84,7 +84,7 @@ test.describe('ビジュアル回帰テスト - レスポンシブフォーカ�
           pickerBounds.x + pickerBounds.width * 0.2,
           pickerBounds.y + pickerBounds.height * 0.2
         );
-        await page.waitForTimeout(500);
+        await expect(focalPointPicker.locator('.components-focal-point-picker__icon_container')).toBeVisible();
         await expect(focalPointPicker).toHaveScreenshot('focal-point-picker-top-left.png');
         
         // 右下に移動
@@ -92,7 +92,7 @@ test.describe('ビジュアル回帰テスト - レスポンシブフォーカ�
           pickerBounds.x + pickerBounds.width * 0.8,
           pickerBounds.y + pickerBounds.height * 0.8
         );
-        await page.waitForTimeout(500);
+        await expect(focalPointPicker.locator('.components-focal-point-picker__icon_container')).toBeVisible();
         await expect(focalPointPicker).toHaveScreenshot('focal-point-picker-bottom-right.png');
         
         // 中央に戻す
@@ -100,7 +100,7 @@ test.describe('ビジュアル回帰テスト - レスポンシブフォーカ�
           pickerBounds.x + pickerBounds.width * 0.5,
           pickerBounds.y + pickerBounds.height * 0.5
         );
-        await page.waitForTimeout(500);
+        await expect(focalPointPicker.locator('.components-focal-point-picker__icon_container')).toBeVisible();
         await expect(focalPointPicker).toHaveScreenshot('focal-point-picker-center.png');
       }
     }
@@ -154,21 +154,21 @@ test.describe('ビジュアル回帰テスト - レスポンシブフォーカ�
         
         // デスクトップビューでのスクリーンショット
         await previewPage.setViewportSize(TEST_VIEWPORTS.DESKTOP);
-        await previewPage.waitForTimeout(1000);
+        await previewPage.waitForLoadState('networkidle');
         await expect(coverElement).toHaveScreenshot('cover-desktop-responsive.png', {
           animations: 'disabled'
         });
         
         // タブレットビューでのスクリーンショット
         await previewPage.setViewportSize(TEST_VIEWPORTS.TABLET);
-        await previewPage.waitForTimeout(1000);
+        await previewPage.waitForLoadState('networkidle');
         await expect(coverElement).toHaveScreenshot('cover-tablet-responsive.png', {
           animations: 'disabled'
         });
         
         // モバイルビューでのスクリーンショット
         await previewPage.setViewportSize(TEST_VIEWPORTS.MOBILE);
-        await previewPage.waitForTimeout(1000);
+        await previewPage.waitForLoadState('networkidle');
         await expect(coverElement).toHaveScreenshot('cover-mobile-responsive.png', {
           animations: 'disabled'
         });
@@ -214,7 +214,7 @@ test.describe('ビジュアル回帰テスト - レスポンシブフォーカ�
         try {
           const coverElement = previewPage.locator('.wp-block-cover');
           await previewPage.setViewportSize(TEST_VIEWPORTS.DESKTOP);
-          await previewPage.waitForTimeout(1000);
+          await previewPage.waitForLoadState('networkidle');
           
           // 画像サイズ別のスクリーンショット
           await expect(coverElement).toHaveScreenshot(`cover-${imageTest.name}-image.png`, {
@@ -281,7 +281,7 @@ test.describe('ビジュアル回帰テスト - レスポンシブフォーカ�
         
         for (const viewportTest of viewportTests) {
           await previewPage.setViewportSize(viewportTest.size);
-          await previewPage.waitForTimeout(1000);
+          await previewPage.waitForLoadState('networkidle');
           
           await expect(coverElement).toHaveScreenshot(`cover-complex-${viewportTest.name}.png`, {
             animations: 'disabled'
@@ -315,7 +315,7 @@ test.describe('ビジュアル回帰テスト - レスポンシブフォーカ�
       // 最小値以下の値を入力
       await breakpointInput.fill('50');
       await breakpointInput.blur();
-      await page.waitForTimeout(500);
+      await expect(breakpointInput).toHaveValue('100');
       await expect(inspectorPanel).toHaveScreenshot('validation-min-clamped.png', {
         mask: [page.locator('.block-editor-block-card')]
       });
@@ -323,7 +323,7 @@ test.describe('ビジュアル回帰テスト - レスポンシブフォーカ�
       // 最大値以上の値を入力
       await breakpointInput.fill('5000');
       await breakpointInput.blur();
-      await page.waitForTimeout(500);
+      await expect(breakpointInput).toHaveValue('2000');
       await expect(inspectorPanel).toHaveScreenshot('validation-max-clamped.png', {
         mask: [page.locator('.block-editor-block-card')]
       });
@@ -331,7 +331,7 @@ test.describe('ビジュアル回帰テスト - レスポンシブフォーカ�
       // 無効な文字列を入力
       await breakpointInput.fill('invalid');
       await breakpointInput.blur();
-      await page.waitForTimeout(500);
+      await expect(breakpointInput).toHaveValue('768');
       await expect(inspectorPanel).toHaveScreenshot('validation-invalid-input.png', {
         mask: [page.locator('.block-editor-block-card')]
       });
@@ -362,14 +362,14 @@ test.describe('ビジュアル回帰テスト - レスポンシブフォーカ�
           pickerBounds.y + pickerBounds.height * 0.7
         );
         
-        // 短時間待機してアニメーション中をキャプチャ
-        await page.waitForTimeout(100);
+        // アニメーション中をキャプチャ
+        await expect(focalPointPicker.locator('.components-focal-point-picker__icon_container')).toBeVisible();
         await expect(focalPointPicker).toHaveScreenshot('animation-during.png');
         
         await clickPromise;
         
         // アニメーション完了後
-        await page.waitForTimeout(500);
+        await expect(focalPointPicker.locator('.components-focal-point-picker__icon_container')).toBeVisible();
         await expect(focalPointPicker).toHaveScreenshot('animation-after.png');
       }
     }

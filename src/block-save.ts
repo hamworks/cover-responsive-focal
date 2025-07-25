@@ -70,7 +70,9 @@ const extendCoverBlockSave = (
 
 	// Create new element with data-fp-id attribute
 	// Using global React in WordPress environment
-	return ( window as any ).React.createElement(
+	return (
+		window as typeof window & { React: typeof import('react') }
+	 ).React.createElement(
 		'div',
 		{
 			...existingProps,

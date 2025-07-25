@@ -4,24 +4,13 @@
  */
 
 import { addFilter } from '@wordpress/hooks';
+import { createElement } from '@wordpress/element';
+import type { ReactNode, ReactElement } from 'react';
+import type { CoverBlockAttributes } from './types';
 
 // Interface for block type
 interface BlockType {
 	name?: string;
-}
-
-// Interface for cover block attributes
-interface CoverBlockAttributes {
-	responsiveFocal?: Array< any >;
-	dataFpId?: string;
-	[ key: string ]: any;
-}
-
-// Interface for React element
-interface ReactElement {
-	type?: string;
-	props?: Record< string, any >;
-	[ key: string ]: any;
 }
 
 /**
@@ -34,10 +23,10 @@ interface ReactElement {
  * @return Modified save element or original element
  */
 const extendCoverBlockSave = (
-	element: ReactElement | null | undefined,
+	element: ReactNode,
 	blockType: BlockType | null | undefined,
 	attributes: CoverBlockAttributes | null | undefined
-): ReactElement | null | undefined => {
+): ReactNode => {
 	// Only process core/cover blocks
 	if ( ! blockType || blockType.name !== 'core/cover' ) {
 		return element;
@@ -65,14 +54,17 @@ const extendCoverBlockSave = (
 		dataFpId ||
 		`crf-${ Date.now() }-${ Math.floor( Math.random() * 10000 ) }`;
 
-	// Get existing props from element
-	const existingProps = element?.props || {};
+	// Type guard to check if element is a React element with props
+	const isReactElement = ( el: ReactNode ): el is ReactElement => {
+		return el !== null && typeof el === 'object' && 'props' in el;
+	};
+
+	// Get existing props from element (if it's a React element with props)
+	const existingProps = isReactElement( element ) ? element.props : {};
 
 	// Create new element with data-fp-id attribute
-	// Using global React in WordPress environment
-	return (
-		window as typeof window & { React: typeof import('react') }
-	 ).React.createElement(
+	// Using WordPress createElement function for proper type compatibility
+	return createElement(
 		'div',
 		{
 			...existingProps,

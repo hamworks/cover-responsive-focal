@@ -9,11 +9,16 @@ jest.mock( '@wordpress/hooks', () => ( {
 	addFilter: mockAddFilter,
 } ) );
 
-// Mock React for createElement
+// Mock WordPress element for createElement
 const mockCreateElement = jest.fn();
-global.React = { createElement: mockCreateElement } as any;
 
-// Import the function for direct testing
+jest.mock( '@wordpress/element', () => ( {
+	createElement: mockCreateElement,
+} ) );
+
+// Import types and function for direct testing
+import type { ReactElement } from 'react';
+import type { CoverBlockAttributes } from '../../src/types';
 import { extendCoverBlockSave } from '../../src/block-save';
 
 describe( 'Block Save Extension (TDD)', () => {
@@ -40,7 +45,11 @@ describe( 'Block Save Extension (TDD)', () => {
 
 	describe( 'extendCoverBlockSave function behavior', () => {
 		test( 'should not modify non-cover blocks', () => {
-			const element = { type: 'div', props: {} };
+			const element: ReactElement = {
+				type: 'div',
+				props: {},
+				key: null,
+			};
 			const blockType = { name: 'core/paragraph' };
 			const attributes = {};
 
@@ -54,7 +63,11 @@ describe( 'Block Save Extension (TDD)', () => {
 		} );
 
 		test( 'should return original element for empty responsiveFocal', () => {
-			const element = { type: 'div', props: {} };
+			const element: ReactElement = {
+				type: 'div',
+				props: {},
+				key: null,
+			};
 			const blockType = { name: 'core/cover' };
 			const attributes = { responsiveFocal: [] };
 
@@ -68,12 +81,13 @@ describe( 'Block Save Extension (TDD)', () => {
 		} );
 
 		test( 'should add data-fp-id when responsiveFocal has items', () => {
-			const element = {
+			const element: ReactElement = {
 				type: 'div',
 				props: { className: 'wp-block-cover' },
+				key: null,
 			};
 			const blockType = { name: 'core/cover' };
-			const attributes = {
+			const attributes: CoverBlockAttributes = {
 				responsiveFocal: [
 					{ mediaType: 'max-width', breakpoint: 767, x: 0.6, y: 0.4 },
 				],
@@ -101,9 +115,13 @@ describe( 'Block Save Extension (TDD)', () => {
 		} );
 
 		test( 'should generate dataFpId when not provided', () => {
-			const element = { type: 'div', props: {} };
+			const element: ReactElement = {
+				type: 'div',
+				props: {},
+				key: null,
+			};
 			const blockType = { name: 'core/cover' };
-			const attributes = {
+			const attributes: CoverBlockAttributes = {
 				responsiveFocal: [
 					{ mediaType: 'max-width', breakpoint: 767, x: 0.6, y: 0.4 },
 				],
@@ -130,38 +148,58 @@ describe( 'Block Save Extension (TDD)', () => {
 		} );
 
 		test( 'should handle null/undefined gracefully', () => {
+			const emptyElement: ReactElement = {
+				type: 'div',
+				props: {},
+				key: null,
+			};
+
 			// Test null blockType
-			expect( extendCoverBlockSave( {}, null, {} ) ).toEqual( {} );
+			expect( extendCoverBlockSave( emptyElement, null, {} ) ).toEqual(
+				emptyElement
+			);
 
 			// Test null attributes
 			expect(
-				extendCoverBlockSave( {}, { name: 'core/cover' }, null )
-			).toEqual( {} );
+				extendCoverBlockSave(
+					emptyElement,
+					{ name: 'core/cover' },
+					null
+				)
+			).toEqual( emptyElement );
 
 			// Test undefined responsiveFocal
 			const attributes = { responsiveFocal: undefined };
 			expect(
-				extendCoverBlockSave( {}, { name: 'core/cover' }, attributes )
-			).toEqual( {} );
+				extendCoverBlockSave(
+					emptyElement,
+					{ name: 'core/cover' },
+					attributes
+				)
+			).toEqual( emptyElement );
 
-			// Test non-array responsiveFocal
-			const invalidAttributes = { responsiveFocal: 'invalid' };
+			// Test non-array responsiveFocal - using valid interface with invalid runtime value
+			const invalidAttributes: CoverBlockAttributes = {
+				// @ts-expect-error: Intentionally testing invalid runtime type for validation
+				responsiveFocal: 'invalid',
+			};
 			expect(
 				extendCoverBlockSave(
-					{},
+					emptyElement,
 					{ name: 'core/cover' },
 					invalidAttributes
 				)
-			).toEqual( {} );
+			).toEqual( emptyElement );
 		} );
 
 		test( 'should preserve existing element props', () => {
-			const element = {
+			const element: ReactElement = {
 				type: 'div',
 				props: { className: 'wp-block-cover', style: { color: 'red' } },
+				key: null,
 			};
 			const blockType = { name: 'core/cover' };
-			const attributes = {
+			const attributes: CoverBlockAttributes = {
 				responsiveFocal: [
 					{ mediaType: 'max-width', breakpoint: 767, x: 0.6, y: 0.4 },
 				],

@@ -5,13 +5,6 @@
 
 import { addFilter } from '@wordpress/hooks';
 
-// Global type declarations for WordPress environment
-declare global {
-	const React: {
-		createElement: ( type: string, props: any, ...children: any[] ) => any;
-	};
-}
-
 // Interface for block type
 interface BlockType {
 	name?: string;
@@ -76,8 +69,10 @@ const extendCoverBlockSave = (
 	const existingProps = element?.props || {};
 
 	// Create new element with data-fp-id attribute
-	// Using React.createElement globally available in WordPress
-	return React.createElement(
+	// Using global React in WordPress environment
+	return (
+		window as typeof window & { React: typeof import('react') }
+	 ).React.createElement(
 		'div',
 		{
 			...existingProps,

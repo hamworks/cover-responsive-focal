@@ -2,33 +2,13 @@
  * Cover Responsive Focal - Type Definitions
  */
 
-import type { ComponentType } from 'react';
-import type { FocalPointPicker } from '@wordpress/components';
 import type { Element } from '@wordpress/element';
+import type { BlockEditProps } from '@wordpress/blocks';
 
-// Extract FocalPoint type from FocalPointPicker component props
-type FocalPoint = NonNullable<
-	React.ComponentProps< typeof FocalPointPicker >[ 'value' ]
->;
-
-/**
- * WordPress Block Type definition
- */
-export interface WPBlockType {
-	/** Block name (e.g., 'core/cover') */
-	name: string;
-	/** Block title */
-	title: string;
-	/** Block category */
-	category?: string;
-	/** Block icon */
-	icon?: string | ComponentType;
-	/** Block keywords */
-	keywords?: string[];
-	/** Block supports */
-	supports?: Record< string, unknown >;
-	/** Block attributes definition */
-	attributes?: Record< string, unknown >;
+// FocalPoint type definition (matches WordPress FocalPointPicker)
+interface FocalPoint {
+	x: number;
+	y: number;
 }
 
 /**
@@ -58,45 +38,30 @@ export interface SelectOption {
 }
 
 /**
- * Cover block attributes (extended version including existing attributes)
+ * Cover block attributes (minimal definition + plugin-specific)
+ * Note: WordPress doesn't provide official Cover block types
  */
 export interface CoverBlockAttributes {
-	// Existing attributes
-	/** Background image/video URL */
+	// Core attributes (only what we actually use)
 	url?: string;
-	/** Media ID */
 	id?: number;
-	/** Existing focal point */
 	focalPoint?: FocalPoint;
-	/** Parallax effect enabled */
-	hasParallax?: boolean;
-	/** Background opacity */
-	dimRatio?: number;
-	/** Overlay color */
-	overlayColor?: string;
-	/** Background type */
-	backgroundType?: string;
-	/** Minimum height */
-	minHeight?: number;
-	/** Video poster image */
-	poster?: string;
 
-	// New attributes
-	/** Array of responsive focal points */
+	// Plugin-specific attributes
 	responsiveFocal?: ResponsiveFocalPoint[];
-	/** Unique ID for CSS identification */
 	dataFpId?: string;
+
+	// Allow any other core attributes
+	[ key: string ]: unknown;
 }
 
 /**
- * Inspector controls component props
+ * Inspector controls component props (using WordPress standard)
  */
-export interface ResponsiveFocalControlsProps {
-	/** Block attributes */
-	attributes: CoverBlockAttributes;
-	/** Function to update attributes */
-	setAttributes: ( attrs: Partial< CoverBlockAttributes > ) => void;
-}
+export type ResponsiveFocalControlsProps = Pick<
+	BlockEditProps< CoverBlockAttributes >,
+	'attributes' | 'setAttributes'
+>;
 
 /**
  * Media query configuration
@@ -105,16 +70,6 @@ export interface MediaQueryConfig {
 	/** Media query type */
 	type: 'min-width' | 'max-width';
 	/** Breakpoint value in pixels */
-	value: number;
-}
-
-/**
- * Breakpoint preset
- */
-export interface BreakpointPreset {
-	/** Display label */
-	label: string;
-	/** Value in pixels */
 	value: number;
 }
 

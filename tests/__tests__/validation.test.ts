@@ -154,20 +154,20 @@ describe( 'Focal Point Validation (TDD)', () => {
 			expect( validateBreakpoint( 768 ) ).toBe( true );
 		} );
 
-		test( '1 is a valid breakpoint (minimum value)', () => {
-			expect( validateBreakpoint( 1 ) ).toBe( true );
+		test( '100 is a valid breakpoint (minimum value)', () => {
+			expect( validateBreakpoint( 100 ) ).toBe( true );
 		} );
 
-		test( '9999 is a valid breakpoint (maximum value)', () => {
-			expect( validateBreakpoint( 9999 ) ).toBe( true );
+		test( '2000 is a valid breakpoint (maximum value)', () => {
+			expect( validateBreakpoint( 2000 ) ).toBe( true );
 		} );
 
 		test( '0 is invalid (out of range)', () => {
 			expect( validateBreakpoint( 0 ) ).toBe( false );
 		} );
 
-		test( '10000 is invalid (out of range)', () => {
-			expect( validateBreakpoint( 10000 ) ).toBe( false );
+		test( '2001 is invalid (out of range)', () => {
+			expect( validateBreakpoint( 2001 ) ).toBe( false );
 		} );
 
 		test( 'string number is invalid', () => {
@@ -215,7 +215,7 @@ describe( 'Focal Point Validation (TDD)', () => {
 		} );
 
 		test( 'very large valid number is accepted', () => {
-			expect( validateBreakpoint( 9998 ) ).toBe( true );
+			expect( validateBreakpoint( 1999 ) ).toBe( true );
 		} );
 
 		test( 'decimal places work correctly', () => {
@@ -223,13 +223,13 @@ describe( 'Focal Point Validation (TDD)', () => {
 		} );
 
 		test( 'boundary values work correctly', () => {
-			expect( validateBreakpoint( 1.0 ) ).toBe( true );
-			expect( validateBreakpoint( 9999.0 ) ).toBe( true );
+			expect( validateBreakpoint( 100.0 ) ).toBe( true );
+			expect( validateBreakpoint( 2000.0 ) ).toBe( true );
 		} );
 
 		test( 'slightly outside boundary is invalid', () => {
-			expect( validateBreakpoint( 0.9999 ) ).toBe( false );
-			expect( validateBreakpoint( 9999.0001 ) ).toBe( false );
+			expect( validateBreakpoint( 99.9999 ) ).toBe( false );
+			expect( validateBreakpoint( 2000.0001 ) ).toBe( false );
 		} );
 	} );
 
@@ -320,14 +320,14 @@ describe( 'Focal Point Validation (TDD)', () => {
 		test( 'handles boundary values correctly', () => {
 			const result = createResponsiveFocalPoint(
 				'min-width',
-				1,
+				100,
 				0.0,
 				1.0
 			);
 
 			expect( result ).toEqual( {
 				mediaType: 'min-width',
-				breakpoint: 1,
+				breakpoint: 100,
 				x: 0.0,
 				y: 1.0,
 			} );
@@ -336,14 +336,14 @@ describe( 'Focal Point Validation (TDD)', () => {
 		test( 'handles maximum boundary values correctly', () => {
 			const result = createResponsiveFocalPoint(
 				'max-width',
-				9999,
+				2000,
 				1.0,
 				0.0
 			);
 
 			expect( result ).toEqual( {
 				mediaType: 'max-width',
-				breakpoint: 9999,
+				breakpoint: 2000,
 				x: 1.0,
 				y: 0.0,
 			} );
@@ -424,11 +424,11 @@ describe( 'Focal Point Validation (TDD)', () => {
 		} );
 
 		test( 'handles boundary values correctly', () => {
-			const result1 = generateMediaQuery( 'min-width', 1 );
-			const result2 = generateMediaQuery( 'max-width', 9999 );
+			const result1 = generateMediaQuery( 'min-width', 100 );
+			const result2 = generateMediaQuery( 'max-width', 2000 );
 
-			expect( result1 ).toBe( '(min-width: 1px)' );
-			expect( result2 ).toBe( '(max-width: 9999px)' );
+			expect( result1 ).toBe( '(min-width: 100px)' );
+			expect( result2 ).toBe( '(max-width: 2000px)' );
 		} );
 
 		test( 'handles large numbers correctly', () => {

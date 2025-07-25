@@ -2,38 +2,30 @@
  * Cover Responsive Focal - Inspector Controls
  */
 
-/* eslint-disable @wordpress/no-unsafe-wp-apis */
 import { __ } from '@wordpress/i18n';
-import {
-	PanelBody,
-	Button,
-	SelectControl,
-	__experimentalNumberControl as NumberControl,
-	FocalPointPicker,
-	ButtonGroup,
-} from '@wordpress/components';
+import { PanelBody, Button } from '@wordpress/components';
+import { Fragment } from '@wordpress/element';
 import type {
 	ResponsiveFocalControlsProps,
 	ResponsiveFocalPoint,
 } from './types';
-import {
-	MEDIA_QUERY_TYPES,
-	DEFAULTS,
-	BREAKPOINT_PRESETS,
-	VALIDATION,
-	type MediaQueryType,
-} from './constants';
+import { DEFAULTS } from './constants';
+import { ResponsiveFocalItem } from './components/responsive-focal-item';
+import { isDevelopment } from './utils/environment';
+import { clampBreakpoint } from './utils/validation';
 
 /**
  * Responsive focal point settings UI
- * @param root0
- * @param root0.attributes
- * @param root0.setAttributes
+ * @param props               Component props
+ * @param props.attributes    Block attributes
+ * @param props.setAttributes Function to update attributes
  */
-export const ResponsiveFocalControls: React.FC<
-	ResponsiveFocalControlsProps
-> = ( { attributes, setAttributes } ) => {
-	const { responsiveFocal = [] } = attributes;
+export const ResponsiveFocalControls = (
+	props: ResponsiveFocalControlsProps
+) => {
+	const { attributes, setAttributes } = props;
+	const safeAttributes = attributes || {};
+	const { responsiveFocal = [] } = safeAttributes;
 
 	/**
 	 * Add new focal point row
@@ -53,24 +45,84 @@ export const ResponsiveFocalControls: React.FC<
 
 	/**
 	 * Remove focal point row
-	 * @param index
+	 * @param index Index to remove
 	 */
 	const removeFocalPoint = ( index: number ) => {
-		const updatedFocals = responsiveFocal.filter( ( _, i ) => i !== index );
+		const updatedFocals = responsiveFocal.filter(
+			( _: ResponsiveFocalPoint, i: number ) => i !== index
+		);
 		setAttributes( { responsiveFocal: updatedFocals } );
 	};
 
 	/**
 	 * Update focal point row
-	 * @param index
-	 * @param updates
+	 * @param index   Index to update
+	 * @param updates Partial updates to apply
 	 */
 	const updateFocalPoint = (
 		index: number,
 		updates: Partial< ResponsiveFocalPoint >
 	) => {
+		// Safe handling of index and updates
+		if (
+			typeof index !== 'number' ||
+			index < 0 ||
+			index >= responsiveFocal.length
+		) {
+			if ( isDevelopment() ) {
+				// eslint-disable-next-line no-console
+				console.warn( 'Invalid index for updateFocalPoint:', index );
+			}
+			return;
+		}
+
+		if ( ! updates || typeof updates !== 'object' ) {
+			if ( isDevelopment() ) {
+				// eslint-disable-next-line no-console
+				console.warn(
+					'Invalid updates for updateFocalPoint:',
+					updates
+				);
+			}
+			return;
+		}
+
+		// Safe handling with fallbacks for invalid values
+		const safeUpdates: Partial< ResponsiveFocalPoint > = {};
+
+		if ( 'mediaType' in updates ) {
+			safeUpdates.mediaType =
+				updates.mediaType === 'min-width' ||
+				updates.mediaType === 'max-width'
+					? updates.mediaType
+					: DEFAULTS.MEDIA_TYPE;
+		}
+
+		if ( 'breakpoint' in updates ) {
+			const numValue =
+				typeof updates.breakpoint === 'number' &&
+				! isNaN( updates.breakpoint )
+					? updates.breakpoint
+					: DEFAULTS.BREAKPOINT;
+			safeUpdates.breakpoint = clampBreakpoint( numValue );
+		}
+
+		if ( 'x' in updates ) {
+			safeUpdates.x =
+				typeof updates.x === 'number' && ! isNaN( updates.x )
+					? Math.max( 0, Math.min( 1, updates.x ) )
+					: DEFAULTS.FOCAL_X;
+		}
+
+		if ( 'y' in updates ) {
+			safeUpdates.y =
+				typeof updates.y === 'number' && ! isNaN( updates.y )
+					? Math.max( 0, Math.min( 1, updates.y ) )
+					: DEFAULTS.FOCAL_Y;
+		}
+
 		const updatedFocals = [ ...responsiveFocal ];
-		updatedFocals[ index ] = { ...updatedFocals[ index ], ...updates };
+		updatedFocals[ index ] = { ...updatedFocals[ index ], ...safeUpdates };
 		setAttributes( { responsiveFocal: updatedFocals } );
 	};
 
@@ -87,124 +139,26 @@ export const ResponsiveFocalControls: React.FC<
 					) }
 				</p>
 			) : (
-				<div className="crf-focal-points-list">
-					{ responsiveFocal.map( ( focal, index ) => (
-						<div key={ index } className="crf-focal-point-item">
-							<div className="crf-focal-point-header">
-								<span>{ `${ focal.mediaType }: ${ focal.breakpoint }px` }</span>
-								<Button
-									isDestructive
-									isSmall
-									onClick={ () => removeFocalPoint( index ) }
-								>
-									{ __( 'Remove', 'cover-responsive-focal' ) }
-								</Button>
-							</div>
-
-							<SelectControl
-								label={ __(
-									'Media Query Type',
-									'cover-responsive-focal'
-								) }
-								value={ focal.mediaType }
-								options={ [ ...MEDIA_QUERY_TYPES ] }
-								onChange={ ( mediaType ) =>
-									updateFocalPoint( index, {
-										mediaType: mediaType as MediaQueryType,
-									} )
-								}
-							/>
-
-							<div className="crf-breakpoint-settings">
-								<NumberControl
-									label={ __(
-										'Breakpoint (px)',
-										'cover-responsive-focal'
-									) }
-									value={ focal.breakpoint }
-									onChange={ ( value ) => {
-										const numValue =
-											typeof value === 'string'
-												? parseInt( value, 10 )
-												: value;
-										const clampedValue = Math.max(
-											VALIDATION.MIN_BREAKPOINT,
-											Math.min(
-												VALIDATION.MAX_BREAKPOINT,
-												numValue || DEFAULTS.BREAKPOINT
-											)
-										);
-										updateFocalPoint( index, {
-											breakpoint: clampedValue,
-										} );
-									} }
-									min={ VALIDATION.MIN_BREAKPOINT }
-									max={ VALIDATION.MAX_BREAKPOINT }
-									step={ 1 }
+				<div>
+					{ responsiveFocal.map(
+						( focal: ResponsiveFocalPoint, index: number ) => (
+							<Fragment key={ index }>
+								<ResponsiveFocalItem
+									focal={ focal }
+									index={ index }
+									imageUrl={ safeAttributes.url }
+									onUpdate={ updateFocalPoint }
+									onRemove={ removeFocalPoint }
 								/>
-
-								<div className="crf-breakpoint-presets">
-									<div className="crf-presets-label">
-										{ __(
-											'Presets:',
-											'cover-responsive-focal'
-										) }
-									</div>
-									<ButtonGroup>
-										{ BREAKPOINT_PRESETS.map(
-											( preset ) => (
-												<Button
-													key={ preset.value }
-													variant={
-														focal.breakpoint ===
-														preset.value
-															? 'primary'
-															: 'secondary'
-													}
-													size="small"
-													onClick={ () =>
-														updateFocalPoint(
-															index,
-															{
-																breakpoint:
-																	preset.value,
-															}
-														)
-													}
-												>
-													{ preset.label }
-												</Button>
-											)
-										) }
-									</ButtonGroup>
-								</div>
-							</div>
-
-							{ attributes.url && (
-								<div className="crf-focal-point-picker">
-									<FocalPointPicker
-										label={ __(
-											'Focal Point',
-											'cover-responsive-focal'
-										) }
-										url={ attributes.url }
-										value={ { x: focal.x, y: focal.y } }
-										onChange={ ( focalPoint ) =>
-											updateFocalPoint( index, {
-												x: focalPoint.x,
-												y: focalPoint.y,
-											} )
-										}
-									/>
-								</div>
-							) }
-						</div>
-					) ) }
+								<hr />
+							</Fragment>
+						)
+					) }
 				</div>
 			) }
 
 			<Button
-				variant="secondary"
+				variant="primary"
 				onClick={ addNewFocalPoint }
 				className="crf-add-focal-point"
 			>

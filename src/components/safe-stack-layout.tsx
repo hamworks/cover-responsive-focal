@@ -7,19 +7,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import type { ReactNode } from 'react';
 import { __experimentalVStack as VStack } from '@wordpress/components';
-
-// Environment check helper for development logging
-const isDevelopment = (): boolean => {
-	try {
-		// Check if we're in development mode, safely handle both browser and Node environments
-		return (
-			typeof window !== 'undefined' &&
-			( window as any )?.wpDevMode === true
-		);
-	} catch {
-		return false;
-	}
-};
+import { isDevelopment } from '../utils/environment';
 
 /**
  * Props for SafeStackLayout
@@ -38,13 +26,15 @@ export const SafeStackLayout = ( props: SafeStackLayoutProps ) => {
 	const { children, spacing = 3, className } = props;
 	// Try VStack first, fallback to regular div
 	try {
-		if ( VStack ) {
+		if ( typeof VStack === 'function' ) {
 			return (
 				<VStack spacing={ spacing } className={ className }>
 					{ children }
 				</VStack>
 			);
 		}
+		// If VStack is not available, throw to trigger fallback
+		throw new Error( 'VStack is not available' );
 	} catch ( error ) {
 		// Fallback to regular div if VStack fails
 		if ( isDevelopment() ) {

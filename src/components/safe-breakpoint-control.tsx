@@ -9,19 +9,8 @@ import {
 	__experimentalNumberControl as NumberControl,
 } from '@wordpress/components';
 import { DEFAULTS, VALIDATION } from '../constants';
-
-// Environment check helper for development logging
-const isDevelopment = (): boolean => {
-	try {
-		// Check if we're in development mode, safely handle both browser and Node environments
-		return (
-			typeof window !== 'undefined' &&
-			( window as any )?.wpDevMode === true
-		);
-	} catch {
-		return false;
-	}
-};
+import { isDevelopment } from '../utils/environment';
+import { clampBreakpoint } from '../utils/validation';
 
 /**
  * Props for SafeBreakpointControl
@@ -56,10 +45,7 @@ export const SafeBreakpointControl = ( props: SafeBreakpointControlProps ) => {
 							typeof newValue === 'number' && ! isNaN( newValue )
 								? newValue
 								: DEFAULTS.BREAKPOINT;
-						const clampedValue = Math.max(
-							VALIDATION.MIN_BREAKPOINT,
-							Math.min( VALIDATION.MAX_BREAKPOINT, numValue )
-						);
+						const clampedValue = clampBreakpoint( numValue );
 						onChange( clampedValue );
 					} }
 					min={ VALIDATION.MIN_BREAKPOINT }
@@ -97,10 +83,7 @@ export const SafeBreakpointControl = ( props: SafeBreakpointControlProps ) => {
 				const validNumValue = isNaN( numValue )
 					? DEFAULTS.BREAKPOINT
 					: numValue;
-				const clampedValue = Math.max(
-					VALIDATION.MIN_BREAKPOINT,
-					Math.min( VALIDATION.MAX_BREAKPOINT, validNumValue )
-				);
+				const clampedValue = clampBreakpoint( validNumValue );
 				onChange( clampedValue );
 			} }
 			min={ VALIDATION.MIN_BREAKPOINT }

@@ -10,26 +10,7 @@ import {
 	SelectControl,
 } from '@wordpress/components';
 import { DEFAULTS, MEDIA_QUERY_TYPES, type MediaQueryType } from '../constants';
-
-// Environment check helper for development logging
-const isDevelopment = (): boolean => {
-	try {
-		// Check NODE_ENV first (most common)
-		if (
-			typeof process !== 'undefined' &&
-			process.env?.NODE_ENV === 'development'
-		) {
-			return true;
-		}
-		// Check if we're in development mode, safely handle both browser and Node environments
-		return (
-			typeof window !== 'undefined' &&
-			( window as any )?.wpDevMode === true
-		);
-	} catch {
-		return false;
-	}
-};
+import { isDevelopment } from '../utils/environment';
 
 /**
  * Props for SafeMediaTypeControl

@@ -11,30 +11,19 @@ import type {
 } from './types';
 import { DEFAULTS } from './constants';
 import { ResponsiveFocalItem } from './components/responsive-focal-item';
-
-// Environment check helper for development logging
-const isDevelopment = (): boolean => {
-	try {
-		// Check if we're in development mode, safely handle both browser and Node environments
-		return (
-			typeof window !== 'undefined' &&
-			( window as any )?.wpDevMode === true
-		);
-	} catch {
-		return false;
-	}
-};
+import { isDevelopment } from './utils/environment';
+import { clampBreakpoint } from './utils/validation';
 
 /**
  * Responsive focal point settings UI
- * @param attributes
- * @param attributes.attributes    Block attributes
- * @param attributes.setAttributes Function to update attributes
+ * @param props               Component props
+ * @param props.attributes    Block attributes
+ * @param props.setAttributes Function to update attributes
  */
-export const ResponsiveFocalControls = ( {
-	attributes,
-	setAttributes,
-}: ResponsiveFocalControlsProps ) => {
+export const ResponsiveFocalControls = (
+	props: ResponsiveFocalControlsProps
+) => {
+	const { attributes, setAttributes } = props;
 	const safeAttributes = attributes || {};
 	const { responsiveFocal = [] } = safeAttributes;
 
@@ -56,7 +45,7 @@ export const ResponsiveFocalControls = ( {
 
 	/**
 	 * Remove focal point row
-	 * @param index
+	 * @param index Index to remove
 	 */
 	const removeFocalPoint = ( index: number ) => {
 		const updatedFocals = responsiveFocal.filter(
@@ -67,8 +56,8 @@ export const ResponsiveFocalControls = ( {
 
 	/**
 	 * Update focal point row
-	 * @param index
-	 * @param updates
+	 * @param index   Index to update
+	 * @param updates Partial updates to apply
 	 */
 	const updateFocalPoint = (
 		index: number,
@@ -115,10 +104,7 @@ export const ResponsiveFocalControls = ( {
 				! isNaN( updates.breakpoint )
 					? updates.breakpoint
 					: DEFAULTS.BREAKPOINT;
-			safeUpdates.breakpoint = Math.max(
-				100, // VALIDATION.MIN_BREAKPOINT
-				Math.min( 2000, numValue ) // VALIDATION.MAX_BREAKPOINT
-			);
+			safeUpdates.breakpoint = clampBreakpoint( numValue );
 		}
 
 		if ( 'x' in updates ) {

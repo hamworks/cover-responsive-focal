@@ -2,18 +2,6 @@
  * Cover Responsive Focal - Constants
  */
 
-import type { BreakpointPreset } from './types';
-
-/**
- * Breakpoint presets
- */
-export const BREAKPOINT_PRESETS: BreakpointPreset[] = [
-	{ label: '320px', value: 320 },
-	{ label: '768px', value: 768 },
-	{ label: '1024px', value: 1024 },
-	{ label: '1200px', value: 1200 },
-];
-
 /**
  * Media query types
  */
@@ -46,9 +34,9 @@ export const DEFAULTS = {
  */
 export const VALIDATION = {
 	/** Minimum breakpoint value */
-	MIN_BREAKPOINT: 1,
+	MIN_BREAKPOINT: 100,
 	/** Maximum breakpoint value */
-	MAX_BREAKPOINT: 9999,
+	MAX_BREAKPOINT: 2000,
 	/** Minimum focal point value */
 	MIN_FOCAL_POINT: 0,
 	/** Maximum focal point value */

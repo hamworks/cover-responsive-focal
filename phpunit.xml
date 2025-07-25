@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<phpunit
+    backupGlobals="false"
+    colors="true"
+    convertErrorsToExceptions="true"
+    convertNoticesToExceptions="true"
+    convertWarningsToExceptions="true"
+>
+    <testsuites>
+        <testsuite name="default">
+            <directory>tests/php/</directory>
+        </testsuite>
+    </testsuites>
+    <filter>
+        <whitelist>
+            <directory suffix=".php">./</directory>
+            <exclude>
+                <directory>./tests/</directory>
+                <directory>./vendor/</directory>
+                <directory>./node_modules/</directory>
+            </exclude>
+        </whitelist>
+    </filter>
+</phpunit>

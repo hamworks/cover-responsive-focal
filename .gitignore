@@ -30,3 +30,5 @@ coverage/
 
 # Package files
 *.zip
+
+vendor/

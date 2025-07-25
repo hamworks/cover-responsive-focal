@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<phpunit
+    colors="true"
+    verbose="true"
+    stopOnFailure="false"
+    bootstrap="tests/php/bootstrap.php"
+>
+    <testsuites>
+        <testsuite name="CSS Functions">
+            <file>tests/php/test-css-functions.php</file>
+        </testsuite>
+    </testsuites>
+</phpunit>

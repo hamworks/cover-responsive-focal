@@ -2,3 +2,7 @@ coverage/
 coverage/**/*
 build/
 build/**/*
+vendor/
+vendor/**/*
+node_modules/
+node_modules/**/*

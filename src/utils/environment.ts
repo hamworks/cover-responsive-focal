@@ -10,6 +10,19 @@ interface WindowWithWpDevMode extends Window {
 }
 
 /**
+ * Node.js process type definition for environment detection
+ * Only defines the minimal interface we need
+ */
+declare const process:
+	| {
+			env?: {
+				NODE_ENV?: string;
+				[ key: string ]: string | undefined;
+			};
+	  }
+	| undefined;
+
+/**
  * Check if we're in development mode
  * @return true if in development mode
  */

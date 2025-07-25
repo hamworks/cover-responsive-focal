@@ -97,7 +97,7 @@
     - 必要なフィルターフックを登録
     - _要件: 2.1, 2.3_
 
-  - [ ] 6.2 アセット読み込み処理の実装
+  - [x] 6.2 アセット読み込み処理の実装
     - wp_enqueue_script で JavaScript ファイルを読み込み
     - wp_enqueue_style で CSS ファイルを読み込み
     - 依存関係（wp-blocks, wp-element 等）を設定

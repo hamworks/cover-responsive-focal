@@ -22,6 +22,7 @@
 		"type-check": "tsc --noEmit"
 	},
 	"devDependencies": {
+		"@playwright/test": "^1.54.1",
 		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/react": "^16.3.0",
 		"@testing-library/user-event": "^14.6.1",
@@ -31,9 +32,11 @@
 		"@types/wordpress__blocks": "^12.5.17",
 		"@types/wordpress__components": "^23.0.0",
 		"@types/wordpress__element": "^2.4.0",
+		"@wordpress/e2e-test-utils-playwright": "^1.27.0",
 		"@wordpress/env": "^10.27.0",
 		"@wordpress/scripts": "^30.20.0",
 		"jest": "^30.0.5",
+		"playwright": "^1.54.1",
 		"ts-jest": "^29.4.0",
 		"typescript": "^5.8.3"
 	},

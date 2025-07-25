@@ -17,6 +17,8 @@ Thumbs.db
 # Testing
 coverage/
 .phpunit.result.cache
+test-results/
+playwright-report/
 
 # WordPress
 .wp-env.json

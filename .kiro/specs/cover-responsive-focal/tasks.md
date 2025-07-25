@@ -135,7 +135,7 @@
 
 - [ ] 9. E2E テスト環境の設定
 
-  - [ ] 9.1 Playwright 環境設定
+  - [x] 9.1 Playwright 環境設定
 
     - Playwright 設定ファイルを作成
     - WordPress 環境のセットアップ

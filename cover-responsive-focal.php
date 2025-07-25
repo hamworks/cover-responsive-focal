@@ -110,7 +110,7 @@ function crf_generate_css_rules( $responsive_focal, $fp_id ) {
 		$media_query = sprintf( '(%s: %dpx)', $media_type, $breakpoint );
 
 		$rules .= sprintf(
-			'@media %s { [data-fp-id="%s"] .wp-block-cover__image-background, [data-fp-id="%s"] .wp-block-cover__video-background { object-position: %s%% %s%%; } }',
+			'@media %s { [data-fp-id="%s"] .wp-block-cover__image-background, [data-fp-id="%s"] .wp-block-cover__video-background { object-position: %s%% %s%% !important; } }',
 			$media_query,
 			esc_attr( $fp_id ),
 			esc_attr( $fp_id ),

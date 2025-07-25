@@ -105,4 +105,17 @@ if (strpos($id1, 'crf-') === 0 && strpos($id2, 'crf-') === 0 && $id1 !== $id2) {
     echo "ID2: $id2\n";
 }
 
+// テスト5: data-fp-id属性重複防止テスト
+echo "\nテスト5: data-fp-id属性重複防止テスト\n";
+$existing_id_content = '<div class="wp-block-cover" data-fp-id="existing-id">Existing Test</div>';
+$no_change_result = crf_add_fp_id_to_content($existing_id_content, 'new-id');
+
+if ($existing_id_content === $no_change_result) {
+    echo "✅ 既存data-fp-id属性の重複防止成功\n";
+} else {
+    echo "❌ 既存data-fp-id属性の重複防止失敗\n";
+    echo "元の内容: $existing_id_content\n";
+    echo "結果: $no_change_result\n";
+}
+
 echo "\n=== GREEN段階確認完了 ===\n";

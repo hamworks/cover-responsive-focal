@@ -49,11 +49,11 @@ class CRF_CSS_Generation_Test extends WP_UnitTestCase {
         
         $css = crf_generate_css_rules($responsive_focal, 'multi-test');
         
-        $this->assertStringContains('@media (max-width: 767px)', $css);
-        $this->assertStringContains('@media (min-width: 768px)', $css);
-        $this->assertStringContains('object-position: 60% 40%', $css);
-        $this->assertStringContains('object-position: 30% 70%', $css);
-        $this->assertStringContains('[data-fp-id="multi-test"]', $css);
+        $this->assertStringContainsString('@media (max-width: 767px)', $css);
+        $this->assertStringContainsString('@media (min-width: 768px)', $css);
+        $this->assertStringContainsString('object-position: 60% 40%', $css);
+        $this->assertStringContainsString('object-position: 30% 70%', $css);
+        $this->assertStringContainsString('[data-fp-id="multi-test"]', $css);
     }
     
     /**
@@ -79,7 +79,7 @@ class CRF_CSS_Generation_Test extends WP_UnitTestCase {
         
         $css = crf_generate_css_rules($responsive_focal, 'boundary-test');
         
-        $this->assertStringContains('object-position: 0% 100%', $css);
+        $this->assertStringContainsString('object-position: 0% 100%', $css);
     }
     
     /**
@@ -156,7 +156,7 @@ class CRF_CSS_Generation_Test extends WP_UnitTestCase {
         $css = crf_generate_css_rules($responsive_focal, $malicious_id);
         
         // HTMLエスケープが適用されることを確認
-        $this->assertStringNotContains('<script>', $css);
-        $this->assertStringNotContains('"id<', $css);
+        $this->assertStringNotContainsString('<script>', $css);
+        $this->assertStringNotContainsString('"id<', $css);
     }
 }

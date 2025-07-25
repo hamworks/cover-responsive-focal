@@ -3,6 +3,7 @@
     colors="true"
     verbose="true"
     stopOnFailure="false"
+    bootstrap="tests/php/bootstrap.php"
 >
     <testsuites>
         <testsuite name="CSS Functions">

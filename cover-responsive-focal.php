@@ -241,9 +241,13 @@ function crf_render_block( $content, $block ) {
  */
 function crf_add_fp_id_to_content( $content, $fp_id ) {
 	// wp-block-coverクラスを持つ要素にdata-fp-id属性を追加
-	return preg_replace(
-		'/(<[^>]*class="[^"]*wp-block-cover[^"]*"[^>]*)/i',
-		'$1 data-fp-id="' . esc_attr( $fp_id ) . '"',
+	return preg_replace_callback(
+		// data-fp-id 属性が未設定の wp-block-cover 要素のみ
+		'/<[^>]*class="[^"]*wp-block-cover[^"]*"(?:(?!data-fp-id)[^>])*?>/i',
+		function( $matches ) use ( $fp_id ) {
+			$tag = $matches[0];
+			return rtrim( $tag, '>' ) . ' data-fp-id="' . esc_attr( $fp_id ) . '">';
+		},
 		$content
 	);
 }

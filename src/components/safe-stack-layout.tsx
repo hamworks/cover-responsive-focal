@@ -56,7 +56,9 @@ export const SafeStackLayout = ( props: SafeStackLayoutProps ) => {
 	// Fallback implementation
 	return (
 		<div
-			className={ `crf-focal-point-item ${ className || '' }` }
+			className={ `crf-focal-point-item${
+				className ? ` ${ className }` : ''
+			}` }
 			style={ { marginBottom: `${ spacing * 8 }px` } }
 		>
 			{ children }

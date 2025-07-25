@@ -3,12 +3,19 @@
  */
 
 import { addFilter } from '@wordpress/hooks';
-import type { BlockEditProps } from '@wordpress/blocks';
+import type { BlockEditProps, Block } from '@wordpress/blocks';
+
+// Extend BlockEditProps to include name property
+interface ExtendedBlockEditProps<
+	T extends Record< string, any > = Record< string, any >,
+> extends BlockEditProps< T > {
+	name: string;
+}
 import { createHigherOrderComponent } from '@wordpress/compose';
 import { InspectorControls } from '@wordpress/block-editor';
 
 import { ResponsiveFocalControls } from './inspector-controls';
-import type { CoverBlockAttributes, WPBlockType, WPSaveElement } from './types';
+import type { CoverBlockAttributes, WPSaveElement } from './types';
 import './block-attributes'; // Load block attributes extension
 import './editor.scss';
 
@@ -17,7 +24,7 @@ import './editor.scss';
  */
 const withResponsiveFocalControls = createHigherOrderComponent(
 	( BlockEdit ) => {
-		return ( props: BlockEditProps< CoverBlockAttributes > ) => {
+		return ( props: ExtendedBlockEditProps< CoverBlockAttributes > ) => {
 			// Check if this is a cover block by checking props.name
 			if ( props.name !== 'core/cover' ) {
 				return <BlockEdit { ...props } />;
@@ -59,7 +66,7 @@ addFilter(
 	'crf/extend-save',
 	(
 		element: WPSaveElement,
-		blockType: WPBlockType,
+		blockType: Block,
 		attributes: CoverBlockAttributes
 	) => {
 		if ( blockType.name !== 'core/cover' ) {

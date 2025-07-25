@@ -103,31 +103,31 @@
     - 依存関係（wp-blocks, wp-element 等）を設定
     - _要件: 2.1, 2.4_
 
-- [ ] 7. ビルドシステムの設定
+- [x] 7. ビルドシステムの設定
 
-  - [ ] 7.1 webpack 設定の作成
+  - [x] 7.1 webpack 設定の作成
 
-    - TypeScript 用の webpack.config.js を作成
+    - TypeScript 用の webpack.config.js を作成（@wordpress/scripts使用）
     - エントリーポイント（src/index.tsx）を設定
     - 出力先（build/）を設定
     - _要件: 2.1_
 
-  - [ ] 7.2 package.json 設定
+  - [x] 7.2 package.json 設定
     - 必要な依存関係を追加（@wordpress/blocks 等）
     - ビルドスクリプトを設定
     - 開発用スクリプトを設定
     - _要件: 2.1_
 
-- [ ] 8. テスト環境の基盤設定
+- [x] 8. テスト環境の基盤設定
 
-  - [ ] 8.1 JavaScript/TypeScript テスト環境設定
+  - [x] 8.1 JavaScript/TypeScript テスト環境設定
 
     - Jest 設定ファイルを作成
     - テストユーティリティとモックの設定
     - カバレッジレポート設定
     - _要件: 3.4_
 
-  - [ ] 8.2 PHP テスト環境設定
+  - [x] 8.2 PHP テスト環境設定
     - PHPUnit 設定ファイルを作成
     - WordPress Test Suite 環境設定
     - テストデータベース設定

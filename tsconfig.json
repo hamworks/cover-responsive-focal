@@ -29,13 +29,13 @@
 
 		"esModuleInterop": true,
 		"resolveJsonModule": true,
-		"types": []
+		"types": ["node"]
 	},
-	"include": [ "**/*.ts", "**/*.tsx", "**/*.json", "**/*.js" ],
+	"include": [ "**/*.ts", "**/*.tsx", "**/*.json", "**/*.js", "types/**/*.d.ts" ],
 	"exclude": [
 		"**/build/**",
 		"**/test/**",
-		"**/tests/**",
+		"tests/php/**",
 		"vendor",
 		"node_modules"
 	]

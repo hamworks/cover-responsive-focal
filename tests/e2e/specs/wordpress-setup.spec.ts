@@ -1,54 +1,52 @@
 import { test, expect } from '@playwright/test';
-import { Admin, Editor } from '@wordpress/e2e-test-utils-playwright';
+import { WPAdminUtils } from '../utils/wp-admin';
 
 /**
- * WordPress環境の基本セットアップ確認テスト
- * WordPress公式E2Eユーティリティを使用
+ * Basic WordPress environment setup verification tests
+ * Using custom WordPress utilities
  */
-test.describe('WordPress環境セットアップ確認', () => {
-  test('WordPress管理画面にアクセスできる', async ({ page }) => {
-    const admin = new Admin({ page });
-    
-    // WordPress管理画面にアクセス
-    await admin.visitAdminPage('/');
-    
-    // ダッシュボードが表示されることを確認
-    await expect(page.locator('#wpadminbar')).toBeVisible();
-    await expect(page).toHaveTitle(/Dashboard/);
-  });
+test.describe( 'WordPress Environment Setup Verification', () => {
+	let wpAdmin: WPAdminUtils;
 
-  test('ブロックエディタが正常に動作する', async ({ page }) => {
-    const admin = new Admin({ page });
-    const editor = new Editor({ page });
-    
-    // 新規投稿作成
-    await admin.createNewPost();
-    
-    // タイトルを設定
-    await editor.canvas.locator('role=textbox[name="Add title"i]').fill('E2Eテスト用投稿');
-    
-    // カバーブロックを挿入
-    await editor.insertBlock({ name: 'core/cover' });
-    
-    // カバーブロックが挿入されることを確認
-    await expect(editor.canvas.locator('[data-type="core/cover"]')).toBeVisible();
-  });
+	test.beforeEach( async ( { page } ) => {
+		wpAdmin = new WPAdminUtils( page );
+		await wpAdmin.login();
+	} );
 
-  test('プラグインが有効化されている', async ({ page }) => {
-    const admin = new Admin({ page });
-    
-    // プラグイン一覧画面に移動
-    await admin.visitAdminPage('plugins.php');
-    
-    // プラグインが表示されていることを確認
-    const pluginRow = page.locator('tr[data-slug="cover-responsive-focal"]');
-    if (await pluginRow.isVisible()) {
-      // プラグインが有効化されていることを確認
-      await expect(pluginRow.locator('.deactivate')).toBeVisible();
-      console.log('プラグインが有効化されています');
-    } else {
-      // プラグインがまだ表示されていない場合は、開発中の状態として正常
-      console.log('プラグインはまだWordPressに認識されていません（開発中）');
-    }
-  });
-});
+	test( 'Can access WordPress admin dashboard', async ( { page } ) => {
+		// Navigate to WordPress admin dashboard
+		await page.goto( '/wp-admin/' );
+
+		// Verify dashboard is displayed
+		await expect( page.locator( '#wpadminbar' ) ).toBeVisible();
+		await expect( page ).toHaveTitle( /Dashboard/ );
+	} );
+
+	test( 'Block editor functions normally', async ( { page } ) => {
+		// Create new post
+		await wpAdmin.createNewPost();
+
+		// Insert cover block
+		await wpAdmin.insertCoverBlock();
+
+		// Verify cover block is inserted
+		const coverBlock = page.locator( '[data-type="core/cover"]' );
+		await expect( coverBlock ).toBeVisible();
+	} );
+
+	test( 'Plugin is activated', async ( { page } ) => {
+		// Navigate to plugins page
+		await page.goto( '/wp-admin/plugins.php' );
+
+		// Verify plugin is displayed
+		const pluginRow = page.locator(
+			'tr[data-slug="cover-responsive-focal"]'
+		);
+		if ( await pluginRow.isVisible() ) {
+			// Verify plugin is activated
+			await expect( pluginRow.locator( '.deactivate' ) ).toBeVisible();
+		} else {
+			// If plugin is not yet displayed, it's normal as it's in development
+		}
+	} );
+} );

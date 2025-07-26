@@ -67,7 +67,10 @@ describe( 'Cover Block Attributes Extension (TDD)', () => {
 	} );
 
 	describe( 'filter function behavior', () => {
-		let filterFunction: ( settings: any, name: string | null | undefined ) => any;
+		let filterFunction: (
+			settings: any,
+			name: string | null | undefined
+		) => any;
 
 		beforeEach( () => {
 			// Import and extract the filter function

@@ -1,103 +1,102 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright E2E テスト設定
- * WordPress ブロックエディタでのカバーブロック操作をテスト
+ * Playwright E2E test configuration
+ * Test cover block operations in WordPress block editor
  */
-export default defineConfig({
-  // テストディレクトリの指定
-  testDir: './tests/e2e',
-  
-  // 並列実行の設定（CIでは1、ローカルでは2に制限）
-  fullyParallel: true,
-  
-  // テスト失敗時の動作（CIでは失敗時に即座に停止）
-  forbidOnly: !!process.env.CI,
-  
-  // 失敗時のリトライ回数（CIでは2回、ローカルでは0回）
-  retries: process.env.CI ? 2 : 0,
-  
-  // ワーカー数の設定（CIでは1、ローカルではCPUの半分）
-  workers: process.env.CI ? 1 : undefined,
-  
-  // レポーター設定
-  reporter: [
-    ['html'],
-    ['json', { outputFile: 'test-results/results.json' }],
-    process.env.CI ? ['github'] : ['list']
-  ],
-  
-  // グローバル設定
-  use: {
-    // ベースURL（wp-envのデフォルト）
-    baseURL: 'http://localhost:8888',
-    
-    // ブラウザ設定
-    headless: !!process.env.CI,
-    viewport: { width: 1280, height: 720 },
-    
-    // スクリーンショット設定
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
-    
-    // トレース設定（失敗時のデバッグに使用）
-    trace: 'on-first-retry',
-    
-    // WordPress固有の設定
-    locale: 'ja-JP',
-    timezoneId: 'Asia/Tokyo',
-  },
+export default defineConfig( {
+	// Test directory specification
+	testDir: './tests/e2e',
 
-  // プロジェクト設定（異なるブラウザでのテスト）
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-    
-    // モバイル環境でのテスト
-    {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
-    },
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    },
-  ],
+	// Parallel execution settings (limited to 1 in CI, 2 locally)
+	fullyParallel: true,
 
-  // WordPress環境のセットアップ
-  webServer: {
-    command: 'npm run env start',
-    port: 8888,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000, // 2分でタイムアウト
-  },
-  
-  // テストの期待値設定
-  expect: {
-    // アサーションのタイムアウト
-    timeout: 10 * 1000, // 10秒
-    
-    // スクリーンショット比較の設定
-    toHaveScreenshot: {
-      mode: 'css', // CSSアニメーションを無効化
-      animations: 'disabled',
-    },
-    toMatchSnapshot: {
-      threshold: 0.2, // 許容誤差20%
-    },
-  },
-  
-  // グローバルタイムアウト設定
-  globalTimeout: 60 * 60 * 1000, // 全体で1時間
-  timeout: 30 * 1000, // 個別テストは30秒
-});
+	// Test failure behavior (stop immediately on failure in CI)
+	forbidOnly: !! process.env.CI,
+
+	// Retry count on failure (2 times in CI, 0 times locally)
+	retries: process.env.CI ? 2 : 0,
+
+	// Worker count settings (1 in CI, half of CPU locally)
+	workers: process.env.CI ? 1 : undefined,
+
+	// Reporter settings
+	reporter: [
+		[ 'html' ],
+		[ 'json', { outputFile: 'test-results/results.json' } ],
+		process.env.CI ? [ 'github' ] : [ 'list' ],
+	],
+
+	// Global settings
+	use: {
+		// Base URL (wp-env default)
+		baseURL: 'http://localhost:8888',
+
+		// Browser settings
+		headless: !! process.env.CI,
+		viewport: { width: 1280, height: 720 },
+
+		// Screenshot settings
+		screenshot: 'only-on-failure',
+		video: 'retain-on-failure',
+
+		// Trace settings (used for debugging on failure)
+		trace: 'on-first-retry',
+
+		// WordPress-specific settings
+		locale: 'ja-JP',
+		timezoneId: 'Asia/Tokyo',
+	},
+
+	// Project settings (testing with different browsers)
+	projects: [
+		{
+			name: 'chromium',
+			use: { ...devices[ 'Desktop Chrome' ] },
+		},
+		{
+			name: 'firefox',
+			use: { ...devices[ 'Desktop Firefox' ] },
+		},
+		{
+			name: 'webkit',
+			use: { ...devices[ 'Desktop Safari' ] },
+		},
+
+		// Mobile environment testing
+		{
+			name: 'Mobile Chrome',
+			use: { ...devices[ 'Pixel 5' ] },
+		},
+		{
+			name: 'Mobile Safari',
+			use: { ...devices[ 'iPhone 12' ] },
+		},
+	],
+
+	// WordPress environment setup
+	webServer: {
+		command: 'npm run env start',
+		port: 8888,
+		reuseExistingServer: ! process.env.CI,
+		timeout: 120 * 1000, // 2 minute timeout
+	},
+
+	// Test expectation settings
+	expect: {
+		// Assertion timeout
+		timeout: 10 * 1000, // 10 seconds
+
+		// Screenshot comparison settings
+		toHaveScreenshot: {
+			animations: 'disabled',
+		},
+		toMatchSnapshot: {
+			threshold: 0.2, // 20% tolerance
+		},
+	},
+
+	// Global timeout settings
+	globalTimeout: 60 * 60 * 1000, // 1 hour total
+	timeout: 30 * 1000, // Individual tests 30 seconds
+} );

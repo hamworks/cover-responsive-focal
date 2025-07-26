@@ -4,7 +4,7 @@
  * This file helps IDEs recognize WordPress testing framework classes
  */
 
-// phpcs:disable
+// phpcs:disable Generic.CodeAnalysis.UnusedFunctionParameter.Found
 
 /**
  * WordPress Unit Test Case base class

@@ -19,7 +19,7 @@ declare global {
 export interface WordPressBlock {
 	clientId: string;
 	name: string;
-	attributes: Record<string, any>;
+	attributes: Record<string, unknown>;
 	innerBlocks: WordPressBlock[];
 }
 

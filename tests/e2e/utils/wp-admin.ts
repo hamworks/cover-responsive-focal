@@ -1,38 +1,31 @@
 import type { Page } from '@playwright/test';
-import { Admin, Editor } from '@wordpress/e2e-test-utils-playwright';
+import { Editor } from '@wordpress/e2e-test-utils-playwright';
 
 /**
  * Utility class for WordPress admin operations
  * Uses official WordPress E2E test utilities
  */
 export class WPAdminUtils {
-	private admin: Admin;
 	private editor: Editor;
 
 	constructor( private page: Page ) {
-		// Initialize editor first
+		// Use simplified initialization with only required dependencies
 		this.editor = new Editor( { page } );
-		
-		// Initialize admin with required dependencies
-		this.admin = new Admin( { 
-			page, 
-			pageUtils: { page } as any, 
-			editor: this.editor 
-		} );
 	}
 
 	/**
 	 * Login to WordPress admin
 	 */
 	async login() {
-		await this.admin.visitAdminPage( '/' );
+		await this.page.goto( '/wp-admin/' );
 	}
 
 	/**
 	 * Create new post and open block editor
 	 */
 	async createNewPost() {
-		await this.admin.createNewPost();
+		await this.page.goto( '/wp-admin/post-new.php' );
+		await this.page.waitForLoadState( 'networkidle' );
 	}
 
 	/**
@@ -94,9 +87,9 @@ export class WPAdminUtils {
 	}
 
 	/**
-	 * Get admin instance (for direct operations if needed)
+	 * Get page instance (for direct operations if needed)
 	 */
-	getAdmin(): Admin {
-		return this.admin;
+	getPage(): Page {
+		return this.page;
 	}
 }

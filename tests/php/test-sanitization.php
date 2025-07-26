@@ -1,12 +1,12 @@
 <?php
 /**
- * サニタイゼーション関数の単体テスト（TDD）
+ * Sanitization function unit tests (TDD)
  */
 
-// WordPress関数のモック
+// WordPress function mocks
 require_once __DIR__ . '/wp-functions-mock.php';
 
-// プラグインファイルを読み込み
+// Load plugin file
 require_once dirname( dirname( __DIR__ ) ) . '/cover-responsive-focal.php';
 
 use PHPUnit\Framework\TestCase;
@@ -14,8 +14,8 @@ use PHPUnit\Framework\TestCase;
 class CRF_Sanitization_Test extends TestCase {
     
     /**
-     * RED: 失敗するテストから開始
-     * フォーカルポイントデータのサニタイゼーション
+     * RED: Start with failing tests
+     * Focal point data sanitization
      */
     public function test_sanitize_focal_point_valid_data() {
         $input = [
@@ -34,7 +34,7 @@ class CRF_Sanitization_Test extends TestCase {
     }
     
     /**
-     * 不正な値をデフォルト値に変換
+     * Convert invalid values to default values
      */
     public function test_sanitize_focal_point_invalid_values() {
         $input = [
@@ -46,14 +46,14 @@ class CRF_Sanitization_Test extends TestCase {
         
         $sanitized = crf_sanitize_focal_point($input);
         
-        $this->assertEquals('max-width', $sanitized['mediaType']); // デフォルト値
-        $this->assertEquals(768, $sanitized['breakpoint']); // デフォルト値
-        $this->assertEquals(0.5, $sanitized['x']); // デフォルト値
-        $this->assertEquals(0.5, $sanitized['y']); // デフォルト値
+        $this->assertEquals('max-width', $sanitized['mediaType']); // Default value
+        $this->assertEquals(768, $sanitized['breakpoint']); // Default value
+        $this->assertEquals(0.5, $sanitized['x']); // Default value
+        $this->assertEquals(0.5, $sanitized['y']); // Default value
     }
     
     /**
-     * XSS攻撃の防止
+     * XSS attack prevention
      */
     public function test_sanitize_focal_point_xss_prevention() {
         $input = [
@@ -72,7 +72,7 @@ class CRF_Sanitization_Test extends TestCase {
     }
     
     /**
-     * 境界値のサニタイゼーション
+     * Boundary value sanitization
      */
     public function test_sanitize_focal_point_boundary_values() {
         $input = [
@@ -91,7 +91,7 @@ class CRF_Sanitization_Test extends TestCase {
     }
     
     /**
-     * 範囲外の値の正規化
+     * Normalization of out-of-range values
      */
     public function test_sanitize_focal_point_out_of_range() {
         $input = [
@@ -104,13 +104,13 @@ class CRF_Sanitization_Test extends TestCase {
         $sanitized = crf_sanitize_focal_point($input);
         
         $this->assertEquals('max-width', $sanitized['mediaType']);
-        $this->assertEquals(768, $sanitized['breakpoint']); // デフォルト値
-        $this->assertEquals(0.0, $sanitized['x']); // 最小値に正規化
-        $this->assertEquals(1.0, $sanitized['y']); // 最大値に正規化
+        $this->assertEquals(768, $sanitized['breakpoint']); // Default value
+        $this->assertEquals(0.0, $sanitized['x']); // Normalized to minimum value
+        $this->assertEquals(1.0, $sanitized['y']); // Normalized to maximum value
     }
     
     /**
-     * 配列全体のサニタイゼーション
+     * Sanitization of entire array
      */
     public function test_sanitize_responsive_focal_array() {
         $input = [
@@ -132,21 +132,21 @@ class CRF_Sanitization_Test extends TestCase {
         
         $this->assertCount(2, $sanitized);
         
-        // 最初の要素（有効）
+        // First element (valid)
         $this->assertEquals('max-width', $sanitized[0]['mediaType']);
         $this->assertEquals(767, $sanitized[0]['breakpoint']);
         $this->assertEquals(0.6, $sanitized[0]['x']);
         $this->assertEquals(0.4, $sanitized[0]['y']);
         
-        // 2番目の要素（修正される）
-        $this->assertEquals('max-width', $sanitized[1]['mediaType']); // デフォルト値
-        $this->assertEquals(768, $sanitized[1]['breakpoint']); // デフォルト値
-        $this->assertEquals(0.0, $sanitized[1]['x']); // 正規化
-        $this->assertEquals(1.0, $sanitized[1]['y']); // 正規化
+        // Second element (corrected)
+        $this->assertEquals('max-width', $sanitized[1]['mediaType']); // Default value
+        $this->assertEquals(768, $sanitized[1]['breakpoint']); // Default value
+        $this->assertEquals(0.0, $sanitized[1]['x']); // Normalized
+        $this->assertEquals(1.0, $sanitized[1]['y']); // Normalized
     }
     
     /**
-     * 空の入力値の処理
+     * Empty input value handling
      */
     public function test_sanitize_focal_point_empty_input() {
         $input = [];
@@ -159,7 +159,7 @@ class CRF_Sanitization_Test extends TestCase {
     }
     
     /**
-     * CSS Injection防止
+     * CSS Injection prevention
      */
     public function test_sanitize_css_injection_prevention() {
         $input = [
@@ -171,7 +171,7 @@ class CRF_Sanitization_Test extends TestCase {
         
         $sanitized = crf_sanitize_focal_point($input);
         
-        // CSS Injectionが除去されることを確認
+        // Verify that CSS Injection is removed
         $this->assertStringNotContainsString('body', (string)$sanitized['mediaType']);
         $this->assertStringNotContainsString('background:', (string)$sanitized['mediaType']);
         $this->assertStringNotContainsString('}', (string)$sanitized['mediaType']);

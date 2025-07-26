@@ -3,7 +3,7 @@
  * PHPUnit Bootstrap File
  */
 
-// WordPress テスト環境の初期化
+// Initialize WordPress test environment
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
 
 if ( ! $_tests_dir ) {

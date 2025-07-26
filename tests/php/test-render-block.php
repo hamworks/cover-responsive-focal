@@ -1,12 +1,12 @@
 <?php
 /**
- * render_blockフィルター関数の単体テスト（TDD）
+ * render_block filter function unit tests (TDD)
  */
 
-// WordPress関数のモック
+// WordPress function mocks
 require_once __DIR__ . '/wp-functions-mock.php';
 
-// プラグインファイルを読み込み
+// Load plugin file
 require_once dirname( dirname( __DIR__ ) ) . '/cover-responsive-focal.php';
 
 use PHPUnit\Framework\TestCase;
@@ -14,8 +14,8 @@ use PHPUnit\Framework\TestCase;
 class CRF_Render_Block_Test extends TestCase {
     
     /**
-     * RED: 失敗するテストから開始
-     * カバーブロックのコンテンツ処理
+     * RED: Start with failing tests
+     * Cover block content processing
      */
     public function test_render_block_cover_with_responsive_focal() {
         $block = [
@@ -36,17 +36,17 @@ class CRF_Render_Block_Test extends TestCase {
         $content = '<div class="wp-block-cover">Test Content</div>';
         $filtered_content = crf_render_block($content, $block);
         
-        // data-fp-id属性が追加されることを確認
+        // Verify that data-fp-id attribute is added
         $this->assertStringContainsString('data-fp-id="test-123"', $filtered_content);
         
-        // インラインスタイルが追加されることを確認
+        // Verify that inline style is added
         $this->assertStringContainsString('<style id="test-123">', $filtered_content);
         $this->assertStringContainsString('@media (max-width: 767px)', $filtered_content);
         $this->assertStringContainsString('object-position: 60% 40%', $filtered_content);
     }
     
     /**
-     * 非カバーブロックはそのまま返す
+     * Return non-cover blocks as is
      */
     public function test_render_block_non_cover_block() {
         $block = [
@@ -57,12 +57,12 @@ class CRF_Render_Block_Test extends TestCase {
         $content = '<p>Test paragraph</p>';
         $filtered_content = crf_render_block($content, $block);
         
-        // 変更されないことを確認
+        // Verify that it remains unchanged
         $this->assertEquals($content, $filtered_content);
     }
     
     /**
-     * responsiveFocalが空の場合はそのまま返す
+     * Return as is when responsiveFocal is empty
      */
     public function test_render_block_empty_responsive_focal() {
         $block = [
@@ -75,12 +75,12 @@ class CRF_Render_Block_Test extends TestCase {
         $content = '<div class="wp-block-cover">Test Content</div>';
         $filtered_content = crf_render_block($content, $block);
         
-        // 変更されないことを確認
+        // Verify that it remains unchanged
         $this->assertEquals($content, $filtered_content);
     }
     
     /**
-     * dataFpIdが未設定の場合は自動生成
+     * Auto-generate when dataFpId is not set
      */
     public function test_render_block_auto_generate_fp_id() {
         $block = [
@@ -100,15 +100,15 @@ class CRF_Render_Block_Test extends TestCase {
         $content = '<div class="wp-block-cover">Test Content</div>';
         $filtered_content = crf_render_block($content, $block);
         
-        // data-fp-id属性が追加されることを確認（自動生成ID）
+        // Verify that data-fp-id attribute is added (auto-generated ID)
         $this->assertMatchesRegularExpression('/data-fp-id="crf-[^"]*"/', $filtered_content);
         
-        // インラインスタイルが追加されることを確認
+        // Verify that inline style is added
         $this->assertStringContainsString('<style id="crf-', $filtered_content);
     }
     
     /**
-     * 複数のレスポンシブフォーカルポイント
+     * Multiple responsive focal points
      */
     public function test_render_block_multiple_focal_points() {
         $block = [
@@ -143,7 +143,7 @@ class CRF_Render_Block_Test extends TestCase {
     }
     
     /**
-     * data-fp-id属性の追加処理テスト
+     * data-fp-id attribute addition process test
      */
     public function test_add_fp_id_to_content() {
         $content = '<div class="wp-block-cover has-background-dim">Test</div>';
@@ -156,7 +156,7 @@ class CRF_Render_Block_Test extends TestCase {
     }
     
     /**
-     * 複雑なクラス構造でのdata-fp-id追加
+     * data-fp-id addition with complex class structure
      */
     public function test_add_fp_id_complex_classes() {
         $content = '<div class="wp-block-cover has-background-dim alignfull">
@@ -169,12 +169,12 @@ class CRF_Render_Block_Test extends TestCase {
         $modified_content = crf_add_fp_id_to_content($content, $fp_id);
         
         $this->assertStringContainsString('data-fp-id="complex-test"', $modified_content);
-        // 最初のwp-block-coverクラス要素のみに追加される
+        // Added only to the first wp-block-cover class element
         $this->assertEquals(1, substr_count($modified_content, 'data-fp-id='));
     }
     
     /**
-     * 一意ID生成のテスト
+     * Unique ID generation test
      */
     public function test_generate_unique_fp_id() {
         $id1 = crf_generate_unique_fp_id();
@@ -182,6 +182,6 @@ class CRF_Render_Block_Test extends TestCase {
         
         $this->assertStringStartsWith('crf-', $id1);
         $this->assertStringStartsWith('crf-', $id2);
-        $this->assertNotEquals($id1, $id2); // 異なるIDが生成される
+        $this->assertNotEquals($id1, $id2); // Different IDs are generated
     }
 }

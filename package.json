@@ -45,6 +45,7 @@
 		"@wordpress/blocks": "^15.0.0",
 		"@wordpress/components": "^30.0.0",
 		"@wordpress/compose": "^7.27.0",
+		"@wordpress/data": "^10.27.0",
 		"@wordpress/element": "^6.27.0",
 		"@wordpress/hooks": "^4.27.0",
 		"@wordpress/i18n": "^6.0.0"

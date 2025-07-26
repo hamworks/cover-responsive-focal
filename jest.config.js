@@ -7,12 +7,15 @@ module.exports = {
 		'**/__tests__/**/*.(ts|tsx|js)',
 		'**/?(*.)+(spec|test).(ts|tsx|js)',
 	],
+	testPathIgnorePatterns: [
+		'<rootDir>/tests/e2e/',
+		'<rootDir>/node_modules/',
+	],
 	transform: {
 		'^.+\\.(ts|tsx)$': [
 			'ts-jest',
 			{
 				useESM: false,
-				isolatedModules: true,
 				tsconfig: {
 					jsx: 'react-jsx',
 					esModuleInterop: true,

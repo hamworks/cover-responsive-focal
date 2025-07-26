@@ -1,16 +1,27 @@
 <?php
 /**
- * CSS生成機能のテスト（TDD）
+ * CSS generation feature tests (TDD)
+ *
+ * @package CoverResponsiveFocal
+ * @subpackage Tests
  */
 
+/**
+ * Test class for CSS generation functionality
+ *
+ * @covers crf_generate_css_rules
+ * @covers crf_validate_media_type
+ * @covers crf_validate_breakpoint
+ * @covers crf_validate_focal_point_value
+ */
 class CRF_CSS_Generation_Test extends WP_UnitTestCase {
     
     /**
-     * RED: 失敗するテストから開始
-     * 単一フォーカルポイントでのCSS生成テスト
+     * RED: Start with failing tests
+     * CSS generation test with single focal point
      */
     public function test_generate_css_rules_single_focal_point() {
-        // まだ実装されていない関数をテスト
+        // Test function not yet implemented
         $responsive_focal = [
             [
                 'mediaType' => 'max-width',
@@ -22,14 +33,14 @@ class CRF_CSS_Generation_Test extends WP_UnitTestCase {
         
         $css = crf_generate_css_rules($responsive_focal, 'test-id');
         
-        // 期待する出力を明確に定義
+        // Clearly define expected output
         $expected_css = '@media (max-width: 767px) { [data-fp-id="test-id"] .wp-block-cover__image-background, [data-fp-id="test-id"] .wp-block-cover__video-background { object-position: 60% 40% !important; } }';
         
         $this->assertEquals($expected_css, $css);
     }
     
     /**
-     * 複数フォーカルポイントのCSS生成テスト
+     * CSS generation test with multiple focal points
      */
     public function test_generate_css_rules_multiple_focal_points() {
         $responsive_focal = [
@@ -57,7 +68,7 @@ class CRF_CSS_Generation_Test extends WP_UnitTestCase {
     }
     
     /**
-     * 空配列でのCSS生成テスト
+     * CSS generation test with empty array
      */
     public function test_generate_css_rules_empty_array() {
         $css = crf_generate_css_rules([], 'empty-test');
@@ -65,7 +76,7 @@ class CRF_CSS_Generation_Test extends WP_UnitTestCase {
     }
     
     /**
-     * 境界値テスト：0.0と1.0のフォーカルポイント
+     * Boundary value test: 0.0 and 1.0 focal points
      */
     public function test_generate_css_rules_boundary_values() {
         $responsive_focal = [
@@ -83,7 +94,7 @@ class CRF_CSS_Generation_Test extends WP_UnitTestCase {
     }
     
     /**
-     * 無効な値の処理テスト
+     * Invalid value handling test
      */
     public function test_generate_css_rules_invalid_values() {
         $responsive_focal = [
@@ -97,12 +108,12 @@ class CRF_CSS_Generation_Test extends WP_UnitTestCase {
         
         $css = crf_generate_css_rules($responsive_focal, 'invalid-test');
         
-        // 無効な値は処理されずスキップされる
+        // Invalid values are skipped without processing
         $this->assertEquals('', $css);
     }
     
     /**
-     * メディアクエリ検証関数のテスト
+     * Media query validation function test
      */
     public function test_validate_media_type() {
         $this->assertTrue(crf_validate_media_type('min-width'));
@@ -113,7 +124,7 @@ class CRF_CSS_Generation_Test extends WP_UnitTestCase {
     }
     
     /**
-     * ブレークポイント検証関数のテスト
+     * Breakpoint validation function test
      */
     public function test_validate_breakpoint() {
         $this->assertTrue(crf_validate_breakpoint(768));
@@ -126,7 +137,7 @@ class CRF_CSS_Generation_Test extends WP_UnitTestCase {
     }
     
     /**
-     * フォーカルポイント値検証のテスト
+     * Focal point value validation test
      */
     public function test_validate_focal_point_values() {
         $this->assertTrue(crf_validate_focal_point_value(0.5));
@@ -139,7 +150,7 @@ class CRF_CSS_Generation_Test extends WP_UnitTestCase {
     }
     
     /**
-     * CSS エスケープ処理のテスト
+     * CSS escaping process test
      */
     public function test_css_escaping() {
         $responsive_focal = [
@@ -151,11 +162,11 @@ class CRF_CSS_Generation_Test extends WP_UnitTestCase {
             ]
         ];
         
-        // 特殊文字を含むIDでテスト
+        // Test with ID containing special characters
         $malicious_id = 'test"id<script>';
         $css = crf_generate_css_rules($responsive_focal, $malicious_id);
         
-        // HTMLエスケープが適用されることを確認
+        // Verify that HTML escaping is applied
         $this->assertStringNotContainsString('<script>', $css);
         $this->assertStringNotContainsString('"id<', $css);
     }

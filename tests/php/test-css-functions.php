@@ -1,12 +1,15 @@
 <?php
 /**
- * CSS生成関数の単体テスト（TDD）
+ * CSS generation function unit tests (TDD)
+ *
+ * @package CoverResponsiveFocal
+ * @subpackage Tests
  */
 
-// WordPress関数のモックを読み込み
+// Load WordPress function mocks
 require_once __DIR__ . '/wp-functions-mock.php';
 
-// プラグインファイルを読み込み
+// Load plugin file
 require_once dirname( dirname( __DIR__ ) ) . '/cover-responsive-focal.php';
 
 use PHPUnit\Framework\TestCase;
@@ -14,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 class CRF_CSS_Functions_Test extends TestCase {
     
     /**
-     * 単一フォーカルポイントでのCSS生成テスト
+     * CSS generation test with single focal point
      */
     public function test_generate_css_rules_single_focal_point() {
         $responsive_focal = [
@@ -34,7 +37,7 @@ class CRF_CSS_Functions_Test extends TestCase {
     }
     
     /**
-     * 複数フォーカルポイントのCSS生成テスト
+     * CSS generation test with multiple focal points
      */
     public function test_generate_css_rules_multiple_focal_points() {
         $responsive_focal = [
@@ -62,7 +65,7 @@ class CRF_CSS_Functions_Test extends TestCase {
     }
     
     /**
-     * 空配列でのCSS生成テスト
+     * CSS generation test with empty array
      */
     public function test_generate_css_rules_empty_array() {
         $css = crf_generate_css_rules([], 'empty-test');
@@ -70,7 +73,7 @@ class CRF_CSS_Functions_Test extends TestCase {
     }
     
     /**
-     * 境界値テスト：0.0と1.0のフォーカルポイント
+     * Boundary value test: 0.0 and 1.0 focal points
      */
     public function test_generate_css_rules_boundary_values() {
         $responsive_focal = [
@@ -88,7 +91,7 @@ class CRF_CSS_Functions_Test extends TestCase {
     }
     
     /**
-     * 無効な値の処理テスト
+     * Invalid value handling test
      */
     public function test_generate_css_rules_invalid_values() {
         $responsive_focal = [
@@ -102,12 +105,12 @@ class CRF_CSS_Functions_Test extends TestCase {
         
         $css = crf_generate_css_rules($responsive_focal, 'invalid-test');
         
-        // 無効な値は処理されずスキップされる
+        // Invalid values are skipped without processing
         $this->assertEquals('', $css);
     }
     
     /**
-     * メディアクエリ検証関数のテスト
+     * Media query validation function test
      */
     public function test_validate_media_type() {
         $this->assertTrue(crf_validate_media_type('min-width'));
@@ -118,7 +121,7 @@ class CRF_CSS_Functions_Test extends TestCase {
     }
     
     /**
-     * ブレークポイント検証関数のテスト
+     * Breakpoint validation function test
      */
     public function test_validate_breakpoint() {
         $this->assertTrue(crf_validate_breakpoint(768));
@@ -131,7 +134,7 @@ class CRF_CSS_Functions_Test extends TestCase {
     }
     
     /**
-     * フォーカルポイント値検証のテスト
+     * Focal point value validation test
      */
     public function test_validate_focal_point_values() {
         $this->assertTrue(crf_validate_focal_point_value(0.5));
@@ -144,7 +147,7 @@ class CRF_CSS_Functions_Test extends TestCase {
     }
     
     /**
-     * CSS エスケープ処理のテスト
+     * CSS escaping process test
      */
     public function test_css_escaping() {
         
@@ -157,11 +160,11 @@ class CRF_CSS_Functions_Test extends TestCase {
             ]
         ];
         
-        // 特殊文字を含むIDでテスト
+        // Test with ID containing special characters
         $malicious_id = 'test"id<script>';
         $css = crf_generate_css_rules($responsive_focal, $malicious_id);
         
-        // HTMLエスケープが適用されることを確認
+        // Verify that HTML escaping is applied
         $this->assertStringNotContainsString('<script>', $css);
         $this->assertStringNotContainsString('"id<', $css);
     }

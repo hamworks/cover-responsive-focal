@@ -1,6 +1,6 @@
 <?php
 /**
- * WordPress関数のモック
+ * WordPress function mocks
  */
 
 if (!function_exists('esc_attr')) {
@@ -29,40 +29,60 @@ if (!function_exists('plugin_dir_path')) {
 
 if (!function_exists('wp_enqueue_script')) {
     function wp_enqueue_script($handle, $src = '', $deps = array(), $ver = false, $in_footer = false) {
-        // モック関数 - 何もしない
+        // Mock function - does nothing
     }
 }
 
 if (!function_exists('wp_enqueue_style')) {
     function wp_enqueue_style($handle, $src = '', $deps = array(), $ver = false, $media = 'all') {
-        // モック関数 - 何もしない
+        // Mock function - does nothing
     }
 }
 
 if (!function_exists('add_action')) {
     function add_action($hook, $function_to_add, $priority = 10, $accepted_args = 1) {
-        // モック関数 - 何もしない
+        // Mock function - does nothing
     }
 }
 
 if (!function_exists('add_filter')) {
     function add_filter($hook, $function_to_add, $priority = 10, $accepted_args = 1) {
-        // モック関数 - 何もしない
+        // Mock function - does nothing
     }
 }
 
-// filemtime は PHP標準関数なので、モック不要（PHP標準で定義されている）
+// filemtime is a PHP standard function, so no mock needed (defined by PHP standard)
 
-// WordPress定数を定義
+// Define WordPress constants
 if (!defined('ABSPATH')) {
     define('ABSPATH', '/tmp/wp/');
 }
 
-// WordPress一意ID生成関数のモック
+// WordPress unique ID generation function mock
 if (!function_exists('wp_unique_id')) {
     function wp_unique_id($prefix = '') {
         static $id_counter = 0;
         $id_counter++;
         return $prefix . time() . '-' . $id_counter;
     }
+}
+
+// Cache function mocks for CSS optimization testing
+if (!function_exists('get_transient')) {
+    function get_transient($transient) {
+        global $_wp_transients;
+        return isset($_wp_transients[$transient]) ? $_wp_transients[$transient] : false;
+    }
+}
+
+if (!function_exists('set_transient')) {
+    function set_transient($transient, $value, $expiration = 0) {
+        global $_wp_transients;
+        $_wp_transients[$transient] = $value;
+        return true;
+    }
+}
+
+if (!defined('HOUR_IN_SECONDS')) {
+    define('HOUR_IN_SECONDS', 3600);
 }

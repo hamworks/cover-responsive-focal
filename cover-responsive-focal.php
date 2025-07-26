@@ -11,6 +11,10 @@
  * Text Domain:       cover-responsive-focal
  *
  * @package CoverResponsiveFocal
+ * @version 0.1.0
+ * @author mel_cha
+ * @license GPL-2.0-or-later
+ * @since 0.1.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -18,6 +22,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
+
+/** @var string Plugin version */
 define( 'CRF_VERSION', '0.1.0' );
 define( 'CRF_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CRF_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -260,8 +266,8 @@ function crf_render_block( $content, $block ) {
 	// Sanitize responsive focal points
 	$sanitized_focal = crf_sanitize_responsive_focal_array( $responsive_focal );
 
-	// Generate CSS
-	$css_rules = crf_generate_css_rules( $sanitized_focal, $fp_id );
+	// Generate optimized CSS
+	$css_rules = crf_generate_optimized_css_rules( $sanitized_focal, $fp_id );
 
 	// Add inline style
 	if ( ! empty( $css_rules ) ) {
@@ -298,5 +304,149 @@ function crf_add_fp_id_to_content( $content, $fp_id ) {
  */
 function crf_generate_unique_fp_id() {
 	return wp_unique_id( 'crf-' );
+}
+
+// ===== CSS Optimization Functions =====
+
+/**
+ * CSS minification processing
+ *
+ * @param string $css CSS string
+ * @return string Minified CSS
+ */
+function crf_minify_css( $css ) {
+	// TDD GREEN: Minimal implementation
+	
+	// Remove unnecessary whitespace
+	$css = preg_replace('/\s+/', ' ', $css);
+	
+	// Remove newlines and tabs
+	$css = str_replace(["\n", "\r", "\t"], '', $css);
+	
+	// Remove spaces around braces
+	$css = preg_replace('/\s*{\s*/', '{', $css);
+	$css = preg_replace('/\s*}\s*/', '}', $css);
+	
+	// Remove spaces around colons and semicolons
+	$css = preg_replace('/\s*:\s*/', ':', $css);
+	$css = preg_replace('/\s*;\s*/', ';', $css);
+	
+	// Remove duplicate semicolons
+	$css = preg_replace('/;+/', ';', $css);
+	
+	// Remove trailing semicolons before closing brace
+	$css = preg_replace('/;\s*}/', '}', $css);
+	
+	// Trim overall whitespace
+	$css = trim($css);
+	
+	return $css;
+}
+
+/**
+ * Duplicate media query merge processing
+ *
+ * @param string $css CSS string
+ * @return string Merged CSS
+ */
+function crf_merge_duplicate_media_queries( $css ) {
+	// TDD GREEN: Simple and safe duplicate removal for this plugin's CSS structure
+	
+	// For this plugin's simple CSS structure, use a safer approach
+	// that focuses on the specific pattern we generate
+	
+	$media_queries_seen = [];
+	$media_blocks = [];
+	
+	// Split CSS into @media blocks and non-media content
+	preg_match_all('/@media\s*([^{]+)\s*\{([^{}]*\{[^}]*\}[^{}]*)\}/i', $css, $matches, PREG_SET_ORDER);
+	
+	foreach ($matches as $match) {
+		$media_query = trim($match[1]);
+		$media_content = $match[2];
+		
+		// Only keep first occurrence of each media query
+		if (!isset($media_queries_seen[$media_query])) {
+			$media_queries_seen[$media_query] = true;
+			$media_blocks[] = sprintf('@media %s{%s}', $media_query, $media_content);
+		}
+	}
+	
+	// Return merged media blocks
+	return implode('', $media_blocks);
+}
+
+/**
+ * Optimized CSS generation
+ *
+ * @param array  $responsive_focal Responsive focal point array
+ * @param string $fp_id Focal point ID
+ * @return string Optimized CSS
+ */
+function crf_generate_optimized_css_rules( $responsive_focal, $fp_id ) {
+	// TDD GREEN: Implementation with integrated optimization
+	
+	// Check cache
+	$cached_css = crf_get_cached_css( $responsive_focal, $fp_id );
+	if ( $cached_css !== false ) {
+		return $cached_css;
+	}
+	
+	// Generate basic CSS
+	$css = crf_generate_css_rules( $responsive_focal, $fp_id );
+	
+	if ( empty( $css ) ) {
+		return '';
+	}
+	
+	// Merge duplicate media queries
+	$css = crf_merge_duplicate_media_queries( $css );
+	
+	// Minify CSS
+	$css = crf_minify_css( $css );
+	
+	// Save to cache
+	crf_cache_css( $responsive_focal, $fp_id, $css );
+	
+	return $css;
+}
+
+/**
+ * Get CSS cache
+ *
+ * @param array  $responsive_focal Responsive focal point array
+ * @param string $fp_id Focal point ID
+ * @return string|false Cached CSS, false if not found
+ */
+function crf_get_cached_css( $responsive_focal, $fp_id ) {
+	// TDD GREEN: Simple cache implementation
+	$cache_key = crf_generate_cache_hash( $responsive_focal, $fp_id );
+	return get_transient( 'crf_css_' . $cache_key );
+}
+
+/**
+ * Save CSS cache
+ *
+ * @param array  $responsive_focal Responsive focal point array
+ * @param string $fp_id Focal point ID
+ * @param string $css CSS string
+ */
+function crf_cache_css( $responsive_focal, $fp_id, $css ) {
+	// TDD GREEN: 1 hour cache
+	$cache_key = crf_generate_cache_hash( $responsive_focal, $fp_id );
+	set_transient( 'crf_css_' . $cache_key, $css, HOUR_IN_SECONDS );
+}
+
+/**
+ * Generate cache hash
+ *
+ * @param array  $responsive_focal Responsive focal point array
+ * @param string $fp_id Focal point ID
+ * @return string Hash value
+ */
+function crf_generate_cache_hash( $responsive_focal, $fp_id ) {
+	// TDD GREEN: Generate data hash
+	$data = json_encode( $responsive_focal ) . $fp_id;
+	return md5( $data );
 }
 

@@ -70,12 +70,12 @@ export class WPAdminUtils {
 	async previewPost(): Promise< Page > {
 		// Open preview in new tab using keyboard shortcut
 		await this.page.keyboard.press( 'Meta+Alt+P' );
-		
+
 		// Wait for new page to open and get the new page instance
 		const newPagePromise = this.page.context().waitForEvent( 'page' );
 		const previewPage = await newPagePromise;
 		await previewPage.waitForLoadState();
-		
+
 		return previewPage;
 	}
 

@@ -350,32 +350,30 @@ function crf_minify_css( $css ) {
  * @return string Merged CSS
  */
 function crf_merge_duplicate_media_queries( $css ) {
-	// TDD GREEN: Simple and reliable merge processing implementation
+	// TDD GREEN: Simple and safe duplicate removal for this plugin's CSS structure
 	
-	// Current implementation prioritizes first rule and
-	// focuses on removing duplicate media queries
+	// For this plugin's simple CSS structure, use a safer approach
+	// that focuses on the specific pattern we generate
 	
-	// Count occurrences of each media query
 	$media_queries_seen = [];
+	$media_blocks = [];
 	
-	// Process each media query block in order
-	$result = preg_replace_callback(
-		'/@media\s*([^{]+)\s*\{[^}]*\{[^}]*\}[^}]*\}/i',
-		function($match) use (&$media_queries_seen) {
-			$media_query = trim($match[1]);
-			
-			// Keep if first occurrence, remove if duplicate
-			if (!isset($media_queries_seen[$media_query])) {
-				$media_queries_seen[$media_query] = true;
-				return $match[0]; // Keep as-is
-			}
-			
-			return ''; // Remove duplicate
-		},
-		$css
-	);
+	// Split CSS into @media blocks and non-media content
+	preg_match_all('/@media\s*([^{]+)\s*\{([^{}]*\{[^}]*\}[^{}]*)\}/i', $css, $matches, PREG_SET_ORDER);
 	
-	return $result ?: $css;
+	foreach ($matches as $match) {
+		$media_query = trim($match[1]);
+		$media_content = $match[2];
+		
+		// Only keep first occurrence of each media query
+		if (!isset($media_queries_seen[$media_query])) {
+			$media_queries_seen[$media_query] = true;
+			$media_blocks[] = sprintf('@media %s{%s}', $media_query, $media_content);
+		}
+	}
+	
+	// Return merged media blocks
+	return implode('', $media_blocks);
 }
 
 /**

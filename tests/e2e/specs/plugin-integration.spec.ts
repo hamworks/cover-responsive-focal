@@ -24,7 +24,7 @@ test.describe( 'Plugin Functionality Integration Tests', () => {
 		await wpAdmin.insertCoverBlock();
 
 		// Verify plugin script is loaded
-		await page.evaluate( () => {
+		const scriptLoaded = await page.evaluate( () => {
 			// Check global variables like window.coverResponsiveFocal
 			return (
 				typeof window !== 'undefined' &&
@@ -35,6 +35,7 @@ test.describe( 'Plugin Functionality Integration Tests', () => {
 				)
 			);
 		} );
+		expect( scriptLoaded ).toBe( true );
 	} );
 
 	test( 'Cover block basic functionality works', async ( { page } ) => {
@@ -82,11 +83,8 @@ test.describe( 'Plugin Functionality Integration Tests', () => {
 			// Check data-fp-id attribute if plugin is implemented
 			const hasFpId = await coverElement.getAttribute( 'data-fp-id' );
 
-			if ( hasFpId ) {
-				// Verify data-fp-id attribute is in correct format
-				expect( hasFpId ).toMatch( /^fp-\d+$/ );
-			} else {
-			}
+			// Verify data-fp-id attribute exists and is in correct format
+			expect( hasFpId ).toMatch( /^crf-\d+$/ );
 		} finally {
 			await previewPost.close();
 		}

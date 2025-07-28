@@ -5,6 +5,7 @@
 import { __ } from '@wordpress/i18n';
 import { PanelBody, Button, ToggleControl } from '@wordpress/components';
 import { Fragment } from '@wordpress/element';
+import { useSelect } from '@wordpress/data';
 import type {
 	ResponsiveFocalControlsProps,
 	ResponsiveFocalPoint,
@@ -27,7 +28,32 @@ export const ResponsiveFocalControls = (
 	const safeAttributes = attributes || {};
 	const { responsiveFocal = [] } = safeAttributes;
 	const previewEnabled = !!previewFocalPoint;
+	
+	// Get the current device preview mode from WordPress editor
+	const deviceType = useSelect( ( select ) => {
+		const { __experimentalGetPreviewDeviceType } = select( 'core/edit-post' ) || {};
+		if ( __experimentalGetPreviewDeviceType ) {
+			return __experimentalGetPreviewDeviceType();
+		}
+		// Fallback for newer versions
+		const { getDeviceType } = select( 'core/editor' ) || {};
+		return getDeviceType ? getDeviceType() : 'Desktop';
+	}, [] );
 
+	/**
+	 * Get effective viewport width based on device preview mode
+	 */
+	const getEffectiveViewportWidth = () => {
+		// Use WordPress editor's device preview sizes
+		switch ( deviceType ) {
+			case 'Mobile':
+				return 360; // Common mobile width
+			case 'Tablet':
+				return 768; // Common tablet width
+			default:
+				return window.innerWidth; // Desktop uses actual viewport
+		}
+	};
 
 	/**
 	 * Add new focal point row
@@ -130,9 +156,8 @@ export const ResponsiveFocalControls = (
 
 		// Always try to update preview if it's enabled
 		if ( previewFocalPoint !== null ) {
-
 			// Find which focal point should apply to current viewport
-			const viewportWidth = window.innerWidth;
+			const viewportWidth = getEffectiveViewportWidth();
 			const sortedFocals = [ ...updatedFocals ].sort(
 				( a, b ) => ( b.breakpoint || 0 ) - ( a.breakpoint || 0 )
 			);
@@ -157,16 +182,14 @@ export const ResponsiveFocalControls = (
 				}
 			}
 
-			// If no applicable focal point is found for current viewport,
-			// use the focal point being edited for preview
-			const focalToPreview = applicableFocal || updatedFocals[ index ];
+			// Always preview the focal point being edited for better UX
+			// This allows users to see changes even when editing a breakpoint
+			// that doesn't match the current viewport
+			const focalToPreview = updatedFocals[ index ];
 			
 			if ( focalToPreview ) {
-				// Force immediate update with completely new object
 				const newX = focalToPreview.x || 0.5;
 				const newY = focalToPreview.y || 0.5;
-				
-				// Create a completely new object to ensure React detects the change
 				const newPoint = JSON.parse( JSON.stringify( { x: newX, y: newY } ) );
 				setPreviewFocalPoint( newPoint );
 			}
@@ -195,7 +218,7 @@ export const ResponsiveFocalControls = (
 				onChange={ ( value ) => {
 					if ( value && responsiveFocal.length > 0 ) {
 						// Find the focal point that applies to current viewport
-						const viewportWidth = window.innerWidth;
+						const viewportWidth = getEffectiveViewportWidth();
 
 						// Sort by breakpoint descending
 						const sortedFocals = [ ...responsiveFocal ].sort(
@@ -223,14 +246,20 @@ export const ResponsiveFocalControls = (
 							}
 						}
 
-						// Use applicable focal point or fall back to first one
-						const previewFocal =
-							applicableFocal || sortedFocals[ 0 ];
-
-						setPreviewFocalPoint( {
-							x: previewFocal.x || 0.5,
-							y: previewFocal.y || 0.5,
-						} );
+						// Set preview with applicable focal point or keep enabled with no changes
+						if ( applicableFocal ) {
+							setPreviewFocalPoint( {
+								x: applicableFocal.x || 0.5,
+								y: applicableFocal.y || 0.5,
+							} );
+						} else {
+							// Keep preview enabled but with a placeholder value
+							// This allows the toggle to stay on even when no focal point matches
+							setPreviewFocalPoint( {
+								x: attributes.focalPoint?.x || 0.5,
+								y: attributes.focalPoint?.y || 0.5,
+							} );
+						}
 					} else {
 						// Disable preview
 						setPreviewFocalPoint( null );
@@ -249,7 +278,7 @@ export const ResponsiveFocalControls = (
 					{ responsiveFocal.map(
 						( focal: ResponsiveFocalPoint, index: number ) => {
 							// Check if this focal point is active for current viewport
-							const viewportWidth = window.innerWidth;
+							const viewportWidth = getEffectiveViewportWidth();
 							let isActive = false;
 
 							// Sort all focal points by breakpoint descending

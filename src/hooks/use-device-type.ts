@@ -13,17 +13,17 @@ export const useDeviceType = (): string => {
 		// Try different store/selector combinations for different WP versions
 		const editPost = select( 'core/edit-post' ) as any;
 		const editor = select( 'core/editor' ) as any;
-		
+
 		// WordPress 6.x uses this
 		if ( editor && editor.getDeviceType ) {
 			return editor.getDeviceType();
 		}
-		
+
 		// Older versions might use this
 		if ( editPost && editPost.__experimentalGetPreviewDeviceType ) {
 			return editPost.__experimentalGetPreviewDeviceType();
 		}
-		
+
 		// Default to Desktop if none available
 		return 'Desktop';
 	}, [] );
@@ -35,13 +35,13 @@ export const useDeviceType = (): string => {
  */
 export const useEffectiveViewportWidth = (): number => {
 	const deviceType = useDeviceType();
-	
+
 	switch ( deviceType ) {
 		case 'Mobile':
 			return 360; // Common mobile width
 		case 'Tablet':
 			return 768; // Common tablet width
 		default:
-			return window.innerWidth; // Desktop uses actual viewport
+			return typeof window !== 'undefined' ? window.innerWidth : 1200; // Desktop uses actual viewport
 	}
 };

@@ -13,7 +13,25 @@ import { DEFAULTS } from './constants';
 import { ResponsiveFocalItem } from './components/responsive-focal-item';
 import { isDevelopment } from './utils/environment';
 import { clampBreakpoint } from './utils/validation';
-import { useApplicableFocalPoint, useIsFocalPointActive } from './hooks/use-applicable-focal-point';
+import { useApplicableFocalPoint, findApplicableFocalPoint } from './hooks/use-applicable-focal-point';
+import { useEffectiveViewportWidth } from './hooks/use-device-type';
+
+/**
+ * Check if a breakpoint already exists
+ * @param responsiveFocal Array of existing focal points
+ * @param mediaType Media type to check
+ * @param breakpoint Breakpoint value to check
+ * @returns True if duplicate exists
+ */
+const isDuplicateBreakpoint = (
+	responsiveFocal: ResponsiveFocalPoint[],
+	mediaType: 'min-width' | 'max-width',
+	breakpoint: number
+): boolean => {
+	return responsiveFocal.some( focal => 
+		focal.mediaType === mediaType && focal.breakpoint === breakpoint
+	);
+};
 
 /**
  * Responsive focal point settings UI
@@ -29,6 +47,7 @@ export const ResponsiveFocalControls = (
 	const { responsiveFocal = [] } = safeAttributes;
 	const previewEnabled = !!previewFocalPoint;
 	const applicableFocalPoint = useApplicableFocalPoint( responsiveFocal );
+	const viewportWidth = useEffectiveViewportWidth();
 
 	/**
 	 * Add new focal point row
@@ -129,16 +148,17 @@ export const ResponsiveFocalControls = (
 		updatedFocals[ index ] = { ...updatedFocals[ index ], ...safeUpdates };
 		setAttributes( { responsiveFocal: updatedFocals } );
 
-		// Always try to update preview if it's enabled
+		// Update preview only if the edited focal point is the applicable one
 		if ( previewFocalPoint !== null ) {
-			// Always preview the focal point being edited for better UX
-			// This allows users to see changes even when editing a breakpoint
-			// that doesn't match the current viewport
-			const focalToPreview = updatedFocals[ index ];
+			const updatedApplicableFocal = findApplicableFocalPoint( updatedFocals, viewportWidth );
+			const editedFocal = updatedFocals[ index ];
 			
-			if ( focalToPreview ) {
-				const newX = focalToPreview.x || 0.5;
-				const newY = focalToPreview.y || 0.5;
+			// Only update preview if the edited focal point is the one that applies to current viewport
+			if ( updatedApplicableFocal && editedFocal && 
+				 updatedApplicableFocal.breakpoint === editedFocal.breakpoint &&
+				 updatedApplicableFocal.mediaType === editedFocal.mediaType ) {
+				const newX = editedFocal.x || 0.5;
+				const newY = editedFocal.y || 0.5;
 				const newPoint = JSON.parse( JSON.stringify( { x: newX, y: newY } ) );
 				setPreviewFocalPoint( newPoint );
 			}
@@ -197,7 +217,18 @@ export const ResponsiveFocalControls = (
 				<div>
 					{ responsiveFocal.map(
 						( focal: ResponsiveFocalPoint, index: number ) => {
-							const isActive = useIsFocalPointActive( focal, responsiveFocal );
+							// Check if this focal point is active without using hooks in map
+							const isActive = applicableFocalPoint && 
+								applicableFocalPoint.breakpoint === focal.breakpoint &&
+								applicableFocalPoint.mediaType === focal.mediaType;
+
+							// Check for duplicate breakpoints
+							const duplicates = responsiveFocal.filter( ( f, i ) => 
+								i !== index && 
+								f.mediaType === focal.mediaType && 
+								f.breakpoint === focal.breakpoint
+							);
+							const isDuplicate = duplicates.length > 0;
 
 							return (
 								<Fragment key={ index }>
@@ -206,6 +237,7 @@ export const ResponsiveFocalControls = (
 										index={ index }
 										imageUrl={ safeAttributes.url }
 										isActive={ isActive }
+										isDuplicate={ isDuplicate }
 										onUpdate={ updateFocalPoint }
 										onRemove={ removeFocalPoint }
 									/>

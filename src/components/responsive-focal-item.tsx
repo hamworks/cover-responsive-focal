@@ -20,6 +20,7 @@ interface ResponsiveFocalItemProps {
 	index: number;
 	imageUrl?: string;
 	isActive?: boolean;
+	isDuplicate?: boolean;
 	onUpdate: (
 		index: number,
 		updates: Partial< ResponsiveFocalPoint >
@@ -32,7 +33,7 @@ interface ResponsiveFocalItemProps {
  * @param props Component props
  */
 export const ResponsiveFocalItem = ( props: ResponsiveFocalItemProps ) => {
-	const { focal, index, imageUrl, isActive, onUpdate, onRemove } = props;
+	const { focal, index, imageUrl, isActive, isDuplicate, onUpdate, onRemove } = props;
 	
 	// Safe handling of focal point data
 	const safeFocal = {
@@ -69,6 +70,23 @@ export const ResponsiveFocalItem = ( props: ResponsiveFocalItemProps ) => {
 				>
 					{ __(
 						'Active for current viewport',
+						'cover-responsive-focal'
+					) }
+				</div>
+			) }
+			{ isDuplicate && (
+				<div
+					style={ {
+						padding: '8px',
+						backgroundColor: '#fee2e2',
+						borderRadius: '4px',
+						marginBottom: '8px',
+						fontSize: '12px',
+						color: '#991b1b',
+					} }
+				>
+					{ __(
+						'Warning: This breakpoint is duplicated',
 						'cover-responsive-focal'
 					) }
 				</div>

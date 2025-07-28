@@ -5,12 +5,12 @@
 
 import { __ } from '@wordpress/i18n';
 import { Button, FocalPointPicker } from '@wordpress/components';
-import { useSelect } from '@wordpress/data';
 import type { ResponsiveFocalPoint } from '../types';
 import { DEFAULTS } from '../constants';
 import { SafeMediaTypeControl } from './safe-media-type-control';
 import { SafeBreakpointControl } from './safe-breakpoint-control';
 import { SafeStackLayout } from './safe-stack-layout';
+import { useBreakpointApplies } from '../hooks/use-applicable-focal-point';
 
 /**
  * Props for ResponsiveFocalItem
@@ -34,29 +34,6 @@ interface ResponsiveFocalItemProps {
 export const ResponsiveFocalItem = ( props: ResponsiveFocalItemProps ) => {
 	const { focal, index, imageUrl, isActive, onUpdate, onRemove } = props;
 	
-	// Get the current device preview mode from WordPress editor
-	const deviceType = useSelect( ( select ) => {
-		const { __experimentalGetPreviewDeviceType } = select( 'core/edit-post' ) || {};
-		if ( __experimentalGetPreviewDeviceType ) {
-			return __experimentalGetPreviewDeviceType();
-		}
-		// Fallback for newer versions
-		const { getDeviceType } = select( 'core/editor' ) || {};
-		return getDeviceType ? getDeviceType() : 'Desktop';
-	}, [] );
-	
-	// Get effective viewport width based on device preview mode
-	const getEffectiveViewportWidth = () => {
-		switch ( deviceType ) {
-			case 'Mobile':
-				return 360; // Common mobile width
-			case 'Tablet':
-				return 768; // Common tablet width
-			default:
-				return window.innerWidth; // Desktop uses actual viewport
-		}
-	};
-	
 	// Safe handling of focal point data
 	const safeFocal = {
 		mediaType: focal?.mediaType || DEFAULTS.MEDIA_TYPE,
@@ -75,10 +52,7 @@ export const ResponsiveFocalItem = ( props: ResponsiveFocalItemProps ) => {
 	};
 
 	// Check if this breakpoint applies to current viewport
-	const viewportWidth = getEffectiveViewportWidth();
-	const appliesToViewport = safeFocal.mediaType === 'max-width' 
-		? viewportWidth <= safeFocal.breakpoint
-		: viewportWidth >= safeFocal.breakpoint;
+	const appliesToViewport = useBreakpointApplies( safeFocal.breakpoint, safeFocal.mediaType );
 
 	return (
 		<SafeStackLayout spacing={ 3 }>

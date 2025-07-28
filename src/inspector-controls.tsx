@@ -65,8 +65,6 @@ export const ResponsiveFocalControls = (
 		index: number,
 		updates: Partial< ResponsiveFocalPoint >
 	) => {
-		// eslint-disable-next-line no-console
-		console.log( 'updateFocalPoint called:', { index, updates, previewEnabled } );
 
 		// Safe handling of index and updates
 		if (
@@ -132,32 +130,17 @@ export const ResponsiveFocalControls = (
 
 		// Always try to update preview if it's enabled
 		if ( previewFocalPoint !== null ) {
-			// eslint-disable-next-line no-console
-			console.log( 'Preview is enabled, updating...', { index, safeUpdates, previewFocalPoint } );
 
 			// Find which focal point should apply to current viewport
 			const viewportWidth = window.innerWidth;
-			console.log( 'Current viewport width:', viewportWidth );
-			
 			const sortedFocals = [ ...updatedFocals ].sort(
 				( a, b ) => ( b.breakpoint || 0 ) - ( a.breakpoint || 0 )
 			);
-			
-			console.log( 'Updated focals:', updatedFocals );
-			console.log( 'Sorted focals:', sortedFocals );
 
 			let applicableFocal = null;
 			for ( const focal of sortedFocals ) {
 				const bp = focal.breakpoint || 0;
 				const mt = focal.mediaType || 'max-width';
-				
-				console.log( 'Checking focal:', { 
-					bp, 
-					mt, 
-					viewportWidth,
-					matches: mt === 'max-width' ? viewportWidth <= bp : viewportWidth >= bp,
-					focal 
-				} );
 
 				if (
 					mt === 'max-width' &&
@@ -173,30 +156,18 @@ export const ResponsiveFocalControls = (
 					break;
 				}
 			}
-			
-			console.log( 'Applicable focal:', applicableFocal );
 
 			// If no applicable focal point is found for current viewport,
 			// use the focal point being edited for preview
 			const focalToPreview = applicableFocal || updatedFocals[ index ];
 			
 			if ( focalToPreview ) {
-				// eslint-disable-next-line no-console
-				console.log( 'Updating preview focal point:', {
-					x: focalToPreview.x || 0.5,
-					y: focalToPreview.y || 0.5,
-					index,
-					updates: safeUpdates,
-					isApplicable: !!applicableFocal
-				} );
 				// Force immediate update with completely new object
 				const newX = focalToPreview.x || 0.5;
 				const newY = focalToPreview.y || 0.5;
 				
 				// Create a completely new object to ensure React detects the change
 				const newPoint = JSON.parse( JSON.stringify( { x: newX, y: newY } ) );
-				
-				console.log( 'Setting new preview focal point:', newPoint );
 				setPreviewFocalPoint( newPoint );
 			}
 		}
@@ -222,7 +193,6 @@ export const ResponsiveFocalControls = (
 				}
 				checked={ previewEnabled }
 				onChange={ ( value ) => {
-					console.log( 'Toggle preview:', { value, previewEnabled, previewFocalPoint } );
 					if ( value && responsiveFocal.length > 0 ) {
 						// Find the focal point that applies to current viewport
 						const viewportWidth = window.innerWidth;

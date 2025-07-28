@@ -108,7 +108,6 @@ export const ResponsiveFocalItem = ( props: ResponsiveFocalItemProps ) => {
 							x: safeX,
 							y: safeY,
 						} );
-						console.log(safeX);
 					} }
 				/>
 			) }

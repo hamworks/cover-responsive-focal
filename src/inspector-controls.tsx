@@ -17,23 +17,6 @@ import { useApplicableFocalPoint, findApplicableFocalPoint } from './hooks/use-a
 import { useEffectiveViewportWidth } from './hooks/use-device-type';
 
 /**
- * Check if a breakpoint already exists
- * @param responsiveFocal Array of existing focal points
- * @param mediaType Media type to check
- * @param breakpoint Breakpoint value to check
- * @returns True if duplicate exists
- */
-const isDuplicateBreakpoint = (
-	responsiveFocal: ResponsiveFocalPoint[],
-	mediaType: 'min-width' | 'max-width',
-	breakpoint: number
-): boolean => {
-	return responsiveFocal.some( focal => 
-		focal.mediaType === mediaType && focal.breakpoint === breakpoint
-	);
-};
-
-/**
  * Responsive focal point settings UI
  * @param props               Component props
  * @param props.attributes    Block attributes
@@ -152,9 +135,9 @@ export const ResponsiveFocalControls = (
 		if ( previewFocalPoint !== null ) {
 			const updatedApplicableFocal = findApplicableFocalPoint( updatedFocals, viewportWidth );
 			const editedFocal = updatedFocals[ index ];
-			
+
 			// Only update preview if the edited focal point is the one that applies to current viewport
-			if ( updatedApplicableFocal && editedFocal && 
+			if ( updatedApplicableFocal && editedFocal &&
 				 updatedApplicableFocal.breakpoint === editedFocal.breakpoint &&
 				 updatedApplicableFocal.mediaType === editedFocal.mediaType ) {
 				const newX = editedFocal.x || 0.5;
@@ -218,14 +201,14 @@ export const ResponsiveFocalControls = (
 					{ responsiveFocal.map(
 						( focal: ResponsiveFocalPoint, index: number ) => {
 							// Check if this focal point is active without using hooks in map
-							const isActive = applicableFocalPoint && 
+							const isActive = applicableFocalPoint ?
 								applicableFocalPoint.breakpoint === focal.breakpoint &&
-								applicableFocalPoint.mediaType === focal.mediaType;
+								applicableFocalPoint.mediaType === focal.mediaType : false;
 
 							// Check for duplicate breakpoints
-							const duplicates = responsiveFocal.filter( ( f, i ) => 
-								i !== index && 
-								f.mediaType === focal.mediaType && 
+							const duplicates = responsiveFocal.filter( ( f, i ) =>
+								i !== index &&
+								f.mediaType === focal.mediaType &&
 								f.breakpoint === focal.breakpoint
 							);
 							const isDuplicate = duplicates.length > 0;

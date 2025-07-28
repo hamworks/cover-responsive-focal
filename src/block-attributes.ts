@@ -46,10 +46,6 @@ const extendCoverBlockAttributes = (
 			dataFpId: {
 				type: 'string',
 			},
-			responsiveFocalPreview: {
-				type: 'object',
-				default: null,
-			},
 		},
 	};
 };

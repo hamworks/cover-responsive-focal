@@ -50,7 +50,6 @@ export interface CoverBlockAttributes {
 	// Plugin-specific attributes
 	responsiveFocal?: ResponsiveFocalPoint[];
 	dataFpId?: string;
-	responsiveFocalPreview?: FocalPoint | null;
 
 	// Allow any other core attributes
 	[ key: string ]: unknown;
@@ -62,7 +61,10 @@ export interface CoverBlockAttributes {
 export type ResponsiveFocalControlsProps = Pick<
 	BlockEditProps< CoverBlockAttributes >,
 	'attributes' | 'setAttributes'
->;
+> & {
+	previewFocalPoint: { x: number; y: number } | null;
+	setPreviewFocalPoint: ( value: { x: number; y: number } | null ) => void;
+};
 
 /**
  * Media query configuration

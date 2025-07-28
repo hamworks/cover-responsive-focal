@@ -23,7 +23,7 @@ import { clampBreakpoint } from './utils/validation';
 export const ResponsiveFocalControls = (
 	props: ResponsiveFocalControlsProps
 ) => {
-	const { attributes, setAttributes } = props;
+	const { attributes, setAttributes, previewFocalPoint, setPreviewFocalPoint } = props;
 	const safeAttributes = attributes || {};
 	const { responsiveFocal = [] } = safeAttributes;
 	const [ previewEnabled, setPreviewEnabled ] = useState( false );
@@ -126,20 +126,15 @@ export const ResponsiveFocalControls = (
 		updatedFocals[ index ] = { ...updatedFocals[ index ], ...safeUpdates };
 		setAttributes( { responsiveFocal: updatedFocals } );
 
-		// If preview is enabled and focal point changes, check if this breakpoint applies
-		if ( previewEnabled && ( 'x' in safeUpdates || 'y' in safeUpdates ) ) {
-			const updatedFocal = updatedFocals[ index ];
+		// Always update preview if enabled to ensure real-time updates
+		if ( previewEnabled ) {
+			// Find which focal point should apply to current viewport
 			const viewportWidth = window.innerWidth;
-
-			// Check if this focal point applies to current viewport
-			let shouldUpdatePreview = false;
-
-			// Sort all focal points by breakpoint descending
 			const sortedFocals = [ ...updatedFocals ].sort(
 				( a, b ) => ( b.breakpoint || 0 ) - ( a.breakpoint || 0 )
 			);
 
-			// Find which focal point should apply to current viewport
+			let applicableFocal = null;
 			for ( const focal of sortedFocals ) {
 				const focalBreakpoint = focal.breakpoint || 0;
 				const focalMediaType = focal.mediaType || 'max-width';
@@ -148,28 +143,22 @@ export const ResponsiveFocalControls = (
 					focalMediaType === 'max-width' &&
 					viewportWidth <= focalBreakpoint
 				) {
-					// This is the focal point that should apply
-					shouldUpdatePreview = focal === updatedFocal;
+					applicableFocal = focal;
 					break;
 				} else if (
 					focalMediaType === 'min-width' &&
 					viewportWidth >= focalBreakpoint
 				) {
-					// This is the focal point that should apply
-					shouldUpdatePreview = focal === updatedFocal;
+					applicableFocal = focal;
 					break;
 				}
 			}
 
-			// Only update preview if this focal point applies to current viewport
-			if ( shouldUpdatePreview ) {
-				const tempFocalPoint = {
-					x: updatedFocal.x || 0.5,
-					y: updatedFocal.y || 0.5,
-				};
-				// Trigger re-render by updating a temporary attribute
-				setAttributes( {
-					responsiveFocalPreview: tempFocalPoint,
+			// Update preview with the applicable focal point
+			if ( applicableFocal ) {
+				setPreviewFocalPoint( {
+					x: applicableFocal.x || 0.5,
+					y: applicableFocal.y || 0.5,
 				} );
 			}
 		}
@@ -230,15 +219,13 @@ export const ResponsiveFocalControls = (
 						const previewFocal =
 							applicableFocal || sortedFocals[ 0 ];
 						
-						setAttributes( {
-							responsiveFocalPreview: {
-								x: previewFocal.x || 0.5,
-								y: previewFocal.y || 0.5,
-							},
+						setPreviewFocalPoint( {
+							x: previewFocal.x || 0.5,
+							y: previewFocal.y || 0.5,
 						} );
 					} else {
 						// Disable preview
-						setAttributes( { responsiveFocalPreview: null } );
+						setPreviewFocalPoint( null );
 					}
 				} }
 			/>

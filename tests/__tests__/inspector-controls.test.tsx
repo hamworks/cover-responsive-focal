@@ -222,6 +222,22 @@ jest.mock( '@wordpress/components', () => ( {
 			</div>
 		);
 	},
+	ToggleControl: ( { label, help, checked, onChange }: any ) => {
+		const id = `toggle-${ Math.random() }`;
+		return (
+			<div data-testid="toggle-control">
+				<input
+					id={ id }
+					type="checkbox"
+					checked={ checked }
+					onChange={ ( e ) => onChange( e.target.checked ) }
+					aria-label={ label }
+				/>
+				<label htmlFor={ id }>{ label }</label>
+				{ help && <span>{ help }</span> }
+			</div>
+		);
+	},
 } ) );
 
 // Mock the new component modules
@@ -229,6 +245,8 @@ interface MockResponsiveFocalItemProps {
 	focal: { mediaType: string; breakpoint: number; x: number; y: number };
 	index: number;
 	imageUrl?: string;
+	isActive?: boolean;
+	isDuplicate?: boolean;
 	onUpdate: (
 		index: number,
 		updates: Partial< {
@@ -243,10 +261,16 @@ interface MockResponsiveFocalItemProps {
 
 jest.mock( '../../src/components/responsive-focal-item', () => ( {
 	ResponsiveFocalItem: ( props: MockResponsiveFocalItemProps ) => {
-		const { focal, index, imageUrl, onUpdate, onRemove } = props;
+		const { focal, index, imageUrl, isActive, isDuplicate, onUpdate, onRemove } = props;
 		return (
 			<div data-testid="responsive-focal-item" data-index={ index }>
 				<div data-testid="vstack" data-spacing="3">
+					{ isActive && (
+						<div data-testid="active-indicator">Active for current viewport</div>
+					) }
+					{ isDuplicate && (
+						<div data-testid="duplicate-warning">Warning: This breakpoint is duplicated</div>
+					) }
 					<div data-testid="toggle-group-control">
 						<span>Media Query Type</span>
 						<div role="radiogroup" aria-label="Media Query Type">
@@ -428,18 +452,32 @@ jest.mock( '@wordpress/i18n', () => ( {
 	__: ( text: string ) => text,
 } ) );
 
+// Mock custom hooks
+jest.mock( '../../src/hooks/use-applicable-focal-point', () => ( {
+	useApplicableFocalPoint: jest.fn( () => null ),
+	findApplicableFocalPoint: jest.fn( () => null ),
+} ) );
+
+jest.mock( '../../src/hooks/use-device-type', () => ( {
+	useEffectiveViewportWidth: jest.fn( () => 1024 ),
+} ) );
+
 describe( 'ResponsiveFocalControls - Basic UI Components (TDD)', () => {
 	const mockSetAttributes = jest.fn();
+	const mockSetPreviewFocalPoint = jest.fn();
 
 	const defaultProps = {
 		attributes: {
 			responsiveFocal: [],
 		} as CoverBlockAttributes,
 		setAttributes: mockSetAttributes,
+		previewFocalPoint: null,
+		setPreviewFocalPoint: mockSetPreviewFocalPoint,
 	};
 
 	beforeEach( () => {
 		mockSetAttributes.mockClear();
+		mockSetPreviewFocalPoint.mockClear();
 	} );
 
 	describe( 'PanelBody structure', () => {
@@ -906,15 +944,308 @@ describe( 'ResponsiveFocalControls - Basic UI Components (TDD)', () => {
 	} );
 } );
 
+// Test for duplicate breakpoint detection
+describe( 'ResponsiveFocalControls - Duplicate Breakpoint Detection', () => {
+	const mockSetAttributes = jest.fn();
+	const mockSetPreviewFocalPoint = jest.fn();
+
+	const propsWithDuplicates = {
+		attributes: {
+			responsiveFocal: [
+				{
+					mediaType: 'max-width' as const,
+					breakpoint: 500,
+					x: 0.6,
+					y: 0.4,
+				},
+				{
+					mediaType: 'max-width' as const,
+					breakpoint: 500,
+					x: 0.3,
+					y: 0.7,
+				},
+				{
+					mediaType: 'max-width' as const,
+					breakpoint: 768,
+					x: 0.5,
+					y: 0.5,
+				},
+			],
+		} as CoverBlockAttributes,
+		setAttributes: mockSetAttributes,
+		previewFocalPoint: null,
+		setPreviewFocalPoint: mockSetPreviewFocalPoint,
+	};
+
+	beforeEach( () => {
+		mockSetAttributes.mockClear();
+		mockSetPreviewFocalPoint.mockClear();
+	} );
+
+	test( 'should show duplicate warning for duplicate breakpoints', () => {
+		render( <ResponsiveFocalControls { ...propsWithDuplicates } /> );
+
+		// Two items should have duplicate warnings (both 500px breakpoints)
+		const warnings = screen.getAllByTestId( 'duplicate-warning' );
+		expect( warnings ).toHaveLength( 2 );
+		expect( warnings[ 0 ] ).toHaveTextContent( 'Warning: This breakpoint is duplicated' );
+	} );
+
+	test( 'should not show duplicate warning for unique breakpoints', () => {
+		render( <ResponsiveFocalControls { ...propsWithDuplicates } /> );
+
+		// Check that the unique breakpoint (768px) doesn't have a duplicate warning
+		const responsiveItems = screen.getAllByTestId( 'responsive-focal-item' );
+		expect( responsiveItems ).toHaveLength( 3 );
+		
+		// The third item (768px) should not have a duplicate warning
+		const thirdItemWarnings = responsiveItems[ 2 ].querySelectorAll( '[data-testid="duplicate-warning"]' );
+		expect( thirdItemWarnings ).toHaveLength( 0 );
+	} );
+
+	test( 'should detect duplicates based on both mediaType and breakpoint', () => {
+		const propsWithDifferentMediaTypes = {
+			...propsWithDuplicates,
+			attributes: {
+				responsiveFocal: [
+					{
+						mediaType: 'max-width' as const,
+						breakpoint: 500,
+						x: 0.6,
+						y: 0.4,
+					},
+					{
+						mediaType: 'min-width' as const,
+						breakpoint: 500,
+						x: 0.3,
+						y: 0.7,
+					},
+				],
+			} as CoverBlockAttributes,
+		};
+
+		render( <ResponsiveFocalControls { ...propsWithDifferentMediaTypes } /> );
+
+		// Should not show duplicate warnings because media types are different
+		const warnings = screen.queryAllByTestId( 'duplicate-warning' );
+		expect( warnings ).toHaveLength( 0 );
+	} );
+} );
+
+// Test for preview functionality improvements
+describe( 'ResponsiveFocalControls - Preview Functionality', () => {
+	const mockSetAttributes = jest.fn();
+	const mockSetPreviewFocalPoint = jest.fn();
+
+	const defaultProps = {
+		attributes: {
+			responsiveFocal: [
+				{
+					mediaType: 'max-width' as const,
+					breakpoint: 500,
+					x: 0.6,
+					y: 0.4,
+				},
+				{
+					mediaType: 'max-width' as const,
+					breakpoint: 768,
+					x: 0.3,
+					y: 0.7,
+				},
+			],
+		} as CoverBlockAttributes,
+		setAttributes: mockSetAttributes,
+		previewFocalPoint: null,
+		setPreviewFocalPoint: mockSetPreviewFocalPoint,
+	};
+
+	beforeEach( () => {
+		mockSetAttributes.mockClear();
+		mockSetPreviewFocalPoint.mockClear();
+		// Reset all mock implementations
+		jest.clearAllMocks();
+	} );
+
+	test( 'should render preview toggle control', () => {
+		render( <ResponsiveFocalControls { ...defaultProps } /> );
+
+		const toggleControl = screen.getByTestId( 'toggle-control' );
+		expect( toggleControl ).toBeInTheDocument();
+		expect( screen.getByLabelText( 'Preview in Editor' ) ).toBeInTheDocument();
+	} );
+
+	test( 'should show correct help text when preview is disabled', () => {
+		render( <ResponsiveFocalControls { ...defaultProps } /> );
+
+		expect( screen.getByText( 'Preview disabled, showing core focal point' ) ).toBeInTheDocument();
+	} );
+
+	test( 'should show correct help text when preview is enabled', () => {
+		const propsWithPreview = {
+			...defaultProps,
+			previewFocalPoint: { x: 0.5, y: 0.5 },
+		};
+
+		render( <ResponsiveFocalControls { ...propsWithPreview } /> );
+
+		expect( screen.getByText( 'Showing responsive focal point preview' ) ).toBeInTheDocument();
+	} );
+
+	test( 'should call setPreviewFocalPoint when toggle is turned on', async () => {
+		const user = userEvent.setup();
+		
+		// Mock the hook to return an applicable focal point
+		const { useApplicableFocalPoint } = require( '../../src/hooks/use-applicable-focal-point' );
+		useApplicableFocalPoint.mockReturnValue( {
+			mediaType: 'max-width',
+			breakpoint: 500,
+			x: 0.6,
+			y: 0.4,
+		} );
+
+		render( <ResponsiveFocalControls { ...defaultProps } /> );
+
+		const toggle = screen.getByLabelText( 'Preview in Editor' );
+		await user.click( toggle );
+
+		expect( mockSetPreviewFocalPoint ).toHaveBeenCalledWith( {
+			x: 0.6,
+			y: 0.4,
+		} );
+	} );
+
+	test( 'should call setPreviewFocalPoint(null) when toggle is turned off', async () => {
+		const user = userEvent.setup();
+		const propsWithPreview = {
+			...defaultProps,
+			previewFocalPoint: { x: 0.5, y: 0.5 },
+		};
+
+		render( <ResponsiveFocalControls { ...propsWithPreview } /> );
+
+		const toggle = screen.getByLabelText( 'Preview in Editor' );
+		await user.click( toggle );
+
+		expect( mockSetPreviewFocalPoint ).toHaveBeenCalledWith( null );
+	} );
+
+	test( 'should show active indicator for applicable focal point', () => {
+		// Mock the hook to return an applicable focal point
+		const { useApplicableFocalPoint } = require( '../../src/hooks/use-applicable-focal-point' );
+		useApplicableFocalPoint.mockReturnValue( {
+			mediaType: 'max-width',
+			breakpoint: 500,
+			x: 0.6,
+			y: 0.4,
+		} );
+
+		render( <ResponsiveFocalControls { ...defaultProps } /> );
+
+		// Only the first item (500px) should be active
+		const activeIndicators = screen.getAllByTestId( 'active-indicator' );
+		expect( activeIndicators ).toHaveLength( 1 );
+		expect( activeIndicators[ 0 ] ).toHaveTextContent( 'Active for current viewport' );
+	} );
+
+	test( 'should update preview only when editing the active focal point', async () => {
+		const user = userEvent.setup();
+
+		// Mock the hook to return the first focal point as applicable
+		const { useApplicableFocalPoint } = require( '../../src/hooks/use-applicable-focal-point' );
+		useApplicableFocalPoint.mockReturnValue( {
+			mediaType: 'max-width',
+			breakpoint: 500,
+			x: 0.6,
+			y: 0.4,
+		} );
+
+		// Mock findApplicableFocalPoint to return the same
+		const { findApplicableFocalPoint } = require( '../../src/hooks/use-applicable-focal-point' );
+		findApplicableFocalPoint.mockReturnValue( {
+			mediaType: 'max-width',
+			breakpoint: 500,
+			x: 0.3,
+			y: 0.7,
+		} );
+
+		const propsWithPreview = {
+			...defaultProps,
+			attributes: {
+				...defaultProps.attributes,
+				url: 'https://example.com/image.jpg',
+			} as CoverBlockAttributes,
+			previewFocalPoint: { x: 0.6, y: 0.4 },
+		};
+
+		render( <ResponsiveFocalControls { ...propsWithPreview } /> );
+
+		// Click the focal point change button for the first item (active)
+		const changeButtons = screen.getAllByTestId( 'focal-point-change' );
+		await user.click( changeButtons[ 0 ] );
+
+		// Should update preview
+		expect( mockSetPreviewFocalPoint ).toHaveBeenCalledWith( {
+			x: 0.3,
+			y: 0.7,
+		} );
+	} );
+
+	test( 'should not update preview when editing non-active focal point', async () => {
+		const user = userEvent.setup();
+
+		// Mock the hook to return the first focal point as applicable
+		const { useApplicableFocalPoint } = require( '../../src/hooks/use-applicable-focal-point' );
+		useApplicableFocalPoint.mockReturnValue( {
+			mediaType: 'max-width',
+			breakpoint: 500,
+			x: 0.6,
+			y: 0.4,
+		} );
+
+		// Mock findApplicableFocalPoint to still return the first one
+		const { findApplicableFocalPoint } = require( '../../src/hooks/use-applicable-focal-point' );
+		findApplicableFocalPoint.mockReturnValue( {
+			mediaType: 'max-width',
+			breakpoint: 500,
+			x: 0.6,
+			y: 0.4,
+		} );
+
+		const propsWithPreview = {
+			...defaultProps,
+			attributes: {
+				...defaultProps.attributes,
+				url: 'https://example.com/image.jpg',
+			} as CoverBlockAttributes,
+			previewFocalPoint: { x: 0.6, y: 0.4 },
+		};
+
+		render( <ResponsiveFocalControls { ...propsWithPreview } /> );
+
+		// Clear previous calls
+		mockSetPreviewFocalPoint.mockClear();
+
+		// Click the focal point change button for the second item (not active)
+		const changeButtons = screen.getAllByTestId( 'focal-point-change' );
+		await user.click( changeButtons[ 1 ] );
+
+		// Should NOT update preview since the second focal point is not active
+		expect( mockSetPreviewFocalPoint ).not.toHaveBeenCalled();
+	} );
+} );
+
 // TDD: UI改善のテスト（要件7対応）
 describe( 'ResponsiveFocalControls - UI Improvements (TDD)', () => {
 	const mockSetAttributes = jest.fn();
+	const mockSetPreviewFocalPoint = jest.fn();
 
 	const defaultProps = {
 		attributes: {
 			responsiveFocal: [],
 		} as CoverBlockAttributes,
 		setAttributes: mockSetAttributes,
+		previewFocalPoint: null,
+		setPreviewFocalPoint: mockSetPreviewFocalPoint,
 	};
 
 	const propsWithFocalPoint = {
@@ -933,6 +1264,7 @@ describe( 'ResponsiveFocalControls - UI Improvements (TDD)', () => {
 
 	beforeEach( () => {
 		mockSetAttributes.mockClear();
+		mockSetPreviewFocalPoint.mockClear();
 	} );
 
 	// RED: ToggleGroupControlの使用テスト（まず失敗させる）
@@ -1096,12 +1428,15 @@ describe( 'ResponsiveFocalControls - UI Improvements (TDD)', () => {
 // TDD: Experimental API代替実装のテスト（安全性対応）
 describe( 'ResponsiveFocalControls - Non-Experimental API Fallback (TDD)', () => {
 	const mockSetAttributes = jest.fn();
+	const mockSetPreviewFocalPoint = jest.fn();
 
 	const defaultProps = {
 		attributes: {
 			responsiveFocal: [],
 		} as CoverBlockAttributes,
 		setAttributes: mockSetAttributes,
+		previewFocalPoint: null,
+		setPreviewFocalPoint: mockSetPreviewFocalPoint,
 	};
 
 	const propsWithFocalPoint = {
@@ -1120,6 +1455,7 @@ describe( 'ResponsiveFocalControls - Non-Experimental API Fallback (TDD)', () =>
 
 	beforeEach( () => {
 		mockSetAttributes.mockClear();
+		mockSetPreviewFocalPoint.mockClear();
 	} );
 
 	// RED: experimental APIが利用できない場合の代替実装テスト
@@ -1217,6 +1553,8 @@ describe( 'ResponsiveFocalControls - Non-Experimental API Fallback (TDD)', () =>
 			const propsWithMissingAttrs = {
 				attributes: {} as CoverBlockAttributes,
 				setAttributes: mockSetAttributes,
+				previewFocalPoint: null,
+				setPreviewFocalPoint: mockSetPreviewFocalPoint,
 			};
 
 			// エラーが発生せずにレンダリングされることを確認
@@ -1232,6 +1570,7 @@ describe( 'ResponsiveFocalControls - Non-Experimental API Fallback (TDD)', () =>
 // TDD: UI改善のテスト
 describe( 'ResponsiveFocalControls - UI Improvements (TDD)', () => {
 	const mockSetAttributes = jest.fn();
+	const mockSetPreviewFocalPoint = jest.fn();
 
 	const propsWithFocalPoints = {
 		attributes: {
@@ -1251,10 +1590,13 @@ describe( 'ResponsiveFocalControls - UI Improvements (TDD)', () => {
 			],
 		} as CoverBlockAttributes,
 		setAttributes: mockSetAttributes,
+		previewFocalPoint: null,
+		setPreviewFocalPoint: mockSetPreviewFocalPoint,
 	};
 
 	beforeEach( () => {
 		mockSetAttributes.mockClear();
+		mockSetPreviewFocalPoint.mockClear();
 	} );
 
 	// RED: Add New Breakpointボタンの色テスト

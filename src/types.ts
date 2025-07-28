@@ -61,7 +61,10 @@ export interface CoverBlockAttributes {
 export type ResponsiveFocalControlsProps = Pick<
 	BlockEditProps< CoverBlockAttributes >,
 	'attributes' | 'setAttributes'
->;
+> & {
+	previewFocalPoint: { x: number; y: number } | null;
+	setPreviewFocalPoint: ( value: { x: number; y: number } | null ) => void;
+};
 
 /**
  * Media query configuration

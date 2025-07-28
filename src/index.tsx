@@ -13,6 +13,7 @@ interface ExtendedBlockEditProps<
 }
 import { createHigherOrderComponent } from '@wordpress/compose';
 import { InspectorControls } from '@wordpress/block-editor';
+import { useState } from '@wordpress/element';
 
 import { ResponsiveFocalControls } from './inspector-controls';
 import type { CoverBlockAttributes, WPSaveElement } from './types';
@@ -35,14 +36,42 @@ const withResponsiveFocalControls = createHigherOrderComponent(
 			}
 
 			const { attributes, setAttributes } = props;
+			
+			// Use local state for preview instead of block attribute
+			const [ previewFocalPoint, setPreviewFocalPoint ] = useState< { x: number; y: number } | null >( null );
+			
+
+			// Create modified props for preview
+			const createModifiedProps = () => {
+				if ( ! previewFocalPoint ) {
+					return props;
+				}
+				
+				const x = Math.round( previewFocalPoint.x * 100 );
+				const y = Math.round( previewFocalPoint.y * 100 );
+				const previewContentPosition = `${ x }% ${ y }%`;
+				
+				return {
+					...props,
+					attributes: {
+						...attributes,
+						focalPoint: { ...previewFocalPoint },
+						contentPosition: previewContentPosition
+					}
+				};
+			};
+			
+			const modifiedProps = createModifiedProps();
 
 			return (
 				<>
-					<BlockEdit { ...props } />
+					<BlockEdit { ...modifiedProps } />
 					<InspectorControls>
 						<ResponsiveFocalControls
 							attributes={ attributes }
 							setAttributes={ setAttributes }
+							previewFocalPoint={ previewFocalPoint }
+							setPreviewFocalPoint={ setPreviewFocalPoint }
 						/>
 					</InspectorControls>
 				</>

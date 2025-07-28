@@ -3,7 +3,7 @@
  */
 
 import { __ } from '@wordpress/i18n';
-import { PanelBody, Button } from '@wordpress/components';
+import { PanelBody, Button, ToggleControl } from '@wordpress/components';
 import { Fragment } from '@wordpress/element';
 import type {
 	ResponsiveFocalControlsProps,
@@ -13,6 +13,8 @@ import { DEFAULTS } from './constants';
 import { ResponsiveFocalItem } from './components/responsive-focal-item';
 import { isDevelopment } from './utils/environment';
 import { clampBreakpoint } from './utils/validation';
+import { useApplicableFocalPoint, findApplicableFocalPoint } from './hooks/use-applicable-focal-point';
+import { useEffectiveViewportWidth } from './hooks/use-device-type';
 
 /**
  * Responsive focal point settings UI
@@ -23,9 +25,12 @@ import { clampBreakpoint } from './utils/validation';
 export const ResponsiveFocalControls = (
 	props: ResponsiveFocalControlsProps
 ) => {
-	const { attributes, setAttributes } = props;
+	const { attributes, setAttributes, previewFocalPoint, setPreviewFocalPoint } = props;
 	const safeAttributes = attributes || {};
 	const { responsiveFocal = [] } = safeAttributes;
+	const previewEnabled = !!previewFocalPoint;
+	const applicableFocalPoint = useApplicableFocalPoint( responsiveFocal );
+	const viewportWidth = useEffectiveViewportWidth();
 
 	/**
 	 * Add new focal point row
@@ -63,6 +68,7 @@ export const ResponsiveFocalControls = (
 		index: number,
 		updates: Partial< ResponsiveFocalPoint >
 	) => {
+
 		// Safe handling of index and updates
 		if (
 			typeof index !== 'number' ||
@@ -124,6 +130,22 @@ export const ResponsiveFocalControls = (
 		const updatedFocals = [ ...responsiveFocal ];
 		updatedFocals[ index ] = { ...updatedFocals[ index ], ...safeUpdates };
 		setAttributes( { responsiveFocal: updatedFocals } );
+
+		// Update preview only if the edited focal point is the applicable one
+		if ( previewFocalPoint !== null ) {
+			const updatedApplicableFocal = findApplicableFocalPoint( updatedFocals, viewportWidth );
+			const editedFocal = updatedFocals[ index ];
+
+			// Only update preview if the edited focal point is the one that applies to current viewport
+			if ( updatedApplicableFocal && editedFocal &&
+				 updatedApplicableFocal.breakpoint === editedFocal.breakpoint &&
+				 updatedApplicableFocal.mediaType === editedFocal.mediaType ) {
+				const newX = editedFocal.x || 0.5;
+				const newY = editedFocal.y || 0.5;
+				const newPoint = JSON.parse( JSON.stringify( { x: newX, y: newY } ) );
+				setPreviewFocalPoint( newPoint );
+			}
+		}
 	};
 
 	return (
@@ -131,6 +153,42 @@ export const ResponsiveFocalControls = (
 			title={ __( 'Responsive Focal Points', 'cover-responsive-focal' ) }
 			initialOpen={ false }
 		>
+			<ToggleControl
+				label={ __( 'Preview in Editor', 'cover-responsive-focal' ) }
+				help={
+					previewEnabled
+						? __(
+								'Showing responsive focal point preview',
+								'cover-responsive-focal'
+						  )
+						: __(
+								'Preview disabled, showing core focal point',
+								'cover-responsive-focal'
+						  )
+				}
+				checked={ previewEnabled }
+				onChange={ ( value ) => {
+					if ( value && responsiveFocal.length > 0 ) {
+						// Set preview with applicable focal point or keep enabled with no changes
+						if ( applicableFocalPoint ) {
+							setPreviewFocalPoint( {
+								x: applicableFocalPoint.x || 0.5,
+								y: applicableFocalPoint.y || 0.5,
+							} );
+						} else {
+							// Keep preview enabled but with a placeholder value
+							// This allows the toggle to stay on even when no focal point matches
+							setPreviewFocalPoint( {
+								x: attributes.focalPoint?.x || 0.5,
+								y: attributes.focalPoint?.y || 0.5,
+							} );
+						}
+					} else {
+						// Disable preview
+						setPreviewFocalPoint( null );
+					}
+				} }
+			/>
 			{ responsiveFocal.length === 0 ? (
 				<p>
 					{ __(
@@ -141,18 +199,35 @@ export const ResponsiveFocalControls = (
 			) : (
 				<div>
 					{ responsiveFocal.map(
-						( focal: ResponsiveFocalPoint, index: number ) => (
-							<Fragment key={ index }>
-								<ResponsiveFocalItem
-									focal={ focal }
-									index={ index }
-									imageUrl={ safeAttributes.url }
-									onUpdate={ updateFocalPoint }
-									onRemove={ removeFocalPoint }
-								/>
-								<hr />
-							</Fragment>
-						)
+						( focal: ResponsiveFocalPoint, index: number ) => {
+							// Check if this focal point is active without using hooks in map
+							const isActive = applicableFocalPoint ?
+								applicableFocalPoint.breakpoint === focal.breakpoint &&
+								applicableFocalPoint.mediaType === focal.mediaType : false;
+
+							// Check for duplicate breakpoints
+							const duplicates = responsiveFocal.filter( ( f, i ) =>
+								i !== index &&
+								f.mediaType === focal.mediaType &&
+								f.breakpoint === focal.breakpoint
+							);
+							const isDuplicate = duplicates.length > 0;
+
+							return (
+								<Fragment key={ index }>
+									<ResponsiveFocalItem
+										focal={ focal }
+										index={ index }
+										imageUrl={ safeAttributes.url }
+										isActive={ isActive }
+										isDuplicate={ isDuplicate }
+										onUpdate={ updateFocalPoint }
+										onRemove={ removeFocalPoint }
+									/>
+									<hr />
+								</Fragment>
+							);
+						}
 					) }
 				</div>
 			) }

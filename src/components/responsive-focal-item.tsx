@@ -18,6 +18,7 @@ interface ResponsiveFocalItemProps {
 	focal: ResponsiveFocalPoint;
 	index: number;
 	imageUrl?: string;
+	isActive?: boolean;
 	onUpdate: (
 		index: number,
 		updates: Partial< ResponsiveFocalPoint >
@@ -30,7 +31,7 @@ interface ResponsiveFocalItemProps {
  * @param props Component props
  */
 export const ResponsiveFocalItem = ( props: ResponsiveFocalItemProps ) => {
-	const { focal, index, imageUrl, onUpdate, onRemove } = props;
+	const { focal, index, imageUrl, isActive, onUpdate, onRemove } = props;
 	// Safe handling of focal point data
 	const safeFocal = {
 		mediaType: focal?.mediaType || DEFAULTS.MEDIA_TYPE,
@@ -50,6 +51,23 @@ export const ResponsiveFocalItem = ( props: ResponsiveFocalItemProps ) => {
 
 	return (
 		<SafeStackLayout spacing={ 3 }>
+			{ isActive && (
+				<div
+					style={ {
+						padding: '8px',
+						backgroundColor: '#e0f2fe',
+						borderRadius: '4px',
+						marginBottom: '8px',
+						fontSize: '12px',
+						color: '#0369a1',
+					} }
+				>
+					{ __(
+						'Active for current viewport',
+						'cover-responsive-focal'
+					) }
+				</div>
+			) }
 			<SafeMediaTypeControl
 				label={ __( 'Media Query Type', 'cover-responsive-focal' ) }
 				value={ safeFocal.mediaType }

@@ -50,6 +50,7 @@ export interface CoverBlockAttributes {
 	// Plugin-specific attributes
 	responsiveFocal?: ResponsiveFocalPoint[];
 	dataFpId?: string;
+	responsiveFocalPreview?: FocalPoint | null;
 
 	// Allow any other core attributes
 	[ key: string ]: unknown;

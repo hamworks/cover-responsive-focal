@@ -3,8 +3,8 @@
  */
 
 import { __ } from '@wordpress/i18n';
-import { PanelBody, Button } from '@wordpress/components';
-import { Fragment } from '@wordpress/element';
+import { PanelBody, Button, ToggleControl } from '@wordpress/components';
+import { Fragment, useState } from '@wordpress/element';
 import type {
 	ResponsiveFocalControlsProps,
 	ResponsiveFocalPoint,
@@ -26,6 +26,7 @@ export const ResponsiveFocalControls = (
 	const { attributes, setAttributes } = props;
 	const safeAttributes = attributes || {};
 	const { responsiveFocal = [] } = safeAttributes;
+	const [ previewEnabled, setPreviewEnabled ] = useState( false );
 
 	/**
 	 * Add new focal point row
@@ -124,6 +125,54 @@ export const ResponsiveFocalControls = (
 		const updatedFocals = [ ...responsiveFocal ];
 		updatedFocals[ index ] = { ...updatedFocals[ index ], ...safeUpdates };
 		setAttributes( { responsiveFocal: updatedFocals } );
+
+		// If preview is enabled and focal point changes, check if this breakpoint applies
+		if ( previewEnabled && ( 'x' in safeUpdates || 'y' in safeUpdates ) ) {
+			const updatedFocal = updatedFocals[ index ];
+			const viewportWidth = window.innerWidth;
+
+			// Check if this focal point applies to current viewport
+			let shouldUpdatePreview = false;
+
+			// Sort all focal points by breakpoint descending
+			const sortedFocals = [ ...updatedFocals ].sort(
+				( a, b ) => ( b.breakpoint || 0 ) - ( a.breakpoint || 0 )
+			);
+
+			// Find which focal point should apply to current viewport
+			for ( const focal of sortedFocals ) {
+				const focalBreakpoint = focal.breakpoint || 0;
+				const focalMediaType = focal.mediaType || 'max-width';
+
+				if (
+					focalMediaType === 'max-width' &&
+					viewportWidth <= focalBreakpoint
+				) {
+					// This is the focal point that should apply
+					shouldUpdatePreview = focal === updatedFocal;
+					break;
+				} else if (
+					focalMediaType === 'min-width' &&
+					viewportWidth >= focalBreakpoint
+				) {
+					// This is the focal point that should apply
+					shouldUpdatePreview = focal === updatedFocal;
+					break;
+				}
+			}
+
+			// Only update preview if this focal point applies to current viewport
+			if ( shouldUpdatePreview ) {
+				const tempFocalPoint = {
+					x: updatedFocal.x || 0.5,
+					y: updatedFocal.y || 0.5,
+				};
+				// Trigger re-render by updating a temporary attribute
+				setAttributes( {
+					responsiveFocalPreview: tempFocalPoint,
+				} );
+			}
+		}
 	};
 
 	return (
@@ -131,6 +180,68 @@ export const ResponsiveFocalControls = (
 			title={ __( 'Responsive Focal Points', 'cover-responsive-focal' ) }
 			initialOpen={ false }
 		>
+			<ToggleControl
+				label={ __( 'Preview in Editor', 'cover-responsive-focal' ) }
+				help={
+					previewEnabled
+						? __(
+								'Showing responsive focal point preview',
+								'cover-responsive-focal'
+						  )
+						: __(
+								'Preview disabled, showing core focal point',
+								'cover-responsive-focal'
+						  )
+				}
+				checked={ previewEnabled }
+				onChange={ ( value ) => {
+					setPreviewEnabled( value );
+					if ( value && responsiveFocal.length > 0 ) {
+						// Find the focal point that applies to current viewport
+						const viewportWidth = window.innerWidth;
+
+						// Sort by breakpoint descending
+						const sortedFocals = [ ...responsiveFocal ].sort(
+							( a, b ) =>
+								( b.breakpoint || 0 ) - ( a.breakpoint || 0 )
+						);
+
+						let applicableFocal = null;
+						for ( const focal of sortedFocals ) {
+							const breakpoint = focal.breakpoint || 0;
+							const mediaType = focal.mediaType || 'max-width';
+
+							if (
+								mediaType === 'max-width' &&
+								viewportWidth <= breakpoint
+							) {
+								applicableFocal = focal;
+								break;
+							} else if (
+								mediaType === 'min-width' &&
+								viewportWidth >= breakpoint
+							) {
+								applicableFocal = focal;
+								break;
+							}
+						}
+
+						// Use applicable focal point or fall back to first one
+						const previewFocal =
+							applicableFocal || sortedFocals[ 0 ];
+						
+						setAttributes( {
+							responsiveFocalPreview: {
+								x: previewFocal.x || 0.5,
+								y: previewFocal.y || 0.5,
+							},
+						} );
+					} else {
+						// Disable preview
+						setAttributes( { responsiveFocalPreview: null } );
+					}
+				} }
+			/>
 			{ responsiveFocal.length === 0 ? (
 				<p>
 					{ __(
@@ -141,18 +252,53 @@ export const ResponsiveFocalControls = (
 			) : (
 				<div>
 					{ responsiveFocal.map(
-						( focal: ResponsiveFocalPoint, index: number ) => (
-							<Fragment key={ index }>
-								<ResponsiveFocalItem
-									focal={ focal }
-									index={ index }
-									imageUrl={ safeAttributes.url }
-									onUpdate={ updateFocalPoint }
-									onRemove={ removeFocalPoint }
-								/>
-								<hr />
-							</Fragment>
-						)
+						( focal: ResponsiveFocalPoint, index: number ) => {
+							// Check if this focal point is active for current viewport
+							const viewportWidth = window.innerWidth;
+							let isActive = false;
+
+							// Sort all focal points by breakpoint descending
+							const sortedFocals = [ ...responsiveFocal ].sort(
+								( a, b ) =>
+									( b.breakpoint || 0 ) -
+									( a.breakpoint || 0 )
+							);
+
+							// Find which focal point should apply to current viewport
+							for ( const sortedFocal of sortedFocals ) {
+								const breakpoint = sortedFocal.breakpoint || 0;
+								const mediaType =
+									sortedFocal.mediaType || 'max-width';
+
+								if (
+									mediaType === 'max-width' &&
+									viewportWidth <= breakpoint
+								) {
+									isActive = sortedFocal === focal;
+									break;
+								} else if (
+									mediaType === 'min-width' &&
+									viewportWidth >= breakpoint
+								) {
+									isActive = sortedFocal === focal;
+									break;
+								}
+							}
+
+							return (
+								<Fragment key={ index }>
+									<ResponsiveFocalItem
+										focal={ focal }
+										index={ index }
+										imageUrl={ safeAttributes.url }
+										isActive={ isActive }
+										onUpdate={ updateFocalPoint }
+										onRemove={ removeFocalPoint }
+									/>
+									<hr />
+								</Fragment>
+							);
+						}
 					) }
 				</div>
 			) }

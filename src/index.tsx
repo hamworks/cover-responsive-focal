@@ -35,10 +35,30 @@ const withResponsiveFocalControls = createHigherOrderComponent(
 			}
 
 			const { attributes, setAttributes } = props;
+			const { responsiveFocalPreview } = attributes;
+
+			// Pass original props to maintain core functionality
+
+			// Modify props only if preview is enabled
+			let modifiedProps = props;
+			if ( responsiveFocalPreview ) {
+				const x = Math.round( ( responsiveFocalPreview.x || 0.5 ) * 100 );
+				const y = Math.round( ( responsiveFocalPreview.y || 0.5 ) * 100 );
+				const previewContentPosition = `${ x }% ${ y }%`;
+				
+				modifiedProps = {
+					...props,
+					attributes: {
+						...attributes,
+						focalPoint: responsiveFocalPreview,
+						contentPosition: previewContentPosition
+					}
+				};
+			}
 
 			return (
 				<>
-					<BlockEdit { ...props } />
+					<BlockEdit { ...modifiedProps } />
 					<InspectorControls>
 						<ResponsiveFocalControls
 							attributes={ attributes }

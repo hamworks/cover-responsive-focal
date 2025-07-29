@@ -28,7 +28,7 @@ export const ResponsiveFocalControls = (
 		setPreviewFocalPoint,
 	} = props;
 	const safeAttributes = attributes || {};
-	const { responsiveFocal = [], url } = safeAttributes;
+	const { responsiveFocal = [] } = safeAttributes;
 	const previewEnabled = !! previewFocalPoint;
 
 	// Device-specific state management
@@ -115,6 +115,9 @@ export const ResponsiveFocalControls = (
 			setTabletEnabled( enabled );
 		}
 	};
+
+	// Extract URL only when needed for DeviceFocalPointControl components
+	const { url } = safeAttributes;
 
 	return (
 		<PanelBody

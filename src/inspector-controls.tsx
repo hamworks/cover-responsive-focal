@@ -3,8 +3,8 @@
  */
 
 import { __ } from '@wordpress/i18n';
-import { PanelBody, PanelRow, ToggleControl } from '@wordpress/components';
-import { useState } from '@wordpress/element';
+import { PanelBody, ToggleControl, Notice } from '@wordpress/components';
+import { useState, useEffect } from '@wordpress/element';
 import type {
 	ResponsiveFocalControlsProps,
 	ResponsiveFocalPoint,
@@ -46,6 +46,12 @@ export const ResponsiveFocalControls = (
 	const tabletFocalPoint = responsiveFocal.find(
 		( fp ) => fp.device === 'tablet'
 	);
+
+	// Sync local state with responsiveFocal array changes
+	useEffect( () => {
+		setMobileEnabled( !! mobileFocalPoint );
+		setTabletEnabled( !! tabletFocalPoint );
+	}, [ mobileFocalPoint, tabletFocalPoint ] );
 
 	/**
 	 * Update focal point for specific device
@@ -108,12 +114,7 @@ export const ResponsiveFocalControls = (
 			removeDeviceFocalPoint( device );
 		}
 
-		// Update local state
-		if ( device === 'mobile' ) {
-			setMobileEnabled( enabled );
-		} else {
-			setTabletEnabled( enabled );
-		}
+		// Note: Local state will be updated automatically via useEffect
 	};
 
 	// Extract URL only when needed for DeviceFocalPointControl components
@@ -186,19 +187,12 @@ export const ResponsiveFocalControls = (
 			/>
 
 			{ ! mobileEnabled && ! tabletEnabled && (
-				<PanelRow>
-					<p
-						style={ {
-							fontStyle: 'italic',
-							color: '#666',
-						} }
-					>
-						{ __(
-							'No responsive focal points enabled. Using default focal point for all devices.',
-							'cover-responsive-focal'
-						) }
-					</p>
-				</PanelRow>
+				<Notice status="info" isDismissible={ false }>
+					{ __(
+						'No responsive focal points enabled. Using default focal point for all devices.',
+						'cover-responsive-focal'
+					) }
+				</Notice>
 			) }
 		</PanelBody>
 	);

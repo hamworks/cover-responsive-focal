@@ -11,12 +11,13 @@ import type {
 } from './types';
 import { DEFAULTS } from './constants';
 // Note: ResponsiveFocalItem will be replaced with new device-based UI components
-import { isDevelopment } from './utils/environment';
-import {
-	useApplicableFocalPoint,
-	findApplicableFocalPoint,
-} from './hooks/use-applicable-focal-point';
-import { useEffectiveViewportWidth } from './hooks/use-device-type';
+// TODO: Task 4.2 - These imports will be needed for new device-based UI
+// import { isDevelopment } from './utils/environment';
+// import {
+// 	useApplicableFocalPoint,
+// 	findApplicableFocalPoint,
+// } from './hooks/use-applicable-focal-point';
+// import { useEffectiveViewportWidth } from './hooks/use-device-type';
 
 /**
  * Responsive focal point settings UI
@@ -36,8 +37,10 @@ export const ResponsiveFocalControls = (
 	const safeAttributes = attributes || {};
 	const { responsiveFocal = [] } = safeAttributes;
 	const previewEnabled = !! previewFocalPoint;
-	const applicableFocalPoint = useApplicableFocalPoint( responsiveFocal );
-	const viewportWidth = useEffectiveViewportWidth();
+
+	// TODO: Task 4.2 - These hooks will be needed for new device-based UI
+	// const applicableFocalPoint = useApplicableFocalPoint( responsiveFocal );
+	// const viewportWidth = useEffectiveViewportWidth();
 
 	/**
 	 * Add new focal point row
@@ -54,11 +57,11 @@ export const ResponsiveFocalControls = (
 		} );
 	};
 
-	/**
-	 * Remove focal point row (temporarily unused)
-	 * @param index Index to remove
-	 */
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	// TODO: Task 4.2 - Implement device-based UI components
+	// TODO: Task 4.3 - Device state management
+	// The following functions will be needed when implementing new device-based UI
+
+	/*
 	const removeFocalPoint = ( index: number ) => {
 		const updatedFocals = responsiveFocal.filter(
 			( _: ResponsiveFocalPoint, i: number ) => i !== index
@@ -66,12 +69,6 @@ export const ResponsiveFocalControls = (
 		setAttributes( { responsiveFocal: updatedFocals } );
 	};
 
-	/**
-	 * Update focal point row (temporarily unused)
-	 * @param index   Index to update
-	 * @param updates Partial updates to apply
-	 */
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const updateFocalPoint = (
 		index: number,
 		updates: Partial< ResponsiveFocalPoint >
@@ -83,7 +80,6 @@ export const ResponsiveFocalControls = (
 			index >= responsiveFocal.length
 		) {
 			if ( isDevelopment() ) {
-				// eslint-disable-next-line no-console
 				console.warn( 'Invalid index for updateFocalPoint:', index );
 			}
 			return;
@@ -91,7 +87,6 @@ export const ResponsiveFocalControls = (
 
 		if ( ! updates || typeof updates !== 'object' ) {
 			if ( isDevelopment() ) {
-				// eslint-disable-next-line no-console
 				console.warn(
 					'Invalid updates for updateFocalPoint:',
 					updates
@@ -151,6 +146,7 @@ export const ResponsiveFocalControls = (
 			}
 		}
 	};
+	*/
 
 	return (
 		<PanelBody
@@ -172,21 +168,13 @@ export const ResponsiveFocalControls = (
 				}
 				checked={ previewEnabled }
 				onChange={ ( value ) => {
+					// TODO: Task 4.2 - Implement preview logic for device-based UI
 					if ( value && responsiveFocal.length > 0 ) {
-						// Set preview with applicable focal point or keep enabled with no changes
-						if ( applicableFocalPoint ) {
-							setPreviewFocalPoint( {
-								x: applicableFocalPoint.x || 0.5,
-								y: applicableFocalPoint.y || 0.5,
-							} );
-						} else {
-							// Keep preview enabled but with a placeholder value
-							// This allows the toggle to stay on even when no focal point matches
-							setPreviewFocalPoint( {
-								x: attributes.focalPoint?.x || 0.5,
-								y: attributes.focalPoint?.y || 0.5,
-							} );
-						}
+						// Temporary fallback - use core focal point
+						setPreviewFocalPoint( {
+							x: attributes.focalPoint?.x || 0.5,
+							y: attributes.focalPoint?.y || 0.5,
+						} );
 					} else {
 						// Disable preview
 						setPreviewFocalPoint( null );
@@ -204,20 +192,18 @@ export const ResponsiveFocalControls = (
 				<div>
 					{ responsiveFocal.map(
 						( focal: ResponsiveFocalPoint, index: number ) => {
-							// Check if this focal point is active without using hooks in map
-							// eslint-disable-next-line @typescript-eslint/no-unused-vars
+							// TODO: Task 4.2 - Use these variables when implementing new device-based UI
+							/*
 							const isActive = applicableFocalPoint
 								? applicableFocalPoint.device === focal.device
 								: false;
 
-							// Check for duplicate devices
-							// eslint-disable-next-line @typescript-eslint/no-unused-vars
 							const duplicates = responsiveFocal.filter(
 								( f, i ) =>
 									i !== index && f.device === focal.device
 							);
-							// eslint-disable-next-line @typescript-eslint/no-unused-vars
 							const isDuplicate = duplicates.length > 0;
+							*/
 
 							return (
 								<Fragment key={ index }>

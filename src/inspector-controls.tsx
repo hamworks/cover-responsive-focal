@@ -3,7 +3,7 @@
  */
 
 import { __ } from '@wordpress/i18n';
-import { PanelBody, ToggleControl, Notice } from '@wordpress/components';
+import { PanelBody, Notice } from '@wordpress/components';
 import type { ResponsiveFocalControlsProps } from './types';
 import { DEVICE_BREAKPOINTS } from './constants';
 import { DeviceFocalPointControl } from './components/device-focal-point-control';
@@ -18,15 +18,9 @@ import { useDeviceStateManagement } from './hooks/use-device-state-management';
 export const ResponsiveFocalControls = (
 	props: ResponsiveFocalControlsProps
 ) => {
-	const {
-		attributes,
-		setAttributes,
-		previewFocalPoint,
-		setPreviewFocalPoint,
-	} = props;
+	const { attributes, setAttributes } = props;
 	const safeAttributes = attributes || {};
 	const { responsiveFocal = [] } = safeAttributes;
-	const previewEnabled = !! previewFocalPoint;
 
 	// Device state management using custom hook
 	const {
@@ -46,36 +40,8 @@ export const ResponsiveFocalControls = (
 		<PanelBody
 			title={ __( 'Responsive Focal Points', 'cover-responsive-focal' ) }
 			initialOpen={ false }
+			opened={ true }
 		>
-			<ToggleControl
-				label={ __( 'Preview in Editor', 'cover-responsive-focal' ) }
-				help={
-					previewEnabled
-						? __(
-								'Showing responsive focal point preview',
-								'cover-responsive-focal'
-						  )
-						: __(
-								'Preview disabled, showing core focal point',
-								'cover-responsive-focal'
-						  )
-				}
-				checked={ previewEnabled }
-				onChange={ ( value ) => {
-					if ( value && responsiveFocal.length > 0 ) {
-						// Use first available responsive focal point as preview
-						const firstFocal = responsiveFocal[ 0 ];
-						setPreviewFocalPoint( {
-							x: firstFocal.x,
-							y: firstFocal.y,
-						} );
-					} else {
-						// Disable preview
-						setPreviewFocalPoint( null );
-					}
-				} }
-			/>
-
 			{ /* Mobile Focal Point Settings */ }
 			<DeviceFocalPointControl
 				device="mobile"

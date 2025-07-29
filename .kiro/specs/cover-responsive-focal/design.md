@@ -32,7 +32,28 @@ cover-responsive-focal/
 │   ├── inspector-controls.tsx # レスポンシブフォーカル設定UI
 │   ├── types.ts               # TypeScript型定義
 │   ├── constants.ts           # 定数定義
-│   └── editor.scss            # エディタ用スタイル
+│   ├── editor.scss            # エディタ用スタイル
+│   ├── hooks/                 # カスタムフック
+│   │   ├── use-device-type.ts           # WordPressエディターデバイス判定
+│   │   └── use-device-state-management.ts  # デバイス状態管理
+│   ├── components/            # UIコンポーネント
+│   │   ├── device-focal-point-control.tsx  # デバイス別フォーカルポイント設定UI
+│   │   └── safe-stack-layout.tsx           # 安全なレイアウトコンポーネント
+│   ├── utils/                 # ユーティリティ関数
+│   │   ├── css-generator.ts   # CSS生成ユーティリティ
+│   │   ├── editor-styles.ts   # エディター用スタイル生成
+│   │   ├── environment.ts     # 環境判定ユーティリティ
+│   │   └── index.ts           # ユーティリティエクスポート
+│   └── validation/            # バリデーション関数
+│       ├── factory.ts         # バリデーション関数ファクトリー
+│       ├── media-query.ts     # メディアクエリ検証
+│       └── validators.ts      # 基本バリデーター
+├── tests/                     # テストファイル
+│   └── __tests__/
+│       ├── css-generator.test.ts        # CSS生成テスト
+│       ├── editor-styles.test.ts        # エディタースタイルテスト
+│       ├── validation.test.ts           # バリデーションテスト
+│       └── use-device-state-management.test.ts  # 状態管理テスト
 ├── cover-responsive-focal.php # プラグインメインファイル
 ├── package.json               # npm設定
 └── readme.txt                 # WordPress.org用README
@@ -92,7 +113,97 @@ addFilter(
 );
 ```
 
-### 2. インスペクターコントロールUI
+### 2. ユーティリティ関数群
+
+#### CSS生成ユーティリティ (`src/utils/css-generator.ts`)
+```typescript
+// CSS object-position値の生成
+export const generateObjectPosition = (x: number, y: number): string => {
+  const xPercent = Math.round(x * 100);
+  const yPercent = Math.round(y * 100);
+  return `${xPercent}% ${yPercent}%`;
+};
+
+// CSS セレクター生成
+export const generateFocalPointSelector = (fpId: string): string => {
+  return `[data-fp-id="${fpId}"] .wp-block-cover__image-background, [data-fp-id="${fpId}"] .wp-block-cover__video-background`;
+};
+
+// 完全なレスポンシブCSS生成
+export const generateResponsiveFocalCSS = (
+  responsiveFocalPoints: ResponsiveFocalPoint[],
+  fpId: string
+): string => {
+  // メディアクエリとobject-positionを組み合わせたCSS生成
+  // 例: @media (max-width: 600px) { [data-fp-id="crf-123"] .wp-block-cover__image-background { object-position: 60% 40% !important; } }
+};
+
+// バリデーション機能
+export const validateResponsiveFocalPoint = (focal: ResponsiveFocalPoint): boolean;
+export const sanitizeResponsiveFocalPoints = (points: ResponsiveFocalPoint[]): ResponsiveFocalPoint[];
+```
+
+#### エディタースタイル生成 (`src/utils/editor-styles.ts`)
+```typescript
+// デバイスタイプに応じたフォーカルポイント取得
+export const getFocalPointForDevice = (
+  responsiveFocal: ResponsiveFocalPoint[],
+  deviceType: string // 'Desktop' | 'Tablet' | 'Mobile'
+): FocalPointCSS | null => {
+  // WordPress エディターのデバイスタイプを internal device type にマップ
+  const deviceMapping = {
+    'Mobile': 'mobile',
+    'Tablet': 'tablet',
+    'Desktop': null // デスクトップは常にコアのfocalPointを使用
+  };
+};
+
+// エディタープレビュー用CSS生成
+export const generateEditorPreviewCSS = (
+  responsiveFocal: ResponsiveFocalPoint[],
+  deviceType: string,
+  blockId: string
+): string | null => {
+  // ブロック固有のCSS生成（エディター内での一時的プレビュー用）
+  // 例: [data-block="client-id"] .wp-block-cover__image-background { object-position: 60% 40% !important; }
+};
+
+// レスポンシブフォーカル適用判定
+export const shouldApplyResponsiveFocal = (
+  responsiveFocal: ResponsiveFocalPoint[],
+  deviceType: string
+): boolean;
+```
+
+#### デバイス判定フック (`src/hooks/use-device-type.ts`)
+```typescript
+// WordPressエディターのデバイスプレビューモード取得
+export const useDeviceType = (): string => {
+  return useSelect((select) => {
+    // WordPress 6.x以降の新しいセレクター
+    const editor = select('core/editor');
+    if (editor?.getDeviceType) {
+      return editor.getDeviceType();
+    }
+    
+    // フォールバック（古いバージョン対応）
+    const editPost = select('core/edit-post');
+    if (editPost?.__experimentalGetPreviewDeviceType) {
+      return editPost.__experimentalGetPreviewDeviceType();
+    }
+    
+    return 'Desktop'; // デフォルト値
+  }, []);
+};
+
+// 実効ビューポート幅の取得
+export const useEffectiveViewportWidth = (): number => {
+  // デバイスタイプに応じた仮想ビューポート幅を返す
+  // Mobile: 360px, Tablet: 768px, Desktop: 実際のwindow.innerWidth
+};
+```
+
+### 3. インスペクターコントロールUI
 
 #### コンポーネント構成
 ```typescript
@@ -337,38 +448,145 @@ t-wadaのTDD（テスト駆動開発）に準拠し、以下のRed-Green-Refacto
 
 #### JavaScript/TypeScript テスト（テストファースト）
 
+##### CSS生成ユーティリティテスト (`tests/__tests__/css-generator.test.ts`)
 ```typescript
-// src/__tests__/validation.test.ts
-// RED: まず失敗するテストを書く
+describe('CSS Generator', () => {
+  describe('generateObjectPosition', () => {
+    test('generates correct percentage values', () => {
+      expect(generateObjectPosition(0.5, 0.5)).toBe('50% 50%');
+      expect(generateObjectPosition(0, 0)).toBe('0% 0%');
+      expect(generateObjectPosition(1, 1)).toBe('100% 100%');
+    });
+    
+    test('rounds decimal values correctly', () => {
+      expect(generateObjectPosition(0.335, 0.666)).toBe('34% 67%');
+    });
+  });
+
+  describe('generateResponsiveFocalCSS', () => {
+    test('generates CSS for multiple focal points', () => {
+      const focals: ResponsiveFocalPoint[] = [
+        { device: 'mobile', x: 0.6, y: 0.4 },
+        { device: 'tablet', x: 0.3, y: 0.7 },
+      ];
+      
+      const result = generateResponsiveFocalCSS(focals, 'multi-test');
+      expect(result).toContain('@media (max-width: 600px)');
+      expect(result).toContain('@media (min-width: 601px) and (max-width: 1024px)');
+      expect(result).toContain('object-position: 60% 40% !important');
+      expect(result).toContain('object-position: 30% 70% !important');
+    });
+  });
+
+  describe('validateResponsiveFocalPoint', () => {
+    test('validates correct focal point', () => {
+      const focal: ResponsiveFocalPoint = {
+        device: 'mobile',
+        x: 0.5,
+        y: 0.5,
+      };
+      expect(validateResponsiveFocalPoint(focal)).toBe(true);
+    });
+
+    test('rejects invalid device type', () => {
+      const focal = {
+        device: 'invalid' as 'mobile',
+        x: 0.5,
+        y: 0.5,
+      };
+      expect(validateResponsiveFocalPoint(focal)).toBe(false);
+    });
+
+    test('rejects out-of-range coordinates', () => {
+      const focal = {
+        device: 'mobile' as const,
+        x: -0.1,
+        y: 0.5,
+      };
+      expect(validateResponsiveFocalPoint(focal)).toBe(false);
+    });
+  });
+});
+```
+
+##### エディタースタイルテスト (`tests/__tests__/editor-styles.test.ts`)
+```typescript
+describe('Editor Styles', () => {
+  const mockResponsiveFocal: ResponsiveFocalPoint[] = [
+    { device: 'mobile', x: 0.6, y: 0.4 },
+    { device: 'tablet', x: 0.3, y: 0.7 },
+  ];
+
+  describe('getFocalPointForDevice', () => {
+    test('returns correct focal point for mobile device', () => {
+      const result = getFocalPointForDevice(mockResponsiveFocal, 'Mobile');
+      expect(result).toEqual({ x: 0.6, y: 0.4 });
+    });
+
+    test('returns null for desktop device', () => {
+      const result = getFocalPointForDevice(mockResponsiveFocal, 'Desktop');
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('generateEditorPreviewCSS', () => {
+    test('generates CSS for mobile device', () => {
+      const result = generateEditorPreviewCSS(
+        mockResponsiveFocal,
+        'Mobile',
+        'test-block-id'
+      );
+
+      expect(result).toContain('[data-block="test-block-id"]');
+      expect(result).toContain('.wp-block-cover__image-background');
+      expect(result).toContain('object-position: 60% 40% !important');
+    });
+
+    test('returns null for desktop device', () => {
+      const result = generateEditorPreviewCSS(
+        mockResponsiveFocal,
+        'Desktop',
+        'desktop-block-id'
+      );
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('shouldApplyResponsiveFocal', () => {
+    test('returns true when responsive focal should be applied for mobile', () => {
+      const result = shouldApplyResponsiveFocal(mockResponsiveFocal, 'Mobile');
+      expect(result).toBe(true);
+    });
+
+    test('returns false for desktop device', () => {
+      const result = shouldApplyResponsiveFocal(mockResponsiveFocal, 'Desktop');
+      expect(result).toBe(false);
+    });
+  });
+});
+```
+
+##### 既存バリデーションテスト（継続）
+```typescript
+// tests/__tests__/validation.test.ts
 describe('フォーカルポイント検証（TDD）', () => {
-  // テストファースト：実装前にテストを書く
   describe('validateFocalPoint関数', () => {
     test('0.5, 0.5は有効なフォーカルポイント', () => {
-      // まだ実装されていない関数をテスト（RED）
       expect(validateFocalPoint(0.5, 0.5)).toBe(true);
     });
 
-    test('0, 0は有効なフォーカルポイント（境界値）', () => {
+    test('境界値テスト', () => {
       expect(validateFocalPoint(0, 0)).toBe(true);
-    });
-
-    test('1, 1は有効なフォーカルポイント（境界値）', () => {
       expect(validateFocalPoint(1, 1)).toBe(true);
     });
 
-    test('-0.1, 0.5は無効（範囲外）', () => {
+    test('範囲外値の拒否', () => {
       expect(validateFocalPoint(-0.1, 0.5)).toBe(false);
-    });
-
-    test('0.5, 1.1は無効（範囲外）', () => {
       expect(validateFocalPoint(0.5, 1.1)).toBe(false);
     });
 
-    test('NaN, 0.5は無効（型不正）', () => {
+    test('不正な型の拒否', () => {
       expect(validateFocalPoint(NaN, 0.5)).toBe(false);
-    });
-
-    test('undefined, 0.5は無効（型不正）', () => {
       expect(validateFocalPoint(undefined, 0.5)).toBe(false);
     });
   });
@@ -999,54 +1217,123 @@ module.exports = {
 
 ## エディタープレビュー機能
 
-### プレビュートグルボタンの設計理由
+### リアルタイムプレビューシステム
 
-#### 技術的制約
-WordPressのCoverブロックのエディター表示は、コアの実装により以下の制約があります：
+#### 設計方針
+WordPressエディターのデバイスプレビューモードと連動したリアルタイムプレビューシステムを実装しています：
 
-1. **直接的なCSS操作の不可**
-   - BlockEditコンポーネントの内部実装は変更できない
-   - コアが動的に生成するCSSを外部から操作することは困難
+1. **WordPressエディターとの統合**
+   - エディター標準のデバイスプレビューボタン（Desktop/Tablet/Mobile）と完全連動
+   - `useDeviceType()` フックでリアルタイムにデバイス状態を監視
+   - ユーザーが慣れ親しんだWordPress UIを活用
 
-2. **属性値の上書きによるプレビュー実現**
-   - エディター上でレスポンシブフォーカルポイントをプレビューするには、`attributes.focalPoint`と`attributes.contentPosition`を一時的に上書きする必要がある
-   - これは現在の技術的制約の中で最も現実的なアプローチ
+2. **!important CSS による上書き方式**
+   - コアのスタイルを変更せず、外部CSSで上書き
+   - `object-position: X% Y% !important` でコアスタイルより高い優先度を確保
+   - エディター内に動的にstyle要素を注入・削除
 
-#### トグルボタンの必要性
+#### 技術実装詳細
 
-1. **元の設定値の確認**
-   - プレビューをオフにすることで、コアのフォーカルポイント設定（デフォルト値）を確認できる
-   - ユーザーが設定した元の値と、レスポンシブ設定の違いを比較できる
-
-2. **デバッグとトラブルシューティング**
-   - 問題が発生した場合、プレビューをオフにして原因を特定できる
-   - レスポンシブ設定が意図通りに動作しているか確認できる
-
-3. **ユーザーコントロール**
-   - ユーザーが自分でプレビューのオン/オフを選択できる
-   - 編集作業中に必要に応じて切り替えられる柔軟性を提供
-
-4. **パフォーマンスへの配慮**
-   - 大量のブレークポイントを設定した場合、常時プレビューだとパフォーマンスに影響する可能性
-   - 必要な時だけプレビューを有効にすることで、エディターの動作を軽快に保つ
-
-#### 実装詳細
+##### デバイス判定とCSS生成
 ```typescript
-// プレビュー状態の管理
-const [ previewFocalPoint, setPreviewFocalPoint ] = useState< { x: number; y: number } | null >( null );
+// デバイスタイプの監視
+const deviceType = useDeviceType(); // 'Desktop' | 'Tablet' | 'Mobile'
 
-// プレビューが有効な場合のみpropsを上書き
-const modifiedProps = previewFocalPoint ? {
-    ...props,
-    attributes: {
-        ...attributes,
-        focalPoint: { ...previewFocalPoint },
-        contentPosition: previewContentPosition
+// CSS生成とDOM注入
+useEffect(() => {
+    const css = generateEditorPreviewCSS(
+        responsiveFocal,
+        deviceType,
+        clientId
+    );
+    
+    if (css) {
+        const styleElement = document.createElement('style');
+        styleElement.id = `crf-preview-${clientId}`;
+        styleElement.textContent = css;
+        document.head.appendChild(styleElement);
     }
-} : props;
+    
+    // クリーンアップ
+    return () => {
+        const element = document.getElementById(`crf-preview-${clientId}`);
+        if (element) element.remove();
+    };
+}, [responsiveFocal, deviceType, clientId]);
 ```
 
-この設計により、技術的制約の中で最良のユーザー体験を提供しています。
+##### CSS生成ロジック
+```typescript
+// エディター用CSS生成
+export const generateEditorPreviewCSS = (
+    responsiveFocal: ResponsiveFocalPoint[],
+    deviceType: string,
+    blockId: string
+): string | null => {
+    // デバイスタイプに応じたフォーカルポイント取得
+    const focalPoint = getFocalPointForDevice(responsiveFocal, deviceType);
+    
+    if (!focalPoint) return null;
+    
+    const objectPosition = generateObjectPosition(focalPoint);
+    
+    // ブロック固有のCSS生成
+    return `
+        [data-block="${blockId}"] .wp-block-cover__image-background,
+        [data-block="${blockId}"] .wp-block-cover__video-background {
+            object-position: ${objectPosition} !important;
+        }
+    `;
+};
+```
+
+#### プレビュー動作仕様
+
+1. **デバイス切り替え時の動作**
+   - **Desktop選択時**: レスポンシブフォーカルは無効、コアのfocalPointを表示
+   - **Tablet選択時**: タブレット用フォーカルポイントが設定されていれば適用
+   - **Mobile選択時**: モバイル用フォーカルポイントが設定されていれば適用
+
+2. **視覚的インジケーター**
+   ```typescript
+   // レスポンシブフォーカルが有効な場合の表示
+   {isResponsiveFocalActive && (
+       <div style={{
+           position: 'absolute',
+           top: '8px',
+           right: '8px',
+           backgroundColor: 'rgba(0, 0, 0, 0.7)',
+           color: 'white',
+           padding: '4px 8px',
+           borderRadius: '4px',
+           fontSize: '12px'
+       }}>
+           Responsive Focal: {deviceType}
+       </div>
+   )}
+   ```
+
+3. **パフォーマンス最適化**
+   - ブロック単位でのstyle要素管理（コンポーネントアンマウント時に自動削除）
+   - デバイスタイプとフォーカルポイント変更時のみCSS再生成
+   - 不要なレンダリングを防ぐためのメモ化
+
+#### ユーザー体験の向上
+
+1. **直感的な操作**
+   - 既存のWordPressエディターUIを活用
+   - 追加の学習コストなし
+   - リアルタイムでの即座な反映
+
+2. **明確な状態表示**
+   - 現在適用中のデバイスタイプを視覚的に表示
+   - レスポンシブフォーカル有効/無効の明確な区別
+
+3. **エラー耐性**
+   - 不正なフォーカルポイント値の場合は自動的にフォールバック
+   - クライアントIDが取得できない場合の安全な処理
+
+この設計により、ユーザーはWordPressの標準的な操作でレスポンシブフォーカルポイントをリアルタイムに確認でき、技術的制約を感じることなく直感的に利用できます。
 
 ## 国際化対応
 

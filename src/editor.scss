@@ -38,3 +38,13 @@
 	margin-bottom: 12px;
 }
 
+// CSS custom property approach for responsive focal points
+[data-crf-preview="true"] {
+
+	.wp-block-cover__image-background,
+	.wp-block-cover__video-background,
+	.wp-block-cover__background {
+		object-position: var(--crf-object-position) !important;
+	}
+}
+

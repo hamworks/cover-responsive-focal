@@ -13,10 +13,15 @@ interface ExtendedBlockEditProps<
 }
 import { createHigherOrderComponent } from '@wordpress/compose';
 import { InspectorControls } from '@wordpress/block-editor';
-import { useState } from '@wordpress/element';
+import type { CSSProperties } from 'react';
 
 import { ResponsiveFocalControls } from './inspector-controls';
 import type { CoverBlockAttributes, WPSaveElement } from './types';
+import { useDeviceType } from './hooks/use-device-type';
+import {
+	getFocalPointForDevice,
+	generateObjectPosition,
+} from './utils/editor-styles';
 import './block-attributes'; // Load block attributes extension
 import './editor.scss';
 
@@ -36,44 +41,37 @@ const withResponsiveFocalControls = createHigherOrderComponent(
 			}
 
 			const { attributes, setAttributes } = props;
+			const { responsiveFocal = [] } = attributes;
+			const deviceType = useDeviceType();
 
-			// Use local state for preview instead of block attribute
-			const [ previewFocalPoint, setPreviewFocalPoint ] = useState< {
-				x: number;
-				y: number;
-			} | null >( null );
-
-			// Create modified props for preview
-			const createModifiedProps = () => {
-				if ( ! previewFocalPoint ) {
-					return props;
-				}
-
-				const x = Math.round( previewFocalPoint.x * 100 );
-				const y = Math.round( previewFocalPoint.y * 100 );
-				const previewContentPosition = `${ x }% ${ y }%`;
-
-				return {
-					...props,
-					attributes: {
-						...attributes,
-						focalPoint: { ...previewFocalPoint },
-						contentPosition: previewContentPosition,
-					},
-				};
-			};
-
-			const modifiedProps = createModifiedProps();
+			// Get current focal point for device
+			const currentFocalPoint = getFocalPointForDevice(
+				responsiveFocal,
+				deviceType
+			);
+			const objectPosition = currentFocalPoint
+				? generateObjectPosition( currentFocalPoint )
+				: null;
 
 			return (
 				<>
-					<BlockEdit { ...modifiedProps } />
+					<div
+						{ ...( objectPosition
+							? {
+									'data-crf-preview': 'true' as const,
+									'data-crf-object-position': objectPosition,
+									style: {
+										'--crf-object-position': objectPosition,
+									} as CSSProperties,
+							  }
+							: { 'data-crf-preview': 'false' as const } ) }
+					>
+						<BlockEdit { ...props } />
+					</div>
 					<InspectorControls>
 						<ResponsiveFocalControls
 							attributes={ attributes }
 							setAttributes={ setAttributes }
-							previewFocalPoint={ previewFocalPoint }
-							setPreviewFocalPoint={ setPreviewFocalPoint }
 						/>
 					</InspectorControls>
 				</>

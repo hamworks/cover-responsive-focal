@@ -129,7 +129,7 @@ const getMediaQueryForDevice = (device: 'mobile' | 'tablet'): string => {
 - **FocalPointPicker**: モバイル用ビジュアルフォーカルポイント選択
 - **ToggleControl**: タブレット用フォーカルポイント有効/無効
 - **FocalPointPicker**: タブレット用ビジュアルフォーカルポイント選択
-- **Text**: 各デバイスの適用範囲説明（「767px以下」「768px以上」）
+- **Text**: 各デバイスの適用範囲説明（「600px以下」「601px-1024px」）
 
 ### 3. 保存機能とマークアップ
 

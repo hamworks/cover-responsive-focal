@@ -241,12 +241,16 @@ describe( 'Focal Point Validation (TDD)', () => {
 		} );
 
 		test( 'returns null for null device type', () => {
-			const result = createResponsiveFocalPoint( null, 0.6, 0.4 );
+			const result = createResponsiveFocalPoint( null as any, 0.6, 0.4 );
 			expect( result ).toBeNull();
 		} );
 
 		test( 'returns null for undefined device type', () => {
-			const result = createResponsiveFocalPoint( undefined, 0.6, 0.4 );
+			const result = createResponsiveFocalPoint(
+				undefined as any,
+				0.6,
+				0.4
+			);
 			expect( result ).toBeNull();
 		} );
 	} );

@@ -4,7 +4,7 @@
  */
 
 import { addFilter } from '@wordpress/hooks';
-import { createElement } from '@wordpress/element';
+import { cloneElement } from '@wordpress/element';
 import type { ReactNode, ReactElement } from 'react';
 import type { CoverBlockAttributes } from './types';
 
@@ -59,19 +59,17 @@ const extendCoverBlockSave = (
 		return el !== null && typeof el === 'object' && 'props' in el;
 	};
 
-	// Get existing props from element (if it's a React element with props)
-	const existingProps = isReactElement( element ) ? element.props : {};
+	// Return original element if it's not a React element
+	if ( ! isReactElement( element ) ) {
+		return element;
+	}
 
-	// Create new element with data-fp-id attribute
-	// Using WordPress createElement function for proper type compatibility
-	return createElement(
-		'div',
-		{
-			...existingProps,
-			'data-fp-id': fpId,
-		},
-		element
-	);
+	// Clone element with additional data-fp-id attribute
+	// This preserves all existing props and adds the new attribute
+	return cloneElement( element, {
+		...element.props,
+		'data-fp-id': fpId,
+	} );
 };
 
 // Register the filter hook

@@ -9,11 +9,11 @@ jest.mock( '@wordpress/hooks', () => ( {
 	addFilter: mockAddFilter,
 } ) );
 
-// Mock WordPress element for createElement
-const mockCreateElement = jest.fn();
+// Mock WordPress element for cloneElement
+const mockCloneElement = jest.fn();
 
 jest.mock( '@wordpress/element', () => ( {
-	createElement: mockCreateElement,
+	cloneElement: mockCloneElement,
 } ) );
 
 // Import types and function for direct testing
@@ -24,7 +24,7 @@ import { extendCoverBlockSave } from '../../src/block-save';
 describe( 'Block Save Extension (TDD)', () => {
 	beforeEach( () => {
 		mockAddFilter.mockClear();
-		mockCreateElement.mockClear();
+		mockCloneElement.mockClear();
 	} );
 
 	describe( 'filter registration', () => {
@@ -80,7 +80,7 @@ describe( 'Block Save Extension (TDD)', () => {
 			expect( result ).toBe( element );
 		} );
 
-		test( 'should add data-fp-id when responsiveFocal has items', () => {
+		test( 'should add data-fp-id attribute to existing element', () => {
 			const element: ReactElement = {
 				type: 'div',
 				props: { className: 'wp-block-cover' },
@@ -88,17 +88,19 @@ describe( 'Block Save Extension (TDD)', () => {
 			};
 			const blockType = { name: 'core/cover' };
 			const attributes: CoverBlockAttributes = {
-				responsiveFocal: [
-					{ mediaType: 'max-width', breakpoint: 767, x: 0.6, y: 0.4 },
-				],
+				responsiveFocal: [ { device: 'mobile', x: 0.6, y: 0.4 } ],
 				dataFpId: 'test-id',
 			};
 
 			const expectedElement = {
 				type: 'div',
-				props: { 'data-fp-id': 'test-id', className: 'wp-block-cover' },
+				props: {
+					className: 'wp-block-cover',
+					'data-fp-id': 'test-id',
+				},
+				key: null,
 			};
-			mockCreateElement.mockReturnValue( expectedElement );
+			mockCloneElement.mockReturnValue( expectedElement );
 
 			const result = extendCoverBlockSave(
 				element,
@@ -106,25 +108,22 @@ describe( 'Block Save Extension (TDD)', () => {
 				attributes
 			);
 
-			expect( mockCreateElement ).toHaveBeenCalledWith(
-				'div',
-				{ 'data-fp-id': 'test-id', className: 'wp-block-cover' },
-				element
-			);
+			expect( mockCloneElement ).toHaveBeenCalledWith( element, {
+				className: 'wp-block-cover',
+				'data-fp-id': 'test-id',
+			} );
 			expect( result ).toBe( expectedElement );
 		} );
 
 		test( 'should generate dataFpId when not provided', () => {
 			const element: ReactElement = {
 				type: 'div',
-				props: {},
+				props: { className: 'wp-block-cover' },
 				key: null,
 			};
 			const blockType = { name: 'core/cover' };
 			const attributes: CoverBlockAttributes = {
-				responsiveFocal: [
-					{ mediaType: 'max-width', breakpoint: 767, x: 0.6, y: 0.4 },
-				],
+				responsiveFocal: [ { device: 'mobile', x: 0.6, y: 0.4 } ],
 			};
 
 			// Mock Date.now and Math.random for predictable ID
@@ -137,11 +136,10 @@ describe( 'Block Save Extension (TDD)', () => {
 
 			extendCoverBlockSave( element, blockType, attributes );
 
-			expect( mockCreateElement ).toHaveBeenCalledWith(
-				'div',
-				{ 'data-fp-id': 'crf-123456789-5000' },
-				element
-			);
+			expect( mockCloneElement ).toHaveBeenCalledWith( element, {
+				className: 'wp-block-cover',
+				'data-fp-id': 'crf-123456789-5000',
+			} );
 
 			mockNow.mockRestore();
 			mockRandom.mockRestore();
@@ -192,33 +190,32 @@ describe( 'Block Save Extension (TDD)', () => {
 			).toEqual( emptyElement );
 		} );
 
-		test( 'should preserve existing element props', () => {
+		test( 'should preserve existing element props and add data-fp-id', () => {
 			const element: ReactElement = {
 				type: 'div',
-				props: { className: 'wp-block-cover', style: { color: 'red' } },
+				props: {
+					className: 'wp-block-cover has-background',
+					style: { color: 'red' },
+					id: 'my-cover',
+				},
 				key: null,
 			};
 			const blockType = { name: 'core/cover' };
 			const attributes: CoverBlockAttributes = {
-				responsiveFocal: [
-					{ mediaType: 'max-width', breakpoint: 767, x: 0.6, y: 0.4 },
-				],
+				responsiveFocal: [ { device: 'mobile', x: 0.6, y: 0.4 } ],
 				dataFpId: 'test-id',
 			};
 
-			mockCreateElement.mockReturnValue( { modified: true } );
+			mockCloneElement.mockReturnValue( { modified: true } );
 
 			extendCoverBlockSave( element, blockType, attributes );
 
-			expect( mockCreateElement ).toHaveBeenCalledWith(
-				'div',
-				{
-					'data-fp-id': 'test-id',
-					className: 'wp-block-cover',
-					style: { color: 'red' },
-				},
-				element
-			);
+			expect( mockCloneElement ).toHaveBeenCalledWith( element, {
+				className: 'wp-block-cover has-background',
+				style: { color: 'red' },
+				id: 'my-cover',
+				'data-fp-id': 'test-id',
+			} );
 		} );
 	} );
 } );

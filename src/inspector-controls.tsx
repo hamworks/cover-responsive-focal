@@ -4,13 +4,10 @@
 
 import { __ } from '@wordpress/i18n';
 import { PanelBody, ToggleControl, Notice } from '@wordpress/components';
-import { useState, useEffect } from '@wordpress/element';
-import type {
-	ResponsiveFocalControlsProps,
-	ResponsiveFocalPoint,
-} from './types';
-import { DEFAULTS, DEVICE_BREAKPOINTS } from './constants';
+import type { ResponsiveFocalControlsProps } from './types';
+import { DEVICE_BREAKPOINTS } from './constants';
 import { DeviceFocalPointControl } from './components/device-focal-point-control';
+import { useDeviceStateManagement } from './hooks/use-device-state-management';
 
 /**
  * Responsive focal point settings UI
@@ -31,91 +28,16 @@ export const ResponsiveFocalControls = (
 	const { responsiveFocal = [] } = safeAttributes;
 	const previewEnabled = !! previewFocalPoint;
 
-	// Device-specific state management
-	const [ mobileEnabled, setMobileEnabled ] = useState(
-		responsiveFocal.some( ( fp ) => fp.device === 'mobile' )
-	);
-	const [ tabletEnabled, setTabletEnabled ] = useState(
-		responsiveFocal.some( ( fp ) => fp.device === 'tablet' )
-	);
-
-	// Find existing focal points by device
-	const mobileFocalPoint = responsiveFocal.find(
-		( fp ) => fp.device === 'mobile'
-	);
-	const tabletFocalPoint = responsiveFocal.find(
-		( fp ) => fp.device === 'tablet'
-	);
-
-	// Sync local state with responsiveFocal array changes
-	useEffect( () => {
-		setMobileEnabled( !! mobileFocalPoint );
-		setTabletEnabled( !! tabletFocalPoint );
-	}, [ mobileFocalPoint, tabletFocalPoint ] );
-
-	/**
-	 * Update focal point for specific device
-	 * @param device
-	 * @param x
-	 * @param y
-	 */
-	const updateDeviceFocalPoint = (
-		device: 'mobile' | 'tablet',
-		x: number,
-		y: number
-	) => {
-		const existingIndex = responsiveFocal.findIndex(
-			( fp ) => fp.device === device
-		);
-
-		if ( existingIndex >= 0 ) {
-			// Update existing focal point
-			const updatedFocals = [ ...responsiveFocal ];
-			updatedFocals[ existingIndex ] = { device, x, y };
-			setAttributes( { responsiveFocal: updatedFocals } );
-		} else {
-			// Add new focal point
-			const newFocalPoint: ResponsiveFocalPoint = { device, x, y };
-			setAttributes( {
-				responsiveFocal: [ ...responsiveFocal, newFocalPoint ],
-			} );
-		}
-	};
-
-	/**
-	 * Remove focal point for specific device
-	 * @param device
-	 */
-	const removeDeviceFocalPoint = ( device: 'mobile' | 'tablet' ) => {
-		const updatedFocals = responsiveFocal.filter(
-			( fp ) => fp.device !== device
-		);
-		setAttributes( { responsiveFocal: updatedFocals } );
-	};
-
-	/**
-	 * Toggle device focal point
-	 * @param device
-	 * @param enabled
-	 */
-	const toggleDeviceFocalPoint = (
-		device: 'mobile' | 'tablet',
-		enabled: boolean
-	) => {
-		if ( enabled ) {
-			// Add default focal point for this device
-			updateDeviceFocalPoint(
-				device,
-				DEFAULTS.FOCAL_X,
-				DEFAULTS.FOCAL_Y
-			);
-		} else {
-			// Remove focal point for this device
-			removeDeviceFocalPoint( device );
-		}
-
-		// Note: Local state will be updated automatically via useEffect
-	};
+	// Device state management using custom hook
+	const {
+		mobileEnabled,
+		tabletEnabled,
+		mobileFocalPoint,
+		tabletFocalPoint,
+		toggleDeviceFocalPoint,
+		updateDeviceFocalPoint,
+		hasAnyDeviceEnabled,
+	} = useDeviceStateManagement( responsiveFocal, setAttributes );
 
 	// Extract URL only when needed for DeviceFocalPointControl components
 	const { url } = safeAttributes;
@@ -186,7 +108,7 @@ export const ResponsiveFocalControls = (
 				}
 			/>
 
-			{ ! mobileEnabled && ! tabletEnabled && (
+			{ ! hasAnyDeviceEnabled && (
 				<Notice status="info" isDismissible={ false }>
 					{ __(
 						'No responsive focal points enabled. Using default focal point for all devices.',

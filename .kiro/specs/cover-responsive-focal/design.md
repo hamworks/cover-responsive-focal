@@ -17,7 +17,7 @@ graph TB
     C --> F[Save Function]
     F --> G[Frontend Rendering]
     G --> H[Dynamic CSS Generation]
-    
+
     I[Plugin PHP] --> J[render_block Filter]
     J --> K[CSS Style Injection]
 ```
@@ -45,8 +45,7 @@ cover-responsive-focal/
 #### ブロック属性拡張
 ```typescript
 interface ResponsiveFocalPoint {
-  mediaType: 'min-width' | 'max-width';  // メディアクエリタイプ
-  breakpoint: number;                     // ブレークポイント値（px）
+  device: 'mobile' | 'tablet';           // デバイスタイプ（固定）
   x: number;                             // X座標 (0-1の範囲)
   y: number;                             // Y座標 (0-1の範囲)
 }
@@ -62,9 +61,9 @@ interface CoverBlockAttributes {
   overlayColor?: string;
   backgroundType?: string;
   minHeight?: number;
-  
-  // 新規追加属性
-  responsiveFocal: ResponsiveFocalPoint[];
+
+  // 新規追加属性（シンプル化）
+  responsiveFocal: ResponsiveFocalPoint[]; // 最大2アイテム（mobile, tablet）
   dataFpId?: string; // CSS識別用の一意ID
 }
 ```
@@ -77,17 +76,17 @@ addFilter(
   'crf/extend-cover-block',
   (settings, name) => {
     if (name !== 'core/cover') return settings;
-    
+
     // 新規属性追加
     settings.attributes.responsiveFocal = {
       type: 'array',
       default: []
     };
-    
+
     settings.attributes.dataFpId = {
       type: 'string'
     };
-    
+
     return settings;
   }
 );
@@ -106,28 +105,31 @@ const ResponsiveFocalControls: React.FC<ResponsiveFocalControlsProps> = ({
   attributes,
   setAttributes
 }) => {
-  // レスポンシブフォーカルポイント設定UI
-  // - 行の追加/削除
-  // - メディアクエリタイプ選択（min-width / max-width）
-  // - ブレークポイント数値入力（プリセット選択 + 自由入力）
-  // - フォーカルポイントピッカー
-  // - 並び替え機能（ドラッグ&ドロップ）
+  // シンプルなレスポンシブフォーカルポイント設定UI
+  // - モバイル用フォーカルポイントピッカー（固定）
+  // - タブレット用フォーカルポイントピッカー（固定）
+  // - 各デバイス用の有効/無効切り替え
 };
 
-// メディアクエリ生成ヘルパー
-const generateMediaQuery = (mediaType: string, breakpoint: number): string => {
-  return `(${mediaType}: ${breakpoint}px)`;
+// 固定ブレークポイント定数
+const DEVICE_BREAKPOINTS = {
+  mobile: { mediaQuery: '(max-width: 600px)', label: 'モバイル' },
+  tablet: { mediaQuery: '(min-width: 601px) and (max-width: 1024px)', label: 'タブレット' }
+} as const;
+
+// メディアクエリ生成ヘルパー（シンプル化）
+const getMediaQueryForDevice = (device: 'mobile' | 'tablet'): string => {
+  return DEVICE_BREAKPOINTS[device].mediaQuery;
 };
 ```
 
-#### UI要素
+#### UI要素（シンプル化）
 - **PanelBody**: 「レスポンシブフォーカルポイント」セクション
-- **Button**: 「新しいブレークポイントを追加」
-- **SelectControl**: メディアクエリタイプ選択（min-width / max-width）
-- **NumberControl**: ブレークポイント数値入力（px）
-- **SelectControl**: プリセットブレークポイント選択（320, 768, 1024, 1200px）
-- **FocalPointPicker**: ビジュアルフォーカルポイント選択
-- **Button**: 行削除ボタン
+- **ToggleControl**: モバイル用フォーカルポイント有効/無効
+- **FocalPointPicker**: モバイル用ビジュアルフォーカルポイント選択
+- **ToggleControl**: タブレット用フォーカルポイント有効/無効
+- **FocalPointPicker**: タブレット用ビジュアルフォーカルポイント選択
+- **Text**: 各デバイスの適用範囲説明（「767px以下」「768px以上」）
 
 ### 3. 保存機能とマークアップ
 
@@ -136,15 +138,15 @@ const generateMediaQuery = (mediaType: string, breakpoint: number): string => {
 // save.js での実装
 const save = ({ attributes }) => {
   const { responsiveFocal, dataFpId } = attributes;
-  
+
   // responsiveFocalが空の場合は標準のカバーブロック動作
   if (!responsiveFocal || responsiveFocal.length === 0) {
     return <InnerBlocks.Content />;
   }
-  
+
   // data-fp-id属性を追加
   const fpId = dataFpId || `crf-${Date.now()}`;
-  
+
   return (
     <div data-fp-id={fpId}>
       <InnerBlocks.Content />
@@ -161,24 +163,24 @@ function crf_render_block($content, $block) {
     if ('core/cover' !== $block['blockName']) {
         return $content;
     }
-    
+
     $attrs = $block['attrs'] ?? [];
     $responsive_focal = $attrs['responsiveFocal'] ?? [];
-    
+
     // 空の場合は何も処理しない（標準動作を維持）
     if (empty($responsive_focal)) {
         return $content;
     }
-    
+
     $fp_id = $attrs['dataFpId'] ?? wp_unique_id('crf-');
-    
+
     // data-fp-id属性をカバーブロックに追加
     $content = crf_add_fp_id_to_content($content, $fp_id);
-    
+
     // CSS生成
     $css_rules = crf_generate_css_rules($responsive_focal, $fp_id);
-    
-    return $content . sprintf('<style id="%s">%s</style>', 
+
+    return $content . sprintf('<style id="%s">%s</style>',
         esc_attr($fp_id), $css_rules);
 }
 
@@ -194,18 +196,27 @@ function crf_add_fp_id_to_content($content, $fp_id) {
 
 #### CSS生成ロジック
 ```php
+// 固定ブレークポイント定数
+const CRF_DEVICE_BREAKPOINTS = [
+    'mobile' => '(max-width: 600px)',
+    'tablet' => '(min-width: 601px) and (max-width: 1024px)'
+];
+
 function crf_generate_css_rules($responsive_focal, $fp_id) {
     $rules = '';
-    
+
     foreach ($responsive_focal as $focal_point) {
-        $media_type = sanitize_text_field($focal_point['mediaType']);
-        $breakpoint = intval($focal_point['breakpoint']);
+        $device = sanitize_text_field($focal_point['device']);
         $x = floatval($focal_point['x']) * 100;
         $y = floatval($focal_point['y']) * 100;
-        
-        // メディアクエリ生成
-        $media_query = sprintf('(%s: %dpx)', $media_type, $breakpoint);
-        
+
+        // 固定メディアクエリを使用
+        if (!isset(CRF_DEVICE_BREAKPOINTS[$device])) {
+            continue; // 無効なデバイスタイプはスキップ
+        }
+
+        $media_query = CRF_DEVICE_BREAKPOINTS[$device];
+
         $rules .= sprintf(
             '@media %s { [data-fp-id="%s"] .wp-block-cover__image-background, [data-fp-id="%s"] .wp-block-cover__video-background { object-position: %s%% %s%%; } }',
             $media_query,
@@ -215,41 +226,34 @@ function crf_generate_css_rules($responsive_focal, $fp_id) {
             $y
         );
     }
-    
+
     return $rules;
 }
 
-// バリデーション関数
-function crf_validate_media_type($media_type) {
-    return in_array($media_type, ['min-width', 'max-width'], true);
+// バリデーション関数（シンプル化）
+function crf_validate_device_type($device) {
+    return in_array($device, ['mobile', 'tablet'], true);
 }
 
-function crf_validate_breakpoint($breakpoint) {
-    return is_numeric($breakpoint) && $breakpoint > 0 && $breakpoint <= 9999;
-}
+// ブレークポイント検証は不要（固定値のため削除）
 ```
 
 ## データモデル
 
-### 属性スキーマ
+### 属性スキーマ（シンプル化）
 ```json
 {
   "responsiveFocal": {
     "type": "array",
     "default": [],
+    "maxItems": 2,
     "items": {
       "type": "object",
       "properties": {
-        "mediaType": {
+        "device": {
           "type": "string",
-          "enum": ["min-width", "max-width"],
-          "description": "メディアクエリタイプ"
-        },
-        "breakpoint": {
-          "type": "number",
-          "minimum": 1,
-          "maximum": 9999,
-          "description": "ブレークポイント値（px）"
+          "enum": ["mobile", "tablet"],
+          "description": "デバイスタイプ（固定）"
         },
         "x": {
           "type": "number",
@@ -258,7 +262,7 @@ function crf_validate_breakpoint($breakpoint) {
           "description": "X座標（0-1）"
         },
         "y": {
-          "type": "number", 
+          "type": "number",
           "minimum": 0,
           "maximum": 1,
           "description": "Y座標（0-1）"
@@ -273,24 +277,25 @@ function crf_validate_breakpoint($breakpoint) {
 }
 ```
 
-### メディアクエリ設定方式
+### デバイス設定方式（シンプル化）
 ```typescript
-interface MediaQueryConfig {
-  type: 'min-width' | 'max-width';
-  value: number; // px値
-}
+// 固定デバイス設定
+const DEVICE_CONFIGS = {
+  mobile: {
+    label: 'モバイル',
+    mediaQuery: '(max-width: 600px)',
+    description: '600px以下'
+  },
+  tablet: {
+    label: 'タブレット',
+    mediaQuery: '(min-width: 601px) and (max-width: 1024px)',
+    description: '601px-1024px'
+  }
+} as const;
 
-// UIでの設定例
-const BREAKPOINT_PRESETS = [
-  { label: '320px', value: 320 },
-  { label: '768px', value: 768 },
-  { label: '1024px', value: 1024 },
-  { label: '1200px', value: 1200 }
-];
-
-// 生成されるメディアクエリ例
-// type: 'max-width', value: 767 → '(max-width: 767px)'
-// type: 'min-width', value: 768 → '(min-width: 768px)'
+// 生成されるメディアクエリ例（固定）
+// device: 'mobile' → '(max-width: 600px)'
+// device: 'tablet' → '(min-width: 601px) and (max-width: 1024px)'
 ```
 
 ## エラーハンドリング
@@ -325,7 +330,7 @@ const validateMediaQuery = (media: string): boolean => {
 t-wadaのTDD（テスト駆動開発）に準拠し、以下のRed-Green-Refactorサイクルを厳密に実行します：
 
 1. **Red**: 失敗するテストを書く
-2. **Green**: テストを通す最小限のコードを書く  
+2. **Green**: テストを通す最小限のコードを書く
 3. **Refactor**: コードを改善する（テストは通ったまま）
 
 ### 1. 単体テスト（Unit Tests）- TDDファースト
@@ -378,98 +383,64 @@ describe('フォーカルポイント検証（TDD）', () => {
   };
   */
 
-  describe('validateMediaType関数', () => {
-    test('min-widthは有効なメディアタイプ', () => {
-      expect(validateMediaType('min-width')).toBe(true);
+  describe('validateDeviceType関数（シンプル化）', () => {
+    test('mobileは有効なデバイスタイプ', () => {
+      expect(validateDeviceType('mobile')).toBe(true);
     });
 
-    test('max-widthは有効なメディアタイプ', () => {
-      expect(validateMediaType('max-width')).toBe(true);
+    test('tabletは有効なデバイスタイプ', () => {
+      expect(validateDeviceType('tablet')).toBe(true);
     });
 
-    test('無効なメディアタイプは拒否', () => {
-      expect(validateMediaType('invalid-type')).toBe(false);
+    test('無効なデバイスタイプは拒否', () => {
+      expect(validateDeviceType('desktop')).toBe(false);
     });
 
     test('空文字は無効', () => {
-      expect(validateMediaType('')).toBe(false);
+      expect(validateDeviceType('')).toBe(false);
     });
 
     test('nullは無効', () => {
-      expect(validateMediaType(null)).toBe(false);
+      expect(validateDeviceType(null)).toBe(false);
     });
   });
 
-  describe('validateBreakpoint関数', () => {
-    test('768は有効なブレークポイント', () => {
-      expect(validateBreakpoint(768)).toBe(true);
-    });
-
-    test('1は有効なブレークポイント（最小値）', () => {
-      expect(validateBreakpoint(1)).toBe(true);
-    });
-
-    test('9999は有効なブレークポイント（最大値）', () => {
-      expect(validateBreakpoint(9999)).toBe(true);
-    });
-
-    test('0は無効（範囲外）', () => {
-      expect(validateBreakpoint(0)).toBe(false);
-    });
-
-    test('10000は無効（範囲外）', () => {
-      expect(validateBreakpoint(10000)).toBe(false);
-    });
-
-    test('文字列は無効', () => {
-      expect(validateBreakpoint('768')).toBe(false);
-    });
-
-    test('NaNは無効', () => {
-      expect(validateBreakpoint(NaN)).toBe(false);
-    });
-  });
+  // validateBreakpoint関数は削除（固定ブレークポイントのため不要）
 });
 
 // TDDサイクル例：ResponsiveFocalPoint型のテスト
 describe('ResponsiveFocalPoint型（TDD）', () => {
-  describe('createResponsiveFocalPoint関数', () => {
+  describe('createResponsiveFocalPoint関数（シンプル化）', () => {
     test('有効な値でResponsiveFocalPointオブジェクトを作成', () => {
-      const result = createResponsiveFocalPoint('max-width', 767, 0.6, 0.4);
-      
+      const result = createResponsiveFocalPoint('mobile', 0.6, 0.4);
+
       expect(result).toEqual({
-        mediaType: 'max-width',
-        breakpoint: 767,
+        device: 'mobile',
         x: 0.6,
         y: 0.4
       });
     });
 
     test('無効なフォーカルポイントでnullを返す', () => {
-      const result = createResponsiveFocalPoint('max-width', 767, -0.1, 0.4);
+      const result = createResponsiveFocalPoint('mobile', -0.1, 0.4);
       expect(result).toBeNull();
     });
 
-    test('無効なメディアタイプでnullを返す', () => {
-      const result = createResponsiveFocalPoint('invalid-type', 767, 0.6, 0.4);
-      expect(result).toBeNull();
-    });
-
-    test('無効なブレークポイントでnullを返す', () => {
-      const result = createResponsiveFocalPoint('max-width', 0, 0.6, 0.4);
+    test('無効なデバイスタイプでnullを返す', () => {
+      const result = createResponsiveFocalPoint('desktop', 0.6, 0.4);
       expect(result).toBeNull();
     });
   });
 
-  describe('generateMediaQuery関数', () => {
-    test('max-widthメディアクエリを正しく生成', () => {
-      const result = generateMediaQuery('max-width', 767);
-      expect(result).toBe('(max-width: 767px)');
+  describe('getMediaQueryForDevice関数（シンプル化）', () => {
+    test('mobileメディアクエリを正しく生成', () => {
+      const result = getMediaQueryForDevice('mobile');
+      expect(result).toBe('(max-width: 600px)');
     });
 
-    test('min-widthメディアクエリを正しく生成', () => {
-      const result = generateMediaQuery('min-width', 768);
-      expect(result).toBe('(min-width: 768px)');
+    test('tabletメディアクエリを正しく生成', () => {
+      const result = getMediaQueryForDevice('tablet');
+      expect(result).toBe('(min-width: 601px) and (max-width: 1024px)');
     });
   });
 });
@@ -480,121 +451,110 @@ describe('ResponsiveFocalPoint型（TDD）', () => {
 ```php
 // tests/test-css-generation.php
 class CRF_CSS_Generation_Test extends WP_UnitTestCase {
-    
-    // RED: 失敗するテストから開始
+
+    // RED: 失敗するテストから開始（シンプル化）
     public function test_generate_css_rules_single_focal_point() {
         // まだ実装されていない関数をテスト
         $responsive_focal = [
             [
-                'mediaType' => 'max-width',
-                'breakpoint' => 767,
+                'device' => 'mobile',
                 'x' => 0.6,
                 'y' => 0.4
             ]
         ];
-        
+
         $css = crf_generate_css_rules($responsive_focal, 'test-id');
-        
+
         // 期待する出力を明確に定義
-        $expected_css = '@media (max-width: 767px) { [data-fp-id="test-id"] .wp-block-cover__image-background, [data-fp-id="test-id"] .wp-block-cover__video-background { object-position: 60% 40%; } }';
-        
+        $expected_css = '@media (max-width: 600px) { [data-fp-id="test-id"] .wp-block-cover__image-background, [data-fp-id="test-id"] .wp-block-cover__video-background { object-position: 60% 40%; } }';
+
         $this->assertEquals($expected_css, $css);
     }
-    
+
     public function test_generate_css_rules_multiple_focal_points() {
         $responsive_focal = [
             [
-                'mediaType' => 'max-width',
-                'breakpoint' => 767,
+                'device' => 'mobile',
                 'x' => 0.6,
                 'y' => 0.4
             ],
             [
-                'mediaType' => 'min-width',
-                'breakpoint' => 768,
+                'device' => 'tablet',
                 'x' => 0.3,
                 'y' => 0.7
             ]
         ];
-        
+
         $css = crf_generate_css_rules($responsive_focal, 'multi-test');
-        
-        $this->assertStringContains('@media (max-width: 767px)', $css);
-        $this->assertStringContains('@media (min-width: 768px)', $css);
+
+        $this->assertStringContains('@media (max-width: 600px)', $css);
+        $this->assertStringContains('@media (min-width: 601px) and (max-width: 1024px)', $css);
         $this->assertStringContains('object-position: 60% 40%', $css);
         $this->assertStringContains('object-position: 30% 70%', $css);
     }
-    
+
     public function test_generate_css_rules_empty_array() {
         $css = crf_generate_css_rules([], 'empty-test');
         $this->assertEquals('', $css);
     }
-    
+
     // GREEN: 最小限の実装でテストを通す
     /*
     function crf_generate_css_rules($responsive_focal, $fp_id) {
         if (empty($responsive_focal)) {
             return '';
         }
-        
+
         $rules = '';
         foreach ($responsive_focal as $focal_point) {
             $media = sanitize_text_field($focal_point['media']);
             $x = floatval($focal_point['x']) * 100;
             $y = floatval($focal_point['y']) * 100;
-            
+
             $rules .= sprintf(
                 '@media %s { [data-fp-id="%s"] .wp-block-cover__image-background, [data-fp-id="%s"] .wp-block-cover__video-background { object-position: %s%% %s%%; } }',
                 $media, esc_attr($fp_id), esc_attr($fp_id), $x, $y
             );
         }
-        
+
         return $rules;
     }
     */
-    
+
     public function test_sanitize_focal_point_values() {
         $input = [
-            'mediaType' => 'max-width',
-            'breakpoint' => '767',
+            'device' => 'mobile',
             'x' => '0.6',
             'y' => 'invalid'
         ];
-        
+
         $sanitized = crf_sanitize_focal_point($input);
-        
-        $this->assertEquals('max-width', $sanitized['mediaType']);
-        $this->assertEquals(767, $sanitized['breakpoint']);
+
+        $this->assertEquals('mobile', $sanitized['device']);
         $this->assertEquals(0.6, $sanitized['x']);
         $this->assertEquals(0, $sanitized['y']); // デフォルト値
     }
-    
-    public function test_validate_media_type() {
-        $this->assertTrue(crf_validate_media_type('min-width'));
-        $this->assertTrue(crf_validate_media_type('max-width'));
-        $this->assertFalse(crf_validate_media_type('invalid-type'));
-        $this->assertFalse(crf_validate_media_type(''));
+
+    public function test_validate_device_type() {
+        $this->assertTrue(crf_validate_device_type('mobile'));
+        $this->assertTrue(crf_validate_device_type('tablet'));
+        $this->assertFalse(crf_validate_device_type('desktop'));
+        $this->assertFalse(crf_validate_device_type(''));
     }
-    
-    public function test_validate_breakpoint() {
-        $this->assertTrue(crf_validate_breakpoint(768));
-        $this->assertTrue(crf_validate_breakpoint(1));
-        $this->assertTrue(crf_validate_breakpoint(9999));
-        $this->assertFalse(crf_validate_breakpoint(0));
-        $this->assertFalse(crf_validate_breakpoint(10000));
-        $this->assertFalse(crf_validate_breakpoint('invalid'));
-    }
-    
+
+    // validateBreakpoint関数は削除（固定ブレークポイントのため不要）
+
     // エッジケースのテスト
     public function test_sanitize_focal_point_boundary_values() {
         $input = [
-            'media' => '(max-width: 767px)',
+            'device' => 'tablet',
             'x' => '1.0',
             'y' => '0.0'
         ];
-        
+
         $sanitized = crf_sanitize_focal_point($input);
-        
+
+        $this->assertEquals('tablet', $sanitized['device']);
         $this->assertEquals(1.0, $sanitized['x']);
         $this->assertEquals(0.0, $sanitized['y']);
     }
@@ -615,14 +575,14 @@ describe('カバーブロック拡張', () => {
   test('レスポンシブフォーカル属性の追加', () => {
     const block = createBlock('core/cover');
     const extendedBlock = applyFilters('blocks.registerBlockType', block, 'core/cover');
-    
+
     expect(extendedBlock.attributes).toHaveProperty('responsiveFocal');
     expect(extendedBlock.attributes).toHaveProperty('dataFpId');
   });
 
   test('インスペクターコントロールの表示', () => {
     const { getByText, getByRole } = render(<CoverBlockEdit />);
-    
+
     expect(getByText('レスポンシブフォーカルポイント')).toBeInTheDocument();
     expect(getByRole('button', { name: '新しいブレークポイントを追加' })).toBeInTheDocument();
   });
@@ -633,7 +593,7 @@ describe('カバーブロック拡張', () => {
 ```php
 // tests/integration/test-render-block.php
 class CRF_Render_Block_Test extends WP_UnitTestCase {
-    
+
     public function test_render_block_filter() {
         $block = [
             'blockName' => 'core/cover',
@@ -648,10 +608,10 @@ class CRF_Render_Block_Test extends WP_UnitTestCase {
                 'dataFpId' => 'test-123'
             ]
         ];
-        
+
         $content = '<div class="wp-block-cover">Test Content</div>';
         $filtered_content = apply_filters('render_block', $content, $block);
-        
+
         $this->assertStringContains('data-fp-id="test-123"', $filtered_content);
         $this->assertStringContains('<style id="test-123">', $filtered_content);
         $this->assertStringContains('@media (max-width: 767px)', $filtered_content);
@@ -670,44 +630,44 @@ test.describe('Cover Responsive Focal E2E', () => {
   test('カバーブロックにレスポンシブフォーカルポイントを設定', async ({ page }) => {
     // WordPress管理画面にログイン
     await page.goto('/wp-admin/post-new.php');
-    
+
     // カバーブロックを追加
     await page.click('[aria-label="ブロックを追加"]');
     await page.fill('[placeholder="ブロックを検索"]', 'カバー');
     await page.click('[data-type="core/cover"]');
-    
+
     // 画像を設定
     await page.click('text=メディアライブラリ');
     await page.click('.attachment:first-child');
     await page.click('text=選択');
-    
+
     // インスペクターでレスポンシブフォーカル設定を開く
     await page.click('[aria-label="設定"]');
     await page.click('text=レスポンシブフォーカルポイント');
-    
+
     // 新しいブレークポイントを追加
     await page.click('text=新しいブレークポイントを追加');
-    
+
     // メディアクエリを選択
     await page.selectOption('[data-testid="media-query-select"]', '(max-width: 767px)');
-    
+
     // フォーカルポイントを設定
     await page.click('[data-testid="focal-point-picker"]', { position: { x: 100, y: 50 } });
-    
+
     // 投稿を公開
     await page.click('text=公開');
     await page.click('text=公開', { nth: 1 });
-    
+
     // フロントエンドで確認
     await page.click('text=投稿を表示');
-    
+
     // レスポンシブCSSが適用されているか確認
     const coverBlock = page.locator('.wp-block-cover[data-fp-id]');
     await expect(coverBlock).toBeVisible();
-    
+
     // モバイルビューポートでテスト
     await page.setViewportSize({ width: 375, height: 667 });
-    
+
     const style = await page.locator('style[id^="crf-"]').textContent();
     expect(style).toContain('@media (max-width: 767px)');
     expect(style).toContain('object-position:');
@@ -737,7 +697,7 @@ test('レスポンシブフォーカルポイントのビジュアル確認', as
   for (const viewport of viewports) {
     await page.setViewportSize(viewport);
     await page.goto('/sample-cover-block-page/');
-    
+
     // スクリーンショット比較
     await expect(page.locator('.wp-block-cover')).toHaveScreenshot(
       `cover-block-${viewport.name}.png`
@@ -752,7 +712,7 @@ test('レスポンシブフォーカルポイントのビジュアル確認', as
 ```php
 // tests/performance/test-css-performance.php
 class CRF_Performance_Test extends WP_UnitTestCase {
-    
+
     public function test_css_generation_performance() {
         // 大量のレスポンシブフォーカルポイントでのパフォーマンステスト
         $large_responsive_focal = array_fill(0, 100, [
@@ -760,11 +720,11 @@ class CRF_Performance_Test extends WP_UnitTestCase {
             'x' => 0.5,
             'y' => 0.5
         ]);
-        
+
         $start_time = microtime(true);
         $css = crf_generate_css_rules($large_responsive_focal, 'perf-test');
         $end_time = microtime(true);
-        
+
         $execution_time = $end_time - $start_time;
         $this->assertLessThan(0.1, $execution_time, 'CSS生成が100ms以内で完了すること');
     }
@@ -778,7 +738,7 @@ describe('フロントエンドパフォーマンス', () => {
   test('CLS（Cumulative Layout Shift）の測定', async () => {
     const page = await browser.newPage();
     await page.goto('/sample-cover-block-page/');
-    
+
     const cls = await page.evaluate(() => {
       return new Promise((resolve) => {
         new PerformanceObserver((list) => {
@@ -786,11 +746,11 @@ describe('フロントエンドパフォーマンス', () => {
           const clsValue = entries.reduce((sum, entry) => sum + entry.value, 0);
           resolve(clsValue);
         }).observe({ entryTypes: ['layout-shift'] });
-        
+
         setTimeout(() => resolve(0), 3000);
       });
     });
-    
+
     expect(cls).toBeLessThan(0.1); // Good CLS threshold
   });
 });
@@ -802,30 +762,31 @@ describe('フロントエンドパフォーマンス', () => {
 ```php
 // tests/security/test-xss-prevention.php
 class CRF_Security_Test extends WP_UnitTestCase {
-    
-    public function test_xss_prevention_in_media_query() {
+
+    public function test_xss_prevention_in_device_type() {
         $malicious_input = [
-            'media' => '<script>alert("xss")</script>(max-width: 767px)',
+            'device' => '<script>alert("xss")</script>mobile',
             'x' => 0.5,
             'y' => 0.5
         ];
-        
+
         $css = crf_generate_css_rules([$malicious_input], 'security-test');
-        
+
         $this->assertStringNotContains('<script>', $css);
         $this->assertStringNotContains('alert', $css);
+        $this->assertEquals('', $css); // 無効なデバイスタイプなのでCSS出力なし
     }
-    
-    public function test_css_injection_prevention() {
+
+    public function test_invalid_device_type_prevention() {
         $malicious_input = [
-            'media' => '(max-width: 767px); } body { background: red; } @media screen',
+            'device' => 'invalid-device-type',
             'x' => 0.5,
             'y' => 0.5
         ];
-        
+
         $css = crf_generate_css_rules([$malicious_input], 'injection-test');
-        
-        $this->assertStringNotContains('body { background: red; }', $css);
+
+        $this->assertEquals('', $css); // 無効なデバイスタイプなのでCSS出力なし
     }
 }
 ```
@@ -836,11 +797,11 @@ class CRF_Security_Test extends WP_UnitTestCase {
 ```php
 // tests/compatibility/test-wp-versions.php
 class CRF_Compatibility_Test extends WP_UnitTestCase {
-    
+
     public function test_wordpress_6_5_compatibility() {
         // WordPress 6.5での動作確認
         $this->assertTrue(version_compare(get_bloginfo('version'), '6.5', '>='));
-        
+
         // 必要なフックが存在するか確認
         $this->assertTrue(has_filter('render_block'));
         $this->assertTrue(has_filter('blocks.registerBlockType'));
@@ -857,12 +818,12 @@ browsers.forEach(browserName => {
   test(`${browserName}でのobject-position対応確認`, async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    
+
     await page.goto('/sample-cover-block-page/');
-    
+
     const objectPosition = await page.locator('.wp-block-cover__image-background')
       .evaluate(el => getComputedStyle(el).objectPosition);
-    
+
     expect(objectPosition).not.toBe('initial');
   });
 });
@@ -884,18 +845,18 @@ jobs:
       matrix:
         php-version: [7.4, 8.0, 8.1, 8.2]
         wordpress-version: [6.5, 6.6, latest]
-    
+
     steps:
       - uses: actions/checkout@v3
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-      
+
       - name: Install WordPress Test Suite
         run: |
           bash bin/install-wp-tests.sh wordpress_test root '' localhost ${{ matrix.wordpress-version }}
-      
+
       - name: Run PHPUnit
         run: phpunit
 
@@ -907,13 +868,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Install Playwright
         run: npx playwright install
-      
+
       - name: Run E2E tests
         run: npm run test:e2e
 ```

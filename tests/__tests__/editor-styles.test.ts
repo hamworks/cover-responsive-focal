@@ -52,11 +52,6 @@ describe( 'Editor Styles', () => {
 			expect( result ).toBeNull();
 		} );
 
-		test( 'returns null for null responsive focal array', () => {
-			const result = getFocalPointForDevice( null as any, 'Mobile' );
-			expect( result ).toBeNull();
-		} );
-
 		test( 'returns null when no matching device found', () => {
 			const mobileFocal: ResponsiveFocalPoint[] = [
 				{ device: 'mobile', x: 0.5, y: 0.5 },

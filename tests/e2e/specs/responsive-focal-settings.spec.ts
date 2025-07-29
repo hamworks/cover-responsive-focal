@@ -76,7 +76,7 @@ test.describe( 'Responsive Focal Point Settings - Detailed Feature Tests', () =>
 		);
 		if ( await responsiveFocalPanel.isVisible() ) {
 			await responsiveFocalPanel.click();
-			
+
 			// Add mobile device (default)
 			await page.locator( 'button.crf-add-focal-point' ).click();
 			const mobileDisplay = page.locator( 'text=Device: mobile' );
@@ -84,7 +84,7 @@ test.describe( 'Responsive Focal Point Settings - Detailed Feature Tests', () =>
 
 			// Add another device (should be able to add tablet)
 			await page.locator( 'button.crf-add-focal-point' ).click();
-			
+
 			// Should show two device entries
 			const deviceDisplays = page.locator( '[data-testid*="device"]' );
 			await expect( deviceDisplays ).toHaveCount( 2 );
@@ -108,13 +108,15 @@ test.describe( 'Responsive Focal Point Settings - Detailed Feature Tests', () =>
 			// Verify focal point coordinates are displayed
 			const coordinatesDisplay = page.locator( 'text=X: 0.5' );
 			await expect( coordinatesDisplay ).toBeVisible();
-			
+
 			const yCoordinatesDisplay = page.locator( 'text=Y: 0.5' );
 			await expect( yCoordinatesDisplay ).toBeVisible();
 		}
 	} );
 
-	test( 'Fixed device breakpoints are correctly applied', async ( { page } ) => {
+	test( 'Fixed device breakpoints are correctly applied', async ( {
+		page,
+	} ) => {
 		await wpAdmin.openBlockInspector();
 
 		const responsiveFocalPanel = page.locator(
@@ -122,7 +124,7 @@ test.describe( 'Responsive Focal Point Settings - Detailed Feature Tests', () =>
 		);
 		if ( await responsiveFocalPanel.isVisible() ) {
 			await responsiveFocalPanel.click();
-			
+
 			// Add mobile device focal point
 			await page.locator( 'button.crf-add-focal-point' ).click();
 			const mobileDisplay = page.locator( 'text=Device: mobile' );
@@ -132,7 +134,7 @@ test.describe( 'Responsive Focal Point Settings - Detailed Feature Tests', () =>
 			// Mobile: (max-width: 600px)
 			// Tablet: (min-width: 601px) and (max-width: 1024px)
 			// No user input for breakpoints needed - they are pre-defined
-			
+
 			// This test verifies the simplified device-based system
 			// where users don't need to configure breakpoints manually
 		}
@@ -241,10 +243,10 @@ test.describe( 'Responsive Focal Point Settings - Detailed Feature Tests', () =>
 			const mobileDisplays = page.locator( 'text=Device: mobile' );
 			await expect( mobileDisplays ).toHaveCount( 2 ); // Both default to mobile
 
-			// Note: Focal point pickers are not currently displayed 
+			// Note: Focal point pickers are not currently displayed
 			// in the temporary device display implementation
 			// This will be implemented when the new device-based UI is created
-			
+
 			// For now, verify that device information is correctly displayed
 			const coordinateDisplays = page.locator( 'div:has-text("X:")' );
 			await expect( coordinateDisplays ).toHaveCount( 2 );
@@ -291,10 +293,10 @@ test.describe( 'Responsive Focal Point Settings - Detailed Feature Tests', () =>
 			// - Fixed breakpoints (mobile: ≤600px, tablet: 601px-1024px)
 			// - No user input validation needed for breakpoints
 			// - Device types are predefined
-			
+
 			const deviceDisplay = page.locator( 'text=Device: mobile' );
 			await expect( deviceDisplay ).toBeVisible();
-			
+
 			// Verify coordinate boundaries (0.0 to 1.0)
 			const coordinateDisplays = page.locator( 'text=X: 0.5' );
 			await expect( coordinateDisplays ).toBeVisible();

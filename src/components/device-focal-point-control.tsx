@@ -24,15 +24,15 @@ interface DeviceFocalPointControlProps {
 /**
  * Device-specific focal point control component
  * Combines toggle control and focal point picker
- * @param root0
- * @param root0.device
- * @param root0.label
- * @param root0.description
- * @param root0.enabled
- * @param root0.focalPoint
- * @param root0.url
- * @param root0.onToggle
- * @param root0.onFocalPointChange
+ * @param props                    Component properties
+ * @param props.device             Device type (mobile/tablet)
+ * @param props.label              Display label for the control
+ * @param props.description        Device description (e.g., "600px and below")
+ * @param props.enabled            Whether the focal point is enabled
+ * @param props.focalPoint         Current focal point settings
+ * @param props.url                Image URL for the focal point picker
+ * @param props.onToggle           Callback when toggle state changes
+ * @param props.onFocalPointChange Callback when focal point changes
  */
 export const DeviceFocalPointControl = ( {
 	device,

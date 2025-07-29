@@ -11,8 +11,16 @@ import { useSelect } from '@wordpress/data';
 export const useDeviceType = (): string => {
 	return useSelect( ( select ) => {
 		// Try different store/selector combinations for different WP versions
-		const editPost = select( 'core/edit-post' ) as any;
-		const editor = select( 'core/editor' ) as any;
+		const editPost = select( 'core/edit-post' ) as
+			| {
+					__experimentalGetPreviewDeviceType?: () => string;
+			  }
+			| undefined;
+		const editor = select( 'core/editor' ) as
+			| {
+					getDeviceType?: () => string;
+			  }
+			| undefined;
 
 		// WordPress 6.x uses this
 		if ( editor && editor.getDeviceType ) {

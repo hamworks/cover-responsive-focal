@@ -139,9 +139,7 @@ export const ResponsiveFocalControls = (
 			) {
 				const newX = editedFocal.x || 0.5;
 				const newY = editedFocal.y || 0.5;
-				const newPoint = JSON.parse(
-					JSON.stringify( { x: newX, y: newY } )
-				);
+				const newPoint = { x: newX, y: newY };
 				setPreviewFocalPoint( newPoint );
 			}
 		}

@@ -9,6 +9,17 @@ import {
 import { createResponsiveFocalPoint } from '../../src/validation/factory';
 import { getMediaQueryForDevice } from '../../src/validation/media-query';
 
+// Test helper to safely test invalid types without using 'as any'
+const testCreateResponsiveFocalPoint = (
+	device: unknown,
+	x: number,
+	y: number
+) => {
+	// This helper allows us to test runtime validation with invalid types
+	// without violating TypeScript's type safety at the call site
+	return createResponsiveFocalPoint( device as string, x, y );
+};
+
 // RED: First, write failing tests before implementation
 describe( 'Focal Point Validation (TDD)', () => {
 	describe( 'validateFocalPoint function', () => {
@@ -241,12 +252,16 @@ describe( 'Focal Point Validation (TDD)', () => {
 		} );
 
 		test( 'returns null for null device type', () => {
-			const result = createResponsiveFocalPoint( null, 0.6, 0.4 );
+			const result = testCreateResponsiveFocalPoint( null, 0.6, 0.4 );
 			expect( result ).toBeNull();
 		} );
 
 		test( 'returns null for undefined device type', () => {
-			const result = createResponsiveFocalPoint( undefined, 0.6, 0.4 );
+			const result = testCreateResponsiveFocalPoint(
+				undefined,
+				0.6,
+				0.4
+			);
 			expect( result ).toBeNull();
 		} );
 	} );

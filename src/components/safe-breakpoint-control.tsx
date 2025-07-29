@@ -10,7 +10,6 @@ import {
 } from '@wordpress/components';
 import { DEFAULTS, VALIDATION } from '../constants';
 import { isDevelopment } from '../utils/environment';
-import { clampBreakpoint } from '../utils/validation';
 
 /**
  * Props for SafeBreakpointControl
@@ -45,8 +44,7 @@ export const SafeBreakpointControl = ( props: SafeBreakpointControlProps ) => {
 							typeof newValue === 'number' && ! isNaN( newValue )
 								? newValue
 								: DEFAULTS.BREAKPOINT;
-						const clampedValue = clampBreakpoint( numValue );
-						onChange( clampedValue );
+						onChange( numValue );
 					} }
 					min={ VALIDATION.MIN_BREAKPOINT }
 					max={ VALIDATION.MAX_BREAKPOINT }
@@ -83,8 +81,7 @@ export const SafeBreakpointControl = ( props: SafeBreakpointControlProps ) => {
 				const validNumValue = isNaN( numValue )
 					? DEFAULTS.BREAKPOINT
 					: numValue;
-				const clampedValue = clampBreakpoint( validNumValue );
-				onChange( clampedValue );
+				onChange( validNumValue );
 			} }
 			min={ VALIDATION.MIN_BREAKPOINT }
 			max={ VALIDATION.MAX_BREAKPOINT }

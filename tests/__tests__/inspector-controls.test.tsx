@@ -261,15 +261,27 @@ interface MockResponsiveFocalItemProps {
 
 jest.mock( '../../src/components/responsive-focal-item', () => ( {
 	ResponsiveFocalItem: ( props: MockResponsiveFocalItemProps ) => {
-		const { focal, index, imageUrl, isActive, isDuplicate, onUpdate, onRemove } = props;
+		const {
+			focal,
+			index,
+			imageUrl,
+			isActive,
+			isDuplicate,
+			onUpdate,
+			onRemove,
+		} = props;
 		return (
 			<div data-testid="responsive-focal-item" data-index={ index }>
 				<div data-testid="vstack" data-spacing="3">
 					{ isActive && (
-						<div data-testid="active-indicator">Active for current viewport</div>
+						<div data-testid="active-indicator">
+							Active for current viewport
+						</div>
 					) }
 					{ isDuplicate && (
-						<div data-testid="duplicate-warning">Warning: This breakpoint is duplicated</div>
+						<div data-testid="duplicate-warning">
+							Warning: This breakpoint is duplicated
+						</div>
 					) }
 					<div data-testid="toggle-group-control">
 						<span>Media Query Type</span>
@@ -988,18 +1000,24 @@ describe( 'ResponsiveFocalControls - Duplicate Breakpoint Detection', () => {
 		// Two items should have duplicate warnings (both 500px breakpoints)
 		const warnings = screen.getAllByTestId( 'duplicate-warning' );
 		expect( warnings ).toHaveLength( 2 );
-		expect( warnings[ 0 ] ).toHaveTextContent( 'Warning: This breakpoint is duplicated' );
+		expect( warnings[ 0 ] ).toHaveTextContent(
+			'Warning: This breakpoint is duplicated'
+		);
 	} );
 
 	test( 'should not show duplicate warning for unique breakpoints', () => {
 		render( <ResponsiveFocalControls { ...propsWithDuplicates } /> );
 
 		// Check that the unique breakpoint (768px) doesn't have a duplicate warning
-		const responsiveItems = screen.getAllByTestId( 'responsive-focal-item' );
+		const responsiveItems = screen.getAllByTestId(
+			'responsive-focal-item'
+		);
 		expect( responsiveItems ).toHaveLength( 3 );
-		
+
 		// The third item (768px) should not have a duplicate warning
-		const thirdItemWarnings = responsiveItems[ 2 ].querySelectorAll( '[data-testid="duplicate-warning"]' );
+		const thirdItemWarnings = responsiveItems[ 2 ].querySelectorAll(
+			'[data-testid="duplicate-warning"]'
+		);
 		expect( thirdItemWarnings ).toHaveLength( 0 );
 	} );
 
@@ -1024,7 +1042,9 @@ describe( 'ResponsiveFocalControls - Duplicate Breakpoint Detection', () => {
 			} as CoverBlockAttributes,
 		};
 
-		render( <ResponsiveFocalControls { ...propsWithDifferentMediaTypes } /> );
+		render(
+			<ResponsiveFocalControls { ...propsWithDifferentMediaTypes } />
+		);
 
 		// Should not show duplicate warnings because media types are different
 		const warnings = screen.queryAllByTestId( 'duplicate-warning' );
@@ -1071,13 +1091,17 @@ describe( 'ResponsiveFocalControls - Preview Functionality', () => {
 
 		const toggleControl = screen.getByTestId( 'toggle-control' );
 		expect( toggleControl ).toBeInTheDocument();
-		expect( screen.getByLabelText( 'Preview in Editor' ) ).toBeInTheDocument();
+		expect(
+			screen.getByLabelText( 'Preview in Editor' )
+		).toBeInTheDocument();
 	} );
 
 	test( 'should show correct help text when preview is disabled', () => {
 		render( <ResponsiveFocalControls { ...defaultProps } /> );
 
-		expect( screen.getByText( 'Preview disabled, showing core focal point' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( 'Preview disabled, showing core focal point' )
+		).toBeInTheDocument();
 	} );
 
 	test( 'should show correct help text when preview is enabled', () => {
@@ -1088,14 +1112,18 @@ describe( 'ResponsiveFocalControls - Preview Functionality', () => {
 
 		render( <ResponsiveFocalControls { ...propsWithPreview } /> );
 
-		expect( screen.getByText( 'Showing responsive focal point preview' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( 'Showing responsive focal point preview' )
+		).toBeInTheDocument();
 	} );
 
 	test( 'should call setPreviewFocalPoint when toggle is turned on', async () => {
 		const user = userEvent.setup();
-		
+
 		// Mock the hook to return an applicable focal point
-		const { useApplicableFocalPoint } = require( '../../src/hooks/use-applicable-focal-point' );
+		const {
+			useApplicableFocalPoint,
+		} = require( '../../src/hooks/use-applicable-focal-point' );
 		useApplicableFocalPoint.mockReturnValue( {
 			mediaType: 'max-width',
 			breakpoint: 500,
@@ -1131,7 +1159,9 @@ describe( 'ResponsiveFocalControls - Preview Functionality', () => {
 
 	test( 'should show active indicator for applicable focal point', () => {
 		// Mock the hook to return an applicable focal point
-		const { useApplicableFocalPoint } = require( '../../src/hooks/use-applicable-focal-point' );
+		const {
+			useApplicableFocalPoint,
+		} = require( '../../src/hooks/use-applicable-focal-point' );
 		useApplicableFocalPoint.mockReturnValue( {
 			mediaType: 'max-width',
 			breakpoint: 500,
@@ -1144,14 +1174,18 @@ describe( 'ResponsiveFocalControls - Preview Functionality', () => {
 		// Only the first item (500px) should be active
 		const activeIndicators = screen.getAllByTestId( 'active-indicator' );
 		expect( activeIndicators ).toHaveLength( 1 );
-		expect( activeIndicators[ 0 ] ).toHaveTextContent( 'Active for current viewport' );
+		expect( activeIndicators[ 0 ] ).toHaveTextContent(
+			'Active for current viewport'
+		);
 	} );
 
 	test( 'should update preview only when editing the active focal point', async () => {
 		const user = userEvent.setup();
 
 		// Mock the hook to return the first focal point as applicable
-		const { useApplicableFocalPoint } = require( '../../src/hooks/use-applicable-focal-point' );
+		const {
+			useApplicableFocalPoint,
+		} = require( '../../src/hooks/use-applicable-focal-point' );
 		useApplicableFocalPoint.mockReturnValue( {
 			mediaType: 'max-width',
 			breakpoint: 500,
@@ -1160,7 +1194,9 @@ describe( 'ResponsiveFocalControls - Preview Functionality', () => {
 		} );
 
 		// Mock findApplicableFocalPoint to return the same
-		const { findApplicableFocalPoint } = require( '../../src/hooks/use-applicable-focal-point' );
+		const {
+			findApplicableFocalPoint,
+		} = require( '../../src/hooks/use-applicable-focal-point' );
 		findApplicableFocalPoint.mockReturnValue( {
 			mediaType: 'max-width',
 			breakpoint: 500,
@@ -1194,7 +1230,9 @@ describe( 'ResponsiveFocalControls - Preview Functionality', () => {
 		const user = userEvent.setup();
 
 		// Mock the hook to return the first focal point as applicable
-		const { useApplicableFocalPoint } = require( '../../src/hooks/use-applicable-focal-point' );
+		const {
+			useApplicableFocalPoint,
+		} = require( '../../src/hooks/use-applicable-focal-point' );
 		useApplicableFocalPoint.mockReturnValue( {
 			mediaType: 'max-width',
 			breakpoint: 500,
@@ -1203,7 +1241,9 @@ describe( 'ResponsiveFocalControls - Preview Functionality', () => {
 		} );
 
 		// Mock findApplicableFocalPoint to still return the first one
-		const { findApplicableFocalPoint } = require( '../../src/hooks/use-applicable-focal-point' );
+		const {
+			findApplicableFocalPoint,
+		} = require( '../../src/hooks/use-applicable-focal-point' );
 		findApplicableFocalPoint.mockReturnValue( {
 			mediaType: 'max-width',
 			breakpoint: 500,

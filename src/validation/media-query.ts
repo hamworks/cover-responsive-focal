@@ -1,21 +1,19 @@
 /**
- * Cover Responsive Focal - Media Query Generation
+ * Cover Responsive Focal - Media Query Generation (Simplified)
  */
 
-import type { GenerateMediaQuery } from '../types';
+import type { GetMediaQueryForDevice } from '../types';
+import { DEVICE_BREAKPOINTS } from '../constants';
 
 /**
- * Generate media query string
- * Creates a CSS media query from media type and breakpoint
+ * Get media query string for device type (simplified)
+ * Uses fixed breakpoints for mobile and tablet
  *
- * @param mediaType  - Media query type
- * @param breakpoint - Breakpoint value
+ * @param device - Device type (mobile/tablet)
  * @return Formatted media query string
  */
-export const generateMediaQuery: GenerateMediaQuery = (
-	mediaType: string,
-	breakpoint: number
+export const getMediaQueryForDevice: GetMediaQueryForDevice = (
+	device: 'mobile' | 'tablet'
 ): string => {
-	// Preserve decimal precision for CSS px values
-	return `(${ mediaType }: ${ breakpoint }px)`;
+	return DEVICE_BREAKPOINTS[ device ].mediaQuery;
 };

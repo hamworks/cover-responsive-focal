@@ -12,8 +12,10 @@ import type {
 import { DEFAULTS } from './constants';
 import { ResponsiveFocalItem } from './components/responsive-focal-item';
 import { isDevelopment } from './utils/environment';
-import { clampBreakpoint } from './utils/validation';
-import { useApplicableFocalPoint, findApplicableFocalPoint } from './hooks/use-applicable-focal-point';
+import {
+	useApplicableFocalPoint,
+	findApplicableFocalPoint,
+} from './hooks/use-applicable-focal-point';
 import { useEffectiveViewportWidth } from './hooks/use-device-type';
 
 /**
@@ -25,10 +27,15 @@ import { useEffectiveViewportWidth } from './hooks/use-device-type';
 export const ResponsiveFocalControls = (
 	props: ResponsiveFocalControlsProps
 ) => {
-	const { attributes, setAttributes, previewFocalPoint, setPreviewFocalPoint } = props;
+	const {
+		attributes,
+		setAttributes,
+		previewFocalPoint,
+		setPreviewFocalPoint,
+	} = props;
 	const safeAttributes = attributes || {};
 	const { responsiveFocal = [] } = safeAttributes;
-	const previewEnabled = !!previewFocalPoint;
+	const previewEnabled = !! previewFocalPoint;
 	const applicableFocalPoint = useApplicableFocalPoint( responsiveFocal );
 	const viewportWidth = useEffectiveViewportWidth();
 
@@ -68,7 +75,6 @@ export const ResponsiveFocalControls = (
 		index: number,
 		updates: Partial< ResponsiveFocalPoint >
 	) => {
-
 		// Safe handling of index and updates
 		if (
 			typeof index !== 'number' ||
@@ -105,12 +111,11 @@ export const ResponsiveFocalControls = (
 		}
 
 		if ( 'breakpoint' in updates ) {
-			const numValue =
+			safeUpdates.breakpoint =
 				typeof updates.breakpoint === 'number' &&
 				! isNaN( updates.breakpoint )
 					? updates.breakpoint
 					: DEFAULTS.BREAKPOINT;
-			safeUpdates.breakpoint = clampBreakpoint( numValue );
 		}
 
 		if ( 'x' in updates ) {
@@ -133,16 +138,24 @@ export const ResponsiveFocalControls = (
 
 		// Update preview only if the edited focal point is the applicable one
 		if ( previewFocalPoint !== null ) {
-			const updatedApplicableFocal = findApplicableFocalPoint( updatedFocals, viewportWidth );
+			const updatedApplicableFocal = findApplicableFocalPoint(
+				updatedFocals,
+				viewportWidth
+			);
 			const editedFocal = updatedFocals[ index ];
 
 			// Only update preview if the edited focal point is the one that applies to current viewport
-			if ( updatedApplicableFocal && editedFocal &&
-				 updatedApplicableFocal.breakpoint === editedFocal.breakpoint &&
-				 updatedApplicableFocal.mediaType === editedFocal.mediaType ) {
+			if (
+				updatedApplicableFocal &&
+				editedFocal &&
+				updatedApplicableFocal.breakpoint === editedFocal.breakpoint &&
+				updatedApplicableFocal.mediaType === editedFocal.mediaType
+			) {
 				const newX = editedFocal.x || 0.5;
 				const newY = editedFocal.y || 0.5;
-				const newPoint = JSON.parse( JSON.stringify( { x: newX, y: newY } ) );
+				const newPoint = JSON.parse(
+					JSON.stringify( { x: newX, y: newY } )
+				);
 				setPreviewFocalPoint( newPoint );
 			}
 		}
@@ -201,15 +214,19 @@ export const ResponsiveFocalControls = (
 					{ responsiveFocal.map(
 						( focal: ResponsiveFocalPoint, index: number ) => {
 							// Check if this focal point is active without using hooks in map
-							const isActive = applicableFocalPoint ?
-								applicableFocalPoint.breakpoint === focal.breakpoint &&
-								applicableFocalPoint.mediaType === focal.mediaType : false;
+							const isActive = applicableFocalPoint
+								? applicableFocalPoint.breakpoint ===
+										focal.breakpoint &&
+								  applicableFocalPoint.mediaType ===
+										focal.mediaType
+								: false;
 
 							// Check for duplicate breakpoints
-							const duplicates = responsiveFocal.filter( ( f, i ) =>
-								i !== index &&
-								f.mediaType === focal.mediaType &&
-								f.breakpoint === focal.breakpoint
+							const duplicates = responsiveFocal.filter(
+								( f, i ) =>
+									i !== index &&
+									f.mediaType === focal.mediaType &&
+									f.breakpoint === focal.breakpoint
 							);
 							const isDuplicate = duplicates.length > 0;
 

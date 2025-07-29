@@ -33,8 +33,16 @@ interface ResponsiveFocalItemProps {
  * @param props Component props
  */
 export const ResponsiveFocalItem = ( props: ResponsiveFocalItemProps ) => {
-	const { focal, index, imageUrl, isActive, isDuplicate, onUpdate, onRemove } = props;
-	
+	const {
+		focal,
+		index,
+		imageUrl,
+		isActive,
+		isDuplicate,
+		onUpdate,
+		onRemove,
+	} = props;
+
 	// Safe handling of focal point data
 	const safeFocal = {
 		mediaType: focal?.mediaType || DEFAULTS.MEDIA_TYPE,
@@ -53,7 +61,10 @@ export const ResponsiveFocalItem = ( props: ResponsiveFocalItemProps ) => {
 	};
 
 	// Check if this breakpoint applies to current viewport
-	const appliesToViewport = useBreakpointApplies( safeFocal.breakpoint, safeFocal.mediaType );
+	const appliesToViewport = useBreakpointApplies(
+		safeFocal.breakpoint,
+		safeFocal.mediaType
+	);
 
 	return (
 		<SafeStackLayout spacing={ 3 }>
@@ -91,7 +102,7 @@ export const ResponsiveFocalItem = ( props: ResponsiveFocalItemProps ) => {
 					) }
 				</div>
 			) }
-			{ !appliesToViewport && (
+			{ ! appliesToViewport && (
 				<div
 					style={ {
 						padding: '8px',

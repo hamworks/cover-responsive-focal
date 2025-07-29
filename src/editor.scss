@@ -6,18 +6,6 @@
 	margin-bottom: 1rem;
 }
 
-.crf-focal-point-item {
-	border: 1px solid var(--wp--preset--color--light-gray-500, #ddd);
-	border-radius: 4px;
-	padding: 12px;
-	margin-bottom: 12px;
-	background-color: var(--wp--preset--color--light-gray-100, #f9f9f9);
-
-	&:last-child {
-		margin-bottom: 0;
-	}
-}
-
 .crf-focal-point-header {
 	display: flex;
 	justify-content: space-between;

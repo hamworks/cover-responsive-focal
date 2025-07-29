@@ -36,31 +36,33 @@ const withResponsiveFocalControls = createHigherOrderComponent(
 			}
 
 			const { attributes, setAttributes } = props;
-			
+
 			// Use local state for preview instead of block attribute
-			const [ previewFocalPoint, setPreviewFocalPoint ] = useState< { x: number; y: number } | null >( null );
-			
+			const [ previewFocalPoint, setPreviewFocalPoint ] = useState< {
+				x: number;
+				y: number;
+			} | null >( null );
 
 			// Create modified props for preview
 			const createModifiedProps = () => {
 				if ( ! previewFocalPoint ) {
 					return props;
 				}
-				
+
 				const x = Math.round( previewFocalPoint.x * 100 );
 				const y = Math.round( previewFocalPoint.y * 100 );
 				const previewContentPosition = `${ x }% ${ y }%`;
-				
+
 				return {
 					...props,
 					attributes: {
 						...attributes,
 						focalPoint: { ...previewFocalPoint },
-						contentPosition: previewContentPosition
-					}
+						contentPosition: previewContentPosition,
+					},
 				};
 			};
-			
+
 			const modifiedProps = createModifiedProps();
 
 			return (

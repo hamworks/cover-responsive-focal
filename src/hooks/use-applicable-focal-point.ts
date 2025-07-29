@@ -8,7 +8,7 @@ import type { ResponsiveFocalPoint } from '../types';
 import { useEffectiveViewportWidth } from './use-device-type';
 
 /**
- * Find the focal point that applies to given viewport width
+ * Find the focal point that applies to given viewport width (simplified for device types)
  * @param responsiveFocal Array of responsive focal points
  * @param viewportWidth   The viewport width to check against
  * @return The applicable focal point or null
@@ -21,41 +21,24 @@ export const findApplicableFocalPoint = (
 		return null;
 	}
 
-	// Separate by media type
-	const maxWidthFocals = responsiveFocal.filter(
-		( f ) => ( f.mediaType || 'max-width' ) === 'max-width'
-	);
-	const minWidthFocals = responsiveFocal.filter(
-		( f ) => f.mediaType === 'min-width'
-	);
-
-	// For max-width: sort ascending (smaller values first for CSS specificity)
-	const sortedMaxWidth = [ ...maxWidthFocals ].sort(
-		( a, b ) => ( a.breakpoint || 0 ) - ( b.breakpoint || 0 )
-	);
-
-	// Find the most specific max-width match
-	for ( const focal of sortedMaxWidth ) {
-		const bp = focal.breakpoint || 0;
-		if ( viewportWidth <= bp ) {
-			return focal;
-		}
+	// Find the device type that applies to current viewport width
+	// Mobile: <= 600px, Tablet: 601px-1024px
+	let targetDevice: 'mobile' | 'tablet';
+	if ( viewportWidth <= 600 ) {
+		targetDevice = 'mobile';
+	} else if ( viewportWidth <= 1024 ) {
+		targetDevice = 'tablet';
+	} else {
+		// For desktop (>1024px), return null as we don't support it
+		return null;
 	}
 
-	// For min-width: sort descending (larger values first for CSS specificity)
-	const sortedMinWidth = [ ...minWidthFocals ].sort(
-		( a, b ) => ( b.breakpoint || 0 ) - ( a.breakpoint || 0 )
+	// Find focal point for the target device
+	const deviceFocal = responsiveFocal.find(
+		( f ) => f.device === targetDevice
 	);
 
-	// Find the most specific min-width match
-	for ( const focal of sortedMinWidth ) {
-		const bp = focal.breakpoint || 0;
-		if ( viewportWidth >= bp ) {
-			return focal;
-		}
-	}
-
-	return null;
+	return deviceFocal || null;
 };
 
 /**
@@ -74,7 +57,7 @@ export const useApplicableFocalPoint = (
 };
 
 /**
- * Check if a specific focal point is active for current viewport
+ * Check if a specific focal point is active for current viewport (simplified)
  * @param focal           The focal point to check
  * @param responsiveFocal All responsive focal points
  * @return Whether the focal point is active
@@ -90,28 +73,24 @@ export const useIsFocalPointActive = (
 			return false;
 		}
 
-		return (
-			applicableFocal.breakpoint === focal.breakpoint &&
-			applicableFocal.mediaType === focal.mediaType
-		);
+		return applicableFocal.device === focal.device;
 	}, [ applicableFocal, focal ] );
 };
 
 /**
- * Check if a breakpoint applies to current viewport
- * @param breakpoint The breakpoint value
- * @param mediaType  The media query type
- * @return Whether the breakpoint applies
+ * Check if a device applies to current viewport (simplified)
+ * @param device The device type to check
+ * @return Whether the device applies
  */
-export const useBreakpointApplies = (
-	breakpoint: number,
-	mediaType: 'min-width' | 'max-width'
-): boolean => {
+export const useDeviceApplies = ( device: 'mobile' | 'tablet' ): boolean => {
 	const viewportWidth = useEffectiveViewportWidth();
 
 	return useMemo( () => {
-		return mediaType === 'max-width'
-			? viewportWidth <= breakpoint
-			: viewportWidth >= breakpoint;
-	}, [ breakpoint, mediaType, viewportWidth ] );
+		if ( device === 'mobile' ) {
+			return viewportWidth <= 600;
+		} else if ( device === 'tablet' ) {
+			return viewportWidth > 600 && viewportWidth <= 1024;
+		}
+		return false;
+	}, [ device, viewportWidth ] );
 };

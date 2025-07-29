@@ -10,7 +10,7 @@ import type {
 	ResponsiveFocalPoint,
 } from './types';
 import { DEFAULTS } from './constants';
-import { ResponsiveFocalItem } from './components/responsive-focal-item';
+// Note: ResponsiveFocalItem will be replaced with new device-based UI components
 import { isDevelopment } from './utils/environment';
 import {
 	useApplicableFocalPoint,
@@ -44,8 +44,7 @@ export const ResponsiveFocalControls = (
 	 */
 	const addNewFocalPoint = () => {
 		const newFocalPoint: ResponsiveFocalPoint = {
-			mediaType: DEFAULTS.MEDIA_TYPE,
-			breakpoint: DEFAULTS.BREAKPOINT,
+			device: DEFAULTS.DEVICE,
 			x: DEFAULTS.FOCAL_X,
 			y: DEFAULTS.FOCAL_Y,
 		};
@@ -56,9 +55,10 @@ export const ResponsiveFocalControls = (
 	};
 
 	/**
-	 * Remove focal point row
+	 * Remove focal point row (temporarily unused)
 	 * @param index Index to remove
 	 */
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const removeFocalPoint = ( index: number ) => {
 		const updatedFocals = responsiveFocal.filter(
 			( _: ResponsiveFocalPoint, i: number ) => i !== index
@@ -67,10 +67,11 @@ export const ResponsiveFocalControls = (
 	};
 
 	/**
-	 * Update focal point row
+	 * Update focal point row (temporarily unused)
 	 * @param index   Index to update
 	 * @param updates Partial updates to apply
 	 */
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const updateFocalPoint = (
 		index: number,
 		updates: Partial< ResponsiveFocalPoint >
@@ -102,20 +103,11 @@ export const ResponsiveFocalControls = (
 		// Safe handling with fallbacks for invalid values
 		const safeUpdates: Partial< ResponsiveFocalPoint > = {};
 
-		if ( 'mediaType' in updates ) {
-			safeUpdates.mediaType =
-				updates.mediaType === 'min-width' ||
-				updates.mediaType === 'max-width'
-					? updates.mediaType
-					: DEFAULTS.MEDIA_TYPE;
-		}
-
-		if ( 'breakpoint' in updates ) {
-			safeUpdates.breakpoint =
-				typeof updates.breakpoint === 'number' &&
-				! isNaN( updates.breakpoint )
-					? updates.breakpoint
-					: DEFAULTS.BREAKPOINT;
+		if ( 'device' in updates ) {
+			safeUpdates.device =
+				updates.device === 'mobile' || updates.device === 'tablet'
+					? updates.device
+					: DEFAULTS.DEVICE;
 		}
 
 		if ( 'x' in updates ) {
@@ -148,8 +140,7 @@ export const ResponsiveFocalControls = (
 			if (
 				updatedApplicableFocal &&
 				editedFocal &&
-				updatedApplicableFocal.breakpoint === editedFocal.breakpoint &&
-				updatedApplicableFocal.mediaType === editedFocal.mediaType
+				updatedApplicableFocal.device === editedFocal.device
 			) {
 				const newX = editedFocal.x || 0.5;
 				const newY = editedFocal.y || 0.5;
@@ -214,33 +205,27 @@ export const ResponsiveFocalControls = (
 					{ responsiveFocal.map(
 						( focal: ResponsiveFocalPoint, index: number ) => {
 							// Check if this focal point is active without using hooks in map
+							// eslint-disable-next-line @typescript-eslint/no-unused-vars
 							const isActive = applicableFocalPoint
-								? applicableFocalPoint.breakpoint ===
-										focal.breakpoint &&
-								  applicableFocalPoint.mediaType ===
-										focal.mediaType
+								? applicableFocalPoint.device === focal.device
 								: false;
 
-							// Check for duplicate breakpoints
+							// Check for duplicate devices
+							// eslint-disable-next-line @typescript-eslint/no-unused-vars
 							const duplicates = responsiveFocal.filter(
 								( f, i ) =>
-									i !== index &&
-									f.mediaType === focal.mediaType &&
-									f.breakpoint === focal.breakpoint
+									i !== index && f.device === focal.device
 							);
+							// eslint-disable-next-line @typescript-eslint/no-unused-vars
 							const isDuplicate = duplicates.length > 0;
 
 							return (
 								<Fragment key={ index }>
-									<ResponsiveFocalItem
-										focal={ focal }
-										index={ index }
-										imageUrl={ safeAttributes.url }
-										isActive={ isActive }
-										isDuplicate={ isDuplicate }
-										onUpdate={ updateFocalPoint }
-										onRemove={ removeFocalPoint }
-									/>
+									{ /* TODO: Replace with new device-based UI component */ }
+									<div>
+										Device: { focal.device }, X: { focal.x }
+										, Y: { focal.y }
+									</div>
 									<hr />
 								</Fragment>
 							);
@@ -254,7 +239,7 @@ export const ResponsiveFocalControls = (
 				onClick={ addNewFocalPoint }
 				className="crf-add-focal-point"
 			>
-				{ __( 'Add New Breakpoint', 'cover-responsive-focal' ) }
+				{ __( 'Add New Device', 'cover-responsive-focal' ) }
 			</Button>
 		</PanelBody>
 	);

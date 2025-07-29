@@ -31,10 +31,6 @@ export const DEFAULTS = {
 	FOCAL_X: 0.5,
 	/** Default focal point Y coordinate */
 	FOCAL_Y: 0.5,
-	/** Temporary breakpoint for backward compatibility (will be removed) */
-	BREAKPOINT: 768,
-	/** Temporary media type for backward compatibility (will be removed) */
-	MEDIA_TYPE: 'max-width' as const,
 } as const;
 
 /**
@@ -47,9 +43,6 @@ export const VALIDATION = {
 	MAX_FOCAL_POINT: 1,
 	/** Valid device types */
 	DEVICE_TYPES: [ 'mobile', 'tablet' ] as const,
-	/** Temporary breakpoint limits for backward compatibility (will be removed) */
-	MIN_BREAKPOINT: 100,
-	MAX_BREAKPOINT: 2000,
 } as const;
 
 /**

@@ -2,11 +2,7 @@
  * Cover Responsive Focal - Basic Validation Functions
  */
 
-import type {
-	ValidateFocalPoint,
-	ValidateMediaType,
-	ValidateBreakpoint,
-} from '../types';
+import type { ValidateFocalPoint, ValidateDeviceType } from '../types';
 import { VALIDATION } from '../constants';
 
 /**
@@ -41,48 +37,20 @@ export const validateFocalPoint: ValidateFocalPoint = (
 };
 
 /**
- * Validate media type
- * Ensures the media type is one of the supported values
+ * Validate device type (simplified for mobile/tablet only)
+ * Ensures the device type is one of the supported values
  *
- * @param mediaType - Media type to validate
+ * @param device - Device type to validate
  * @return true if valid, false otherwise
  */
-export const validateMediaType: ValidateMediaType = (
-	mediaType: unknown
+export const validateDeviceType: ValidateDeviceType = (
+	device: unknown
 ): boolean => {
 	// Type check: must be string
-	if ( typeof mediaType !== 'string' ) {
+	if ( typeof device !== 'string' ) {
 		return false;
 	}
 
-	// Check against allowed values using array includes for better maintainability
-	const allowedMediaTypes = [ 'min-width', 'max-width' ] as const;
-	return allowedMediaTypes.includes( mediaType as 'min-width' | 'max-width' );
-};
-
-/**
- * Validate breakpoint value
- * Ensures the breakpoint is a number within the valid range
- *
- * @param breakpoint - Breakpoint value to validate
- * @return true if valid, false otherwise
- */
-export const validateBreakpoint: ValidateBreakpoint = (
-	breakpoint: unknown
-): boolean => {
-	// Type check: must be number
-	if ( typeof breakpoint !== 'number' ) {
-		return false;
-	}
-
-	// NaN and Infinity check
-	if ( ! isFinite( breakpoint ) ) {
-		return false;
-	}
-
-	// Range check using constants
-	return (
-		breakpoint >= VALIDATION.MIN_BREAKPOINT &&
-		breakpoint <= VALIDATION.MAX_BREAKPOINT
-	);
+	// Check against allowed values using constants
+	return VALIDATION.DEVICE_TYPES.includes( device as 'mobile' | 'tablet' );
 };

@@ -10,11 +10,14 @@ import type {
 	ResponsiveFocalPoint,
 } from './types';
 import { DEFAULTS } from './constants';
-import { ResponsiveFocalItem } from './components/responsive-focal-item';
-import { isDevelopment } from './utils/environment';
-import { clampBreakpoint } from './utils/validation';
-import { useApplicableFocalPoint, findApplicableFocalPoint } from './hooks/use-applicable-focal-point';
-import { useEffectiveViewportWidth } from './hooks/use-device-type';
+// Note: ResponsiveFocalItem will be replaced with new device-based UI components
+// TODO: Task 4.2 - These imports will be needed for new device-based UI
+// import { isDevelopment } from './utils/environment';
+// import {
+// 	useApplicableFocalPoint,
+// 	findApplicableFocalPoint,
+// } from './hooks/use-applicable-focal-point';
+// import { useEffectiveViewportWidth } from './hooks/use-device-type';
 
 /**
  * Responsive focal point settings UI
@@ -25,20 +28,26 @@ import { useEffectiveViewportWidth } from './hooks/use-device-type';
 export const ResponsiveFocalControls = (
 	props: ResponsiveFocalControlsProps
 ) => {
-	const { attributes, setAttributes, previewFocalPoint, setPreviewFocalPoint } = props;
+	const {
+		attributes,
+		setAttributes,
+		previewFocalPoint,
+		setPreviewFocalPoint,
+	} = props;
 	const safeAttributes = attributes || {};
 	const { responsiveFocal = [] } = safeAttributes;
-	const previewEnabled = !!previewFocalPoint;
-	const applicableFocalPoint = useApplicableFocalPoint( responsiveFocal );
-	const viewportWidth = useEffectiveViewportWidth();
+	const previewEnabled = !! previewFocalPoint;
+
+	// TODO: Task 4.2 - These hooks will be needed for new device-based UI
+	// const applicableFocalPoint = useApplicableFocalPoint( responsiveFocal );
+	// const viewportWidth = useEffectiveViewportWidth();
 
 	/**
 	 * Add new focal point row
 	 */
 	const addNewFocalPoint = () => {
 		const newFocalPoint: ResponsiveFocalPoint = {
-			mediaType: DEFAULTS.MEDIA_TYPE,
-			breakpoint: DEFAULTS.BREAKPOINT,
+			device: DEFAULTS.DEVICE,
 			x: DEFAULTS.FOCAL_X,
 			y: DEFAULTS.FOCAL_Y,
 		};
@@ -48,10 +57,11 @@ export const ResponsiveFocalControls = (
 		} );
 	};
 
-	/**
-	 * Remove focal point row
-	 * @param index Index to remove
-	 */
+	// TODO: Task 4.2 - Implement device-based UI components
+	// TODO: Task 4.3 - Device state management
+	// The following functions will be needed when implementing new device-based UI
+
+	/*
 	const removeFocalPoint = ( index: number ) => {
 		const updatedFocals = responsiveFocal.filter(
 			( _: ResponsiveFocalPoint, i: number ) => i !== index
@@ -59,16 +69,10 @@ export const ResponsiveFocalControls = (
 		setAttributes( { responsiveFocal: updatedFocals } );
 	};
 
-	/**
-	 * Update focal point row
-	 * @param index   Index to update
-	 * @param updates Partial updates to apply
-	 */
 	const updateFocalPoint = (
 		index: number,
 		updates: Partial< ResponsiveFocalPoint >
 	) => {
-
 		// Safe handling of index and updates
 		if (
 			typeof index !== 'number' ||
@@ -76,7 +80,6 @@ export const ResponsiveFocalControls = (
 			index >= responsiveFocal.length
 		) {
 			if ( isDevelopment() ) {
-				// eslint-disable-next-line no-console
 				console.warn( 'Invalid index for updateFocalPoint:', index );
 			}
 			return;
@@ -84,7 +87,6 @@ export const ResponsiveFocalControls = (
 
 		if ( ! updates || typeof updates !== 'object' ) {
 			if ( isDevelopment() ) {
-				// eslint-disable-next-line no-console
 				console.warn(
 					'Invalid updates for updateFocalPoint:',
 					updates
@@ -96,21 +98,11 @@ export const ResponsiveFocalControls = (
 		// Safe handling with fallbacks for invalid values
 		const safeUpdates: Partial< ResponsiveFocalPoint > = {};
 
-		if ( 'mediaType' in updates ) {
-			safeUpdates.mediaType =
-				updates.mediaType === 'min-width' ||
-				updates.mediaType === 'max-width'
-					? updates.mediaType
-					: DEFAULTS.MEDIA_TYPE;
-		}
-
-		if ( 'breakpoint' in updates ) {
-			const numValue =
-				typeof updates.breakpoint === 'number' &&
-				! isNaN( updates.breakpoint )
-					? updates.breakpoint
-					: DEFAULTS.BREAKPOINT;
-			safeUpdates.breakpoint = clampBreakpoint( numValue );
+		if ( 'device' in updates ) {
+			safeUpdates.device =
+				updates.device === 'mobile' || updates.device === 'tablet'
+					? updates.device
+					: DEFAULTS.DEVICE;
 		}
 
 		if ( 'x' in updates ) {
@@ -133,20 +125,26 @@ export const ResponsiveFocalControls = (
 
 		// Update preview only if the edited focal point is the applicable one
 		if ( previewFocalPoint !== null ) {
-			const updatedApplicableFocal = findApplicableFocalPoint( updatedFocals, viewportWidth );
+			const updatedApplicableFocal = findApplicableFocalPoint(
+				updatedFocals,
+				viewportWidth
+			);
 			const editedFocal = updatedFocals[ index ];
 
 			// Only update preview if the edited focal point is the one that applies to current viewport
-			if ( updatedApplicableFocal && editedFocal &&
-				 updatedApplicableFocal.breakpoint === editedFocal.breakpoint &&
-				 updatedApplicableFocal.mediaType === editedFocal.mediaType ) {
+			if (
+				updatedApplicableFocal &&
+				editedFocal &&
+				updatedApplicableFocal.device === editedFocal.device
+			) {
 				const newX = editedFocal.x || 0.5;
 				const newY = editedFocal.y || 0.5;
-				const newPoint = JSON.parse( JSON.stringify( { x: newX, y: newY } ) );
+				const newPoint = { x: newX, y: newY };
 				setPreviewFocalPoint( newPoint );
 			}
 		}
 	};
+	*/
 
 	return (
 		<PanelBody
@@ -168,21 +166,13 @@ export const ResponsiveFocalControls = (
 				}
 				checked={ previewEnabled }
 				onChange={ ( value ) => {
+					// TODO: Task 4.2 - Implement preview logic for device-based UI
 					if ( value && responsiveFocal.length > 0 ) {
-						// Set preview with applicable focal point or keep enabled with no changes
-						if ( applicableFocalPoint ) {
-							setPreviewFocalPoint( {
-								x: applicableFocalPoint.x || 0.5,
-								y: applicableFocalPoint.y || 0.5,
-							} );
-						} else {
-							// Keep preview enabled but with a placeholder value
-							// This allows the toggle to stay on even when no focal point matches
-							setPreviewFocalPoint( {
-								x: attributes.focalPoint?.x || 0.5,
-								y: attributes.focalPoint?.y || 0.5,
-							} );
-						}
+						// Temporary fallback - use core focal point
+						setPreviewFocalPoint( {
+							x: attributes.focalPoint?.x || 0.5,
+							y: attributes.focalPoint?.y || 0.5,
+						} );
 					} else {
 						// Disable preview
 						setPreviewFocalPoint( null );
@@ -200,30 +190,26 @@ export const ResponsiveFocalControls = (
 				<div>
 					{ responsiveFocal.map(
 						( focal: ResponsiveFocalPoint, index: number ) => {
-							// Check if this focal point is active without using hooks in map
-							const isActive = applicableFocalPoint ?
-								applicableFocalPoint.breakpoint === focal.breakpoint &&
-								applicableFocalPoint.mediaType === focal.mediaType : false;
+							// TODO: Task 4.2 - Use these variables when implementing new device-based UI
+							/*
+							const isActive = applicableFocalPoint
+								? applicableFocalPoint.device === focal.device
+								: false;
 
-							// Check for duplicate breakpoints
-							const duplicates = responsiveFocal.filter( ( f, i ) =>
-								i !== index &&
-								f.mediaType === focal.mediaType &&
-								f.breakpoint === focal.breakpoint
+							const duplicates = responsiveFocal.filter(
+								( f, i ) =>
+									i !== index && f.device === focal.device
 							);
 							const isDuplicate = duplicates.length > 0;
+							*/
 
 							return (
 								<Fragment key={ index }>
-									<ResponsiveFocalItem
-										focal={ focal }
-										index={ index }
-										imageUrl={ safeAttributes.url }
-										isActive={ isActive }
-										isDuplicate={ isDuplicate }
-										onUpdate={ updateFocalPoint }
-										onRemove={ removeFocalPoint }
-									/>
+									{ /* TODO: Replace with new device-based UI component */ }
+									<div>
+										Device: { focal.device }, X: { focal.x }
+										, Y: { focal.y }
+									</div>
 									<hr />
 								</Fragment>
 							);
@@ -237,7 +223,7 @@ export const ResponsiveFocalControls = (
 				onClick={ addNewFocalPoint }
 				className="crf-add-focal-point"
 			>
-				{ __( 'Add New Breakpoint', 'cover-responsive-focal' ) }
+				{ __( 'Add New Device', 'cover-responsive-focal' ) }
 			</Button>
 		</PanelBody>
 	);

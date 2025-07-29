@@ -6,13 +6,21 @@ import { useSelect } from '@wordpress/data';
 
 /**
  * Get the current device preview type from WordPress editor
- * @returns Device type: 'Desktop' | 'Tablet' | 'Mobile'
+ * @return Device type: 'Desktop' | 'Tablet' | 'Mobile'
  */
 export const useDeviceType = (): string => {
 	return useSelect( ( select ) => {
 		// Try different store/selector combinations for different WP versions
-		const editPost = select( 'core/edit-post' ) as any;
-		const editor = select( 'core/editor' ) as any;
+		const editPost = select( 'core/edit-post' ) as
+			| {
+					__experimentalGetPreviewDeviceType?: () => string;
+			  }
+			| undefined;
+		const editor = select( 'core/editor' ) as
+			| {
+					getDeviceType?: () => string;
+			  }
+			| undefined;
 
 		// WordPress 6.x uses this
 		if ( editor && editor.getDeviceType ) {
@@ -31,7 +39,7 @@ export const useDeviceType = (): string => {
 
 /**
  * Get effective viewport width based on device preview mode
- * @returns Viewport width in pixels
+ * @return Viewport width in pixels
  */
 export const useEffectiveViewportWidth = (): number => {
 	const deviceType = useDeviceType();

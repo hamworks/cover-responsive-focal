@@ -3,26 +3,30 @@
  */
 
 /**
- * Media query types
+ * Device configurations (simplified to fixed breakpoints)
  */
-export const MEDIA_QUERY_TYPES = [
-	{ label: 'Min Width', value: 'min-width' },
-	{ label: 'Max Width', value: 'max-width' },
-] as const;
+export const DEVICE_BREAKPOINTS = {
+	mobile: {
+		mediaQuery: '(max-width: 600px)',
+		label: 'Mobile (600px and below)',
+	},
+	tablet: {
+		mediaQuery: '(min-width: 601px) and (max-width: 1024px)',
+		label: 'Tablet (601px-1024px)',
+	},
+} as const;
 
 /**
- * Media query type union
+ * Device type union
  */
-export type MediaQueryType = ( typeof MEDIA_QUERY_TYPES )[ number ][ 'value' ];
+export type DeviceType = keyof typeof DEVICE_BREAKPOINTS;
 
 /**
- * Default values
+ * Default values (simplified)
  */
 export const DEFAULTS = {
-	/** Default media query type */
-	MEDIA_TYPE: 'max-width' as const,
-	/** Default breakpoint */
-	BREAKPOINT: 768,
+	/** Default device type */
+	DEVICE: 'mobile' as const,
 	/** Default focal point X coordinate */
 	FOCAL_X: 0.5,
 	/** Default focal point Y coordinate */
@@ -30,17 +34,15 @@ export const DEFAULTS = {
 } as const;
 
 /**
- * Validation constraints
+ * Validation constraints (simplified)
  */
 export const VALIDATION = {
-	/** Minimum breakpoint value */
-	MIN_BREAKPOINT: 100,
-	/** Maximum breakpoint value */
-	MAX_BREAKPOINT: 2000,
 	/** Minimum focal point value */
 	MIN_FOCAL_POINT: 0,
 	/** Maximum focal point value */
 	MAX_FOCAL_POINT: 1,
+	/** Valid device types */
+	DEVICE_TYPES: [ 'mobile', 'tablet' ] as const,
 } as const;
 
 /**

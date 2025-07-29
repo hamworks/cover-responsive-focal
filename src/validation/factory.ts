@@ -6,35 +6,24 @@ import type {
 	CreateResponsiveFocalPoint,
 	ResponsiveFocalPoint,
 } from '../types';
-import {
-	validateFocalPoint,
-	validateMediaType,
-	validateBreakpoint,
-} from './validators';
+import { validateFocalPoint, validateDeviceType } from './validators';
 
 /**
- * Create a ResponsiveFocalPoint object
+ * Create a ResponsiveFocalPoint object (simplified)
  * Validates all inputs and returns null if any validation fails
  *
- * @param mediaType  - Media query type
- * @param breakpoint - Breakpoint value
- * @param x          - X coordinate
- * @param y          - Y coordinate
+ * @param device - Device type (mobile/tablet)
+ * @param x      - X coordinate
+ * @param y      - Y coordinate
  * @return ResponsiveFocalPoint object or null if invalid
  */
 export const createResponsiveFocalPoint: CreateResponsiveFocalPoint = (
-	mediaType: string,
-	breakpoint: number,
+	device: string,
 	x: number,
 	y: number
 ): ResponsiveFocalPoint | null => {
-	// Validate media type
-	if ( ! validateMediaType( mediaType ) ) {
-		return null;
-	}
-
-	// Validate breakpoint
-	if ( ! validateBreakpoint( breakpoint ) ) {
+	// Validate device type
+	if ( ! validateDeviceType( device ) ) {
 		return null;
 	}
 
@@ -45,8 +34,7 @@ export const createResponsiveFocalPoint: CreateResponsiveFocalPoint = (
 
 	// All validations passed, create the object
 	return {
-		mediaType: mediaType as 'min-width' | 'max-width',
-		breakpoint,
+		device: device as 'mobile' | 'tablet',
 		x,
 		y,
 	};

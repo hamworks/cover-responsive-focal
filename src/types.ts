@@ -12,13 +12,11 @@ interface FocalPoint {
 }
 
 /**
- * Responsive focal point settings
+ * Responsive focal point settings (simplified)
  */
 export interface ResponsiveFocalPoint {
-	/** Media query type */
-	mediaType: 'min-width' | 'max-width';
-	/** Breakpoint value in pixels */
-	breakpoint: number;
+	/** Device type (fixed breakpoints) */
+	device: 'mobile' | 'tablet';
 	/** X coordinate (0-1 range) */
 	x: number;
 	/** Y coordinate (0-1 range) */
@@ -67,13 +65,15 @@ export type ResponsiveFocalControlsProps = Pick<
 };
 
 /**
- * Media query configuration
+ * Device configuration (simplified)
  */
-export interface MediaQueryConfig {
-	/** Media query type */
-	type: 'min-width' | 'max-width';
-	/** Breakpoint value in pixels */
-	value: number;
+export interface DeviceConfig {
+	/** Device type */
+	device: 'mobile' | 'tablet';
+	/** Fixed media query */
+	mediaQuery: string;
+	/** Display label */
+	label: string;
 }
 
 /**
@@ -82,19 +82,14 @@ export interface MediaQueryConfig {
 export type WPSaveElement = Element | null;
 
 /**
- * Validation function type definitions
+ * Validation function type definitions (simplified)
  * Note: These types are used in validation modules, keep them here for centralized type management
  */
 export type ValidateFocalPoint = ( x: unknown, y: unknown ) => boolean;
-export type ValidateMediaType = ( mediaType: unknown ) => boolean;
-export type ValidateBreakpoint = ( breakpoint: unknown ) => boolean;
+export type ValidateDeviceType = ( device: unknown ) => boolean;
 export type CreateResponsiveFocalPoint = (
-	mediaType: string,
-	breakpoint: number,
+	device: string,
 	x: number,
 	y: number
 ) => ResponsiveFocalPoint | null;
-export type GenerateMediaQuery = (
-	mediaType: string,
-	breakpoint: number
-) => string;
+export type GetMediaQueryForDevice = ( device: 'mobile' | 'tablet' ) => string;

@@ -15,13 +15,13 @@
     - テストを通す最小限の実装を作成
     - _要件: 1.2, 3.1_
 
-  - [ ] 2.2 デバイスタイプ検証関数を TDD で実装（シンプル化）
+  - [x] 2.2 デバイスタイプ検証関数を TDD で実装（シンプル化）
 
     - validateDeviceType 関数のテストを先に作成
     - テストを通す実装を作成（mobile/tablet のみ）
     - _要件: 1.2, 1.3_
 
-  - [ ] 2.3 ResponsiveFocalPoint 作成関数を TDD で実装（シンプル化）
+  - [x] 2.3 ResponsiveFocalPoint 作成関数を TDD で実装（シンプル化）
     - createResponsiveFocalPoint 関数のテストを先に作成（device, x, y のみ）
     - getMediaQueryForDevice 関数のテストを先に作成
     - テストを通す実装を作成
@@ -51,7 +51,7 @@
     - 固定2デバイス用の基本レイアウトを実装
     - _要件: 1.1, 6.1_
 
-  - [ ] 4.2 フォーカルポイント設定 UI の実装（シンプル化）
+  - [x] 4.2 フォーカルポイント設定 UI の実装（シンプル化）
 
     - ToggleControl（モバイル用有効/無効）を実装
     - FocalPointPicker（モバイル用）コンポーネントを統合

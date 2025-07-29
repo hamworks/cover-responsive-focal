@@ -129,14 +129,6 @@ test.describe( 'Responsive Focal Point Settings - Detailed Feature Tests', () =>
 			await page.locator( 'button.crf-add-focal-point' ).click();
 			const mobileDisplay = page.locator( 'text=Device: mobile' );
 			await expect( mobileDisplay ).toBeVisible();
-
-			// Note: In the new system, breakpoints are fixed:
-			// Mobile: (max-width: 600px)
-			// Tablet: (min-width: 601px) and (max-width: 1024px)
-			// No user input for breakpoints needed - they are pre-defined
-
-			// This test verifies the simplified device-based system
-			// where users don't need to configure breakpoints manually
 		}
 	} );
 

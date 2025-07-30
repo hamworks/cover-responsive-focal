@@ -30,7 +30,7 @@ Cover Responsive Focal provides responsive focal point functionality while maint
 cd /path/to/wordpress/wp-content/plugins/
 
 # Clone repository
-git clone https://github.com/chiilog/cover-responsive-focal.git
+git clone git@github.com:hamworks/cover-responsive-focal.git
 
 # Install dependencies
 cd cover-responsive-focal
@@ -134,7 +134,7 @@ cover-responsive-focal/
 
 ```bash
 # Clone repository
-git clone https://github.com/chiilog/cover-responsive-focal.git
+git clone git@github.com:hamworks/cover-responsive-focal.git
 cd cover-responsive-focal
 
 # Install dependencies
@@ -269,8 +269,8 @@ This plugin is released under the GPL v2 or later license.
 
 ## Support
 
-- **Issue Tracker**: [GitHub Issues](https://github.com/chiilog/cover-responsive-focal/issues)
-- **Documentation**: [Project Wiki](https://github.com/chiilog/cover-responsive-focal/wiki)
+- **Issue Tracker**: [GitHub Issues](https://github.com/hamworks/cover-responsive-focal/issues)
+- **Documentation**: [Project Wiki](https://github.com/hamworks/cover-responsive-focal/wiki)
 - **WordPress.org Support**: [Support Forum](https://wordpress.org/support/plugin/cover-responsive-focal)
 
 ## Author

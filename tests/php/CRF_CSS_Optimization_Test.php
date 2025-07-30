@@ -73,7 +73,7 @@ class CRF_CSS_Optimization_Test extends TestCase {
     private function clear_all_css_cache() {
         global $wp_transients;
         if (isset($wp_transients)) {
-            foreach ($wp_transients as $key => $_) {
+            foreach (array_keys($wp_transients) as $key) {
                 if (strpos($key, 'crf_css_') === 0) {
                     unset($wp_transients[$key]);
                 }

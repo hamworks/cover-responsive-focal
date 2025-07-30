@@ -14,7 +14,7 @@ Extend WordPress Cover blocks with device-specific focal points for mobile, tabl
 
 Cover Responsive Focal extends the standard WordPress Cover block to support device-specific focal points, allowing you to set different background image positions for mobile, tablet, and desktop devices. This ensures optimal image display across all screen sizes without compromising backward compatibility.
 
-**🎯 Key Features:**
+**Key Features:**
 
 * **Device-Specific Settings**: Set different focal points for Mobile (≤600px) and Tablet (601px-782px)
 * **Gutenberg Standards Compliant**: Follows official WordPress breakpoint specifications
@@ -23,7 +23,7 @@ Cover Responsive Focal extends the standard WordPress Cover block to support dev
 * **Lightweight & Optimized**: Minimal markup, CSS optimization with caching
 * **Zero Configuration**: Works out-of-the-box with intuitive interface
 
-**📱 Supported Breakpoints:**
+**Supported Breakpoints:**
 
 Following [Gutenberg's official breakpoint standards](https://github.com/WordPress/gutenberg/blob/trunk/packages/base-styles/_breakpoints.scss):
 
@@ -31,14 +31,14 @@ Following [Gutenberg's official breakpoint standards](https://github.com/WordPre
 * **Tablet**: 601px to 782px
 * **Desktop**: 783px and above (uses standard focal point)
 
-**✨ Perfect For:**
+**Perfect For:**
 
 * **Content Creators**: Optimize hero images for mobile without technical knowledge
 * **Web Designers**: Precise responsive control without custom CSS
 * **Theme Developers**: Enhanced responsive capabilities for client projects
 * **Marketing Teams**: Ensure brand messages remain visible on all devices
 
-**🔧 Technical Highlights:**
+**Technical Highlights:**
 
 * Built with TypeScript + React using WordPress Gutenberg components
 * Test-driven development with comprehensive test coverage

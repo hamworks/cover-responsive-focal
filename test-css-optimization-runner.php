@@ -5,10 +5,18 @@
  */
 
 // Load WordPress function mocks
-require_once 'tests/php/wp-functions-mock.php';
+$mock_file = 'tests/php/wp-functions-mock.php';
+if (!file_exists($mock_file)) {
+    die("Error: Required file not found: $mock_file\n");
+}
+require_once $mock_file;
 
 // Load plugin file
-require_once 'cover-responsive-focal.php';
+$plugin_file = 'cover-responsive-focal.php';
+if (!file_exists($plugin_file)) {
+    die("Error: Required file not found: $plugin_file\n");
+}
+require_once $plugin_file;
 
 echo "=== CSS Optimization Test Execution (TDD GREEN Phase Verification) ===\n";
 
@@ -190,7 +198,7 @@ $secure_css = $css_optimizer->generate_optimized_css_rules($responsive_focal_sec
 
 $security_tests = [
     'no_script_tags' => strpos($secure_css, '<script>') === false,
-    'alert_properly_escaped' => strpos($secure_css, 'alert(&quot;') !== false, // Check HTML escaped format
+    'no_alert_function' => strpos($secure_css, 'alert(') === false,
     'no_html_injection' => strpos($secure_css, '"id<') === false,
     'has_css_content' => !empty($secure_css) && strpos($secure_css, 'object-position') !== false,
 ];
@@ -202,7 +210,7 @@ $security_passed = array_reduce($security_tests, function($carry, $test) {
 if ($security_passed) {
     echo "✅ Security test success\n";
     echo "   - Script tag removal: ✓\n";
-    echo "   - Alert function escaping: ✓\n";
+    echo "   - Alert function removal: ✓\n";
     echo "   - HTML injection prevention: ✓\n";
     echo "   - Normal CSS generation: ✓\n";
 } else {

@@ -24,10 +24,10 @@ Cover Responsive Focalは、WordPressのGutenbergエディタにおける標準�
 
 #### 受け入れ基準
 
-1. WHEN ページが読み込まれた時 THEN モバイル（600px以下）とタブレット（601px-1024px）に対応するCSSメディアクエリが動的に生成される SHALL
+1. WHEN ページが読み込まれた時 THEN モバイル（600px以下）とタブレット（601px-782px）に対応するCSSメディアクエリが動的に生成される SHALL
 2. WHEN 画面サイズが変更された時 THEN 対応するフォーカルポイントが自動的に適用される SHALL
 3. WHEN responsiveFocal配列が空の時 THEN 標準のfocalPoint属性の動作に完全にフォールバックする SHALL
-4. WHEN デスクトップ（1025px以上）でアクセスした時 THEN 標準のfocalPoint属性が適用される SHALL
+4. WHEN デスクトップ（783px以上）でアクセスした時 THEN 標準のfocalPoint属性が適用される SHALL
 
 ### 要件3
 
@@ -69,6 +69,6 @@ Cover Responsive Focalは、WordPressのGutenbergエディタにおける標準�
 #### 受け入れ基準
 
 1. WHEN モバイル用フォーカルポイントを設定する時 THEN 「モバイル（600px以下）」のラベルと共にビジュアルなフォーカルポイントピッカーを使用できる SHALL
-2. WHEN タブレット用フォーカルポイントを設定する時 THEN 「タブレット（601px-1024px）」のラベルと共にビジュアルなフォーカルポイントピッカーを使用できる SHALL
+2. WHEN タブレット用フォーカルポイントを設定する時 THEN 「タブレット（601px-782px）」のラベルと共にビジュアルなフォーカルポイントピッカーを使用できる SHALL
 3. WHEN 各デバイス用設定を無効にする時 THEN トグルコントロールで簡単にオン/オフできる SHALL
 4. WHEN 設定を保存した時 THEN data-fp-id属性とインラインCSS変数が適切に出力される SHALL

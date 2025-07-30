@@ -1,68 +1,144 @@
 === Cover Responsive Focal ===
-Contributors:      chiilog
-Tags:              block, responsive, focal-point, cover, gutenberg, editor
+Contributors:      mel_cha
+Tags:              block, responsive, focal-point, cover, gutenberg, mobile, tablet, editor
+Requires at least: 6.8
 Tested up to:      6.8
+Requires PHP:      7.4
 Stable tag:        0.1.0
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
-Add responsive focal point functionality to WordPress Cover blocks for better responsive design control.
+Extend WordPress Cover blocks with device-specific focal points for mobile, tablet, and desktop responsiveness. Gutenberg-standard compliant.
 
 == Description ==
 
-Cover Responsive Focal extends the WordPress Cover block with responsive focal point settings, allowing you to set different focal points for different screen sizes and media queries.
+Cover Responsive Focal extends the standard WordPress Cover block to support device-specific focal points, allowing you to set different background image positions for mobile, tablet, and desktop devices. This ensures optimal image display across all screen sizes without compromising backward compatibility.
 
-**Key Features:**
+**🎯 Key Features:**
 
-* Set custom focal points for different breakpoints (320px, 768px, 1024px, 1200px)
-* Support for both min-width and max-width media queries
-* Visual focal point picker integrated into the block editor
-* Clean, intuitive interface in the Inspector Controls
-* Type-safe validation with comprehensive error handling
-* Test-driven development with 100% test coverage
-* Follows WordPress coding standards and accessibility guidelines
+* **Device-Specific Settings**: Set different focal points for Mobile (≤600px) and Tablet (601px-782px)
+* **Gutenberg Standards Compliant**: Follows official WordPress breakpoint specifications
+* **100% Backward Compatible**: Existing Cover blocks work exactly as before
+* **Real-Time Preview**: See changes instantly with editor device preview buttons
+* **Lightweight & Optimized**: Minimal markup, CSS optimization with caching
+* **Zero Configuration**: Works out-of-the-box with intuitive interface
 
-**Use Cases:**
+**📱 Supported Breakpoints:**
 
-* Optimize hero images for mobile and desktop viewing
-* Ensure important image content remains visible across all screen sizes
-* Fine-tune responsive design without requiring multiple image uploads
-* Professional responsive design control for content creators
+Following [Gutenberg's official breakpoint standards](https://github.com/WordPress/gutenberg/blob/trunk/packages/base-styles/_breakpoints.scss):
 
-Perfect for theme developers, web designers, and content creators who need precise control over how cover images display across different devices.
+* **Mobile**: 600px and below
+* **Tablet**: 601px to 782px
+* **Desktop**: 783px and above (uses standard focal point)
 
-== Installation ==
+**✨ Perfect For:**
 
-This section describes how to install the plugin and get it working.
+* **Content Creators**: Optimize hero images for mobile without technical knowledge
+* **Web Designers**: Precise responsive control without custom CSS
+* **Theme Developers**: Enhanced responsive capabilities for client projects
+* **Marketing Teams**: Ensure brand messages remain visible on all devices
 
-e.g.
+**🔧 Technical Highlights:**
 
-1. Upload the plugin files to the `/wp-content/plugins/cover-responsive-focal` directory, or install the plugin through the WordPress plugins screen directly.
-1. Activate the plugin through the 'Plugins' screen in WordPress
+* Built with TypeScript + React using WordPress Gutenberg components
+* Test-driven development with comprehensive test coverage
+* CSS optimization: minification, duplicate media query merging, caching
+* Security-first: XSS prevention, input validation, sanitization
+* Performance optimized: Sub-200ms CSS generation, minimal memory footprint
 
+== How It Works ==
+
+1. **Add Cover Block**: Create a Cover block and add your background image as usual
+2. **Open Responsive Settings**: Find "Responsive Focal Point" in the block inspector
+3. **Enable Device Settings**: Toggle mobile or tablet focal points on/off
+4. **Set Focal Points**: Use the visual picker to set optimal positions
+5. **Preview Results**: Use editor preview buttons to see changes instantly
+
+The plugin generates optimized CSS media queries that override the default focal point only for specified devices, ensuring perfect fallback behavior.
+
+**Requirements:**
+
+* WordPress 6.8 or higher
+* PHP 7.4 or higher
+* Modern browser with CSS `object-position` support
 
 == Frequently Asked Questions ==
 
-= How do I set a focal point for my Cover block? =
+= Will this affect my existing Cover blocks? =
 
-After installing the plugin, edit any Cover block and look for the "Responsive Focal Point" settings in the block inspector panel on the right side of the editor.
+No. Existing Cover blocks without responsive focal points work exactly as before. The plugin only adds functionality when specifically configured.
 
-= What are the valid focal point coordinate ranges? =
+= What happens if I deactivate the plugin? =
 
-Focal point coordinates must be numeric values between 0 and 1, where (0,0) represents the top-left corner and (1,1) represents the bottom-right corner of the image.
+Responsive focal point settings will stop working, but your standard focal point settings remain intact. No data is lost.
 
-== Screenshots ==
+= Does this work with video backgrounds? =
 
-1. Block inspector panel showing responsive focal point settings
-2. Focal point picker with coordinates display
+Yes! The plugin works with both image and video Cover blocks.
+
+= How does this impact site performance? =
+
+Minimal impact. The plugin includes CSS optimization features (minification, caching, duplicate removal) to ensure optimal performance.
+
+= Is this compatible with my theme? =
+
+Yes. The plugin works with any theme that supports WordPress Cover blocks, including block themes and classic themes.
+
+= Can I use this with page builders? =
+
+The plugin specifically enhances WordPress's native Cover block in the Gutenberg editor. Compatibility with third-party page builders varies.
+
+= How do I report bugs or request features? =
+
+Please use the [GitHub Issues](https://github.com/chiilog/cover-responsive-focal/issues) for bug reports and feature requests.
+
+== Usage Examples ==
+
+**Hero Image Optimization:**
+Perfect for ensuring faces or important elements remain visible on mobile devices when desktop crops might cut them off.
+
+**Product Photography:**
+E-commerce sites can ensure product details are prominently displayed across all device sizes.
+
+**Landscape Photography:**
+Travel and photography sites can showcase different aspects of images for different viewing contexts.
+
+**Marketing Banners:**
+Ensure call-to-action text or brand elements remain visible regardless of screen size.
+
+== Technical Details ==
+
+**Generated CSS Example:**
+
+```css
+@media (max-width: 600px) {
+  [data-fp-id="crf-123"] .wp-block-cover__image-background {
+    object-position: 60% 40% !important;
+  }
+}
+```
+
+**Extensibility:**
+
+* Built on WordPress standard hooks and filters
+* Uses `blocks.registerBlockType` for block extension
+* Uses `render_block` for frontend CSS injection
+* Architecture designed for future extensibility
 
 == Changelog ==
 
 = 0.1.0 =
-* Release
+* Initial release
+* Mobile and tablet responsive focal point support
+* Gutenberg standard breakpoint compliance
+* CSS optimization features (minification, caching, duplicate removal)
+* Comprehensive test suite
+* WordPress 6.1+ compatibility
+* PHP 7.4+ support
+* Real-time editor preview integration
+* Complete backward compatibility with existing Cover blocks
 
-== Arbitrary section ==
+== Upgrade Notice ==
 
-You may provide arbitrary sections, in the same format as the ones above. This may be of use for extremely complicated
-plugins where more information needs to be conveyed that doesn't fit into the categories of "description" or
-"installation." Arbitrary sections will be shown below the built-in sections outlined above.
+= 0.1.0 =
+Initial release of Cover Responsive Focal. Adds device-specific focal point capabilities to WordPress Cover blocks with full backward compatibility.

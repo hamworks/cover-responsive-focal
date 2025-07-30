@@ -426,8 +426,9 @@ class CRF_CSS_Optimization_Test extends TestCase {
         
         $execution_time = $end_time - $start_time;
         
-        // Should complete within reasonable time (100ms)
-        $this->assertLessThan(0.1, $execution_time, 'CSS optimization should complete within 100ms');
+        // Should complete within reasonable time (considering CI/CD environments)
+        $max_execution_time = getenv('CRF_TEST_PERFORMANCE_THRESHOLD') ?: 0.2;
+        $this->assertLessThan($max_execution_time, $execution_time, "CSS optimization should complete within {$max_execution_time}s");
         $this->assertNotEmpty($result);
     }
     

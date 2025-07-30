@@ -25,19 +25,18 @@ export const getFocalPointForDevice = (
 		return null;
 	}
 
+	// For desktop, use default focal point (no override)
+	if ( deviceType === 'Desktop' ) {
+		return null;
+	}
+
 	// Map WordPress editor device types to our device types
-	let targetDevice: 'mobile' | 'tablet' | null = null;
-	switch ( deviceType ) {
-		case 'Mobile':
-			targetDevice = 'mobile';
-			break;
-		case 'Tablet':
-			targetDevice = 'tablet';
-			break;
-		case 'Desktop':
-		default:
-			// For desktop, use default focal point (no override)
-			return null;
+	const targetDevice = deviceType === 'Mobile' || deviceType === 'Tablet' 
+		? deviceType.toLowerCase() as 'mobile' | 'tablet'
+		: null;
+
+	if ( ! targetDevice ) {
+		return null;
 	}
 
 	// Find matching responsive focal point

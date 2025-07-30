@@ -276,7 +276,7 @@ describe( 'Focal Point Validation (TDD)', () => {
 		test( 'generates correct tablet media query', () => {
 			const result = getMediaQueryForDevice( 'tablet' );
 			expect( result ).toBe(
-				'(min-width: 601px) and (max-width: 1024px)'
+				'(min-width: 601px) and (max-width: 782px)'
 			);
 		} );
 
@@ -286,7 +286,7 @@ describe( 'Focal Point Validation (TDD)', () => {
 				'(max-width: 600px)'
 			);
 			expect( getMediaQueryForDevice( 'tablet' ) ).toBe(
-				'(min-width: 601px) and (max-width: 1024px)'
+				'(min-width: 601px) and (max-width: 782px)'
 			);
 		} );
 

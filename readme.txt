@@ -90,7 +90,7 @@ The plugin specifically enhances WordPress's native Cover block in the Gutenberg
 
 = How do I report bugs or request features? =
 
-Please use the [GitHub Issues](https://github.com/chiilog/cover-responsive-focal/issues) for bug reports and feature requests.
+Please use the [GitHub Issues](https://github.com/hamworks/cover-responsive-focal/issues) for bug reports and feature requests.
 
 == Usage Examples ==
 

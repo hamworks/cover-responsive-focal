@@ -131,6 +131,11 @@ class CRF_CSS_Optimizer {
 		// Split CSS into @media blocks and non-media content
 		preg_match_all('/@media\s*([^{]+)\s*\{([^{}]*\{[^}]*\}[^{}]*)\}/i', $css, $matches, PREG_SET_ORDER);
 		
+		// If no media queries found, return original CSS
+		if (empty($matches)) {
+			return $css;
+		}
+		
 		foreach ($matches as $match) {
 			$media_query = trim($match[1]);
 			$media_content = $match[2];

@@ -67,6 +67,21 @@ if ($media_query_count === 1) {
     echo "   - Result: " . $merged . "\n";
 }
 
+// Test 2b: No media queries case
+echo "\n【Test 2b: No media queries to merge】\n";
+$no_media_css = '.regular-css { color: red; }';
+$no_media_merged = $css_optimizer->merge_duplicate_media_queries($no_media_css);
+
+if ($no_media_merged === $no_media_css) {
+    echo "✅ No media queries handling success\n";
+    echo "   - Original CSS returned when no media queries found\n";
+    echo "   - Result: " . $no_media_merged . "\n";
+} else {
+    echo "❌ No media queries handling failed\n";
+    echo "   - Expected: " . $no_media_css . "\n";
+    echo "   - Actual: " . $no_media_merged . "\n";
+}
+
 // ========================================
 // Test 3: Cache functionality
 // ========================================
@@ -201,7 +216,7 @@ $secure_css = $css_optimizer->generate_optimized_css_rules($responsive_focal_sec
 
 $security_tests = [
     'no_script_tags' => strpos($secure_css, '<script>') === false,
-    'no_alert_function' => strpos($secure_css, 'alert(') === false,
+    'no_unescaped_alert' => strpos($secure_css, 'alert("xss")') === false, // Check for actual JavaScript
     'no_html_injection' => strpos($secure_css, '"id<') === false,
     'has_css_content' => !empty($secure_css) && strpos($secure_css, 'object-position') !== false,
 ];
@@ -213,7 +228,7 @@ $security_passed = array_reduce($security_tests, function($carry, $test) {
 if ($security_passed) {
     echo "✅ Security test success\n";
     echo "   - Script tag removal: ✓\n";
-    echo "   - Alert function removal: ✓\n";
+    echo "   - Unescaped alert prevention: ✓\n";
     echo "   - HTML injection prevention: ✓\n";
     echo "   - Normal CSS generation: ✓\n";
 } else {

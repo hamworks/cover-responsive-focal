@@ -12,9 +12,9 @@ export const DEVICE_BREAKPOINTS = {
 		description: '600px and below',
 	},
 	tablet: {
-		mediaQuery: '(min-width: 601px) and (max-width: 1024px)',
-		label: 'Tablet (601px-1024px)',
-		description: '601px-1024px',
+		mediaQuery: '(min-width: 601px) and (max-width: 782px)',
+		label: 'Tablet (601px-782px)',
+		description: '601px-782px',
 	},
 } as const;
 

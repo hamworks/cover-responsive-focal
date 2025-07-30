@@ -22,14 +22,14 @@ export const findApplicableFocalPoint = (
 	}
 
 	// Find the device type that applies to current viewport width
-	// Mobile: <= 600px, Tablet: 601px-1024px
+	// Mobile: <= 600px, Tablet: 601px-782px
 	let targetDevice: 'mobile' | 'tablet';
 	if ( viewportWidth <= 600 ) {
 		targetDevice = 'mobile';
-	} else if ( viewportWidth <= 1024 ) {
+	} else if ( viewportWidth <= 782 ) {
 		targetDevice = 'tablet';
 	} else {
-		// For desktop (>1024px), return null as we don't support it
+		// For desktop (>782px), return null as we don't support it
 		return null;
 	}
 
@@ -89,7 +89,7 @@ export const useDeviceApplies = ( device: 'mobile' | 'tablet' ): boolean => {
 		if ( device === 'mobile' ) {
 			return viewportWidth <= 600;
 		} else if ( device === 'tablet' ) {
-			return viewportWidth > 600 && viewportWidth <= 1024;
+			return viewportWidth > 600 && viewportWidth <= 782;
 		}
 		return false;
 	}, [ device, viewportWidth ] );

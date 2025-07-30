@@ -23,30 +23,19 @@ class CRF_Validator {
 	 * @var array
 	 */
 	private $defaults = array(
-		'mediaType' => 'max-width',
-		'breakpoint' => 768,
+		'device' => 'mobile',
 		'x' => 0.5,
 		'y' => 0.5
 	);
 
 	/**
-	 * Validate media type
+	 * Validate device type
 	 *
-	 * @param string $media_type Media type to validate
-	 * @return bool Whether the media type is valid
+	 * @param string $device Device type to validate
+	 * @return bool Whether the device type is valid
 	 */
-	public function validate_media_type( $media_type ) {
-		return in_array( $media_type, array( 'min-width', 'max-width' ), true );
-	}
-
-	/**
-	 * Validate breakpoint value
-	 *
-	 * @param mixed $breakpoint Breakpoint value to validate
-	 * @return bool Whether the breakpoint is valid
-	 */
-	public function validate_breakpoint( $breakpoint ) {
-		return is_numeric( $breakpoint ) && $breakpoint > 0 && $breakpoint <= 9999;
+	public function validate_device_type( $device ) {
+		return in_array( $device, array( 'mobile', 'tablet' ), true );
 	}
 
 	/**
@@ -67,21 +56,14 @@ class CRF_Validator {
 	 */
 	public function sanitize_focal_point( $input ) {
 		// Get input values with defaults
-		$media_type = isset( $input['mediaType'] ) ? $input['mediaType'] : $this->defaults['mediaType'];
-		$breakpoint = isset( $input['breakpoint'] ) ? $input['breakpoint'] : $this->defaults['breakpoint'];
+		$device = isset( $input['device'] ) ? $input['device'] : $this->defaults['device'];
 		$x = isset( $input['x'] ) ? $input['x'] : $this->defaults['x'];
 		$y = isset( $input['y'] ) ? $input['y'] : $this->defaults['y'];
 
-		// Sanitize media type
-		$media_type = sanitize_text_field( $media_type );
-		if ( ! $this->validate_media_type( $media_type ) ) {
-			$media_type = $this->defaults['mediaType'];
-		}
-
-		// Sanitize breakpoint
-		$breakpoint = intval( $breakpoint );
-		if ( ! $this->validate_breakpoint( $breakpoint ) ) {
-			$breakpoint = $this->defaults['breakpoint'];
+		// Sanitize device type
+		$device = sanitize_text_field( $device );
+		if ( ! $this->validate_device_type( $device ) ) {
+			$device = $this->defaults['device'];
 		}
 
 		// Sanitize focal point values
@@ -101,8 +83,7 @@ class CRF_Validator {
 		$y = max( 0.0, min( 1.0, $y ) );
 
 		return array(
-			'mediaType' => $media_type,
-			'breakpoint' => $breakpoint,
+			'device' => $device,
 			'x' => $x,
 			'y' => $y
 		);

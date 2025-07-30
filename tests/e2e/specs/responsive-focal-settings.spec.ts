@@ -282,7 +282,7 @@ test.describe( 'Responsive Focal Point Settings - Detailed Feature Tests', () =>
 			await page.locator( 'button.crf-add-focal-point' ).click();
 
 			// In the new simplified system, edge cases are handled automatically:
-			// - Fixed breakpoints (mobile: ≤600px, tablet: 601px-1024px)
+			// - Fixed breakpoints (mobile: ≤600px, tablet: 601px-782px)
 			// - No user input validation needed for breakpoints
 			// - Device types are predefined
 

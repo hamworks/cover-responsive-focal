@@ -45,24 +45,32 @@ class CRF_CSS_Optimizer {
 			return '';
 		}
 
+		// Fixed breakpoint constants (Gutenberg standard compliant)
+		$device_breakpoints = array(
+			'mobile' => '(max-width: 600px)',
+			'tablet' => '(min-width: 601px) and (max-width: 782px)'
+		);
+
 		$rules = '';
 
 		foreach ( $responsive_focal as $focal_point ) {
 			// Validation - skip invalid values
-			if ( ! $this->validator->validate_media_type( $focal_point['mediaType'] ) ||
-				 ! $this->validator->validate_breakpoint( $focal_point['breakpoint'] ) ||
+			if ( ! $this->validator->validate_device_type( $focal_point['device'] ) ||
 				 ! $this->validator->validate_focal_point_value( $focal_point['x'] ) ||
 				 ! $this->validator->validate_focal_point_value( $focal_point['y'] ) ) {
 				continue;
 			}
 
-			$media_type = sanitize_text_field( $focal_point['mediaType'] );
-			$breakpoint = intval( $focal_point['breakpoint'] );
+			$device = sanitize_text_field( $focal_point['device'] );
 			$x = floatval( $focal_point['x'] ) * 100;
 			$y = floatval( $focal_point['y'] ) * 100;
 
-			// Generate media query
-			$media_query = sprintf( '(%s: %dpx)', $media_type, $breakpoint );
+			// Get fixed media query for device
+			if ( ! isset( $device_breakpoints[ $device ] ) ) {
+				continue; // Skip invalid device type
+			}
+
+			$media_query = $device_breakpoints[ $device ];
 
 			$rules .= sprintf(
 				'@media %s { [data-fp-id="%s"] .wp-block-cover__image-background, [data-fp-id="%s"] .wp-block-cover__video-background { object-position: %s%% %s%% !important; } }',

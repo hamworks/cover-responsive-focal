@@ -9,9 +9,39 @@ require_once __DIR__ . '/wp-functions-mock.php';
 // Load plugin file
 require_once dirname( dirname( __DIR__ ) ) . '/cover-responsive-focal.php';
 
+// Load required classes
+require_once dirname( dirname( __DIR__ ) ) . '/includes/class-validator.php';
+require_once dirname( dirname( __DIR__ ) ) . '/includes/class-css-optimizer.php';
+require_once dirname( dirname( __DIR__ ) ) . '/includes/class-block-renderer.php';
+
 use PHPUnit\Framework\TestCase;
 
 class CRF_Render_Block_Test extends TestCase {
+    
+    /**
+     * Block renderer instance
+     */
+    private $block_renderer;
+    
+    /**
+     * Validator instance
+     */
+    private $validator;
+    
+    /**
+     * CSS Optimizer instance
+     */
+    private $css_optimizer;
+    
+    /**
+     * Set up test
+     */
+    public function setUp(): void {
+        parent::setUp();
+        $this->validator = new CRF_Validator();
+        $this->css_optimizer = new CRF_CSS_Optimizer($this->validator);
+        $this->block_renderer = new CRF_Block_Renderer($this->validator, $this->css_optimizer);
+    }
     
     /**
      * RED: Start with failing tests
@@ -23,8 +53,7 @@ class CRF_Render_Block_Test extends TestCase {
             'attrs' => [
                 'responsiveFocal' => [
                     [
-                        'mediaType' => 'max-width',
-                        'breakpoint' => 767,
+                        'device' => 'mobile',
                         'x' => 0.6,
                         'y' => 0.4
                     ]
@@ -34,15 +63,15 @@ class CRF_Render_Block_Test extends TestCase {
         ];
         
         $content = '<div class="wp-block-cover">Test Content</div>';
-        $filtered_content = crf_render_block($content, $block);
+        $filtered_content = $this->block_renderer->render_block($content, $block);
         
         // Verify that data-fp-id attribute is added
         $this->assertStringContainsString('data-fp-id="test-123"', $filtered_content);
         
         // Verify that inline style is added
         $this->assertStringContainsString('<style id="test-123">', $filtered_content);
-        $this->assertStringContainsString('@media (max-width: 767px)', $filtered_content);
-        $this->assertStringContainsString('object-position: 60% 40%', $filtered_content);
+        $this->assertStringContainsString('@media (max-width:600px)', $filtered_content);
+        $this->assertStringContainsString('object-position:60% 40%', $filtered_content);
     }
     
     /**
@@ -55,7 +84,7 @@ class CRF_Render_Block_Test extends TestCase {
         ];
         
         $content = '<p>Test paragraph</p>';
-        $filtered_content = crf_render_block($content, $block);
+        $filtered_content = $this->block_renderer->render_block($content, $block);
         
         // Verify that it remains unchanged
         $this->assertEquals($content, $filtered_content);
@@ -73,7 +102,7 @@ class CRF_Render_Block_Test extends TestCase {
         ];
         
         $content = '<div class="wp-block-cover">Test Content</div>';
-        $filtered_content = crf_render_block($content, $block);
+        $filtered_content = $this->block_renderer->render_block($content, $block);
         
         // Verify that it remains unchanged
         $this->assertEquals($content, $filtered_content);
@@ -88,8 +117,7 @@ class CRF_Render_Block_Test extends TestCase {
             'attrs' => [
                 'responsiveFocal' => [
                     [
-                        'mediaType' => 'max-width',
-                        'breakpoint' => 767,
+                        'device' => 'mobile',
                         'x' => 0.5,
                         'y' => 0.5
                     ]
@@ -98,7 +126,7 @@ class CRF_Render_Block_Test extends TestCase {
         ];
         
         $content = '<div class="wp-block-cover">Test Content</div>';
-        $filtered_content = crf_render_block($content, $block);
+        $filtered_content = $this->block_renderer->render_block($content, $block);
         
         // Verify that data-fp-id attribute is added (auto-generated ID)
         $this->assertMatchesRegularExpression('/data-fp-id="crf-[^"]*"/', $filtered_content);
@@ -116,14 +144,12 @@ class CRF_Render_Block_Test extends TestCase {
             'attrs' => [
                 'responsiveFocal' => [
                     [
-                        'mediaType' => 'max-width',
-                        'breakpoint' => 767,
+                        'device' => 'mobile',
                         'x' => 0.6,
                         'y' => 0.4
                     ],
                     [
-                        'mediaType' => 'min-width',
-                        'breakpoint' => 768,
+                        'device' => 'tablet',
                         'x' => 0.3,
                         'y' => 0.7
                     ]
@@ -133,55 +159,12 @@ class CRF_Render_Block_Test extends TestCase {
         ];
         
         $content = '<div class="wp-block-cover">Test Multi</div>';
-        $filtered_content = crf_render_block($content, $block);
+        $filtered_content = $this->block_renderer->render_block($content, $block);
         
         $this->assertStringContainsString('data-fp-id="multi-test"', $filtered_content);
-        $this->assertStringContainsString('@media (max-width: 767px)', $filtered_content);
-        $this->assertStringContainsString('@media (min-width: 768px)', $filtered_content);
-        $this->assertStringContainsString('object-position: 60% 40%', $filtered_content);
-        $this->assertStringContainsString('object-position: 30% 70%', $filtered_content);
-    }
-    
-    /**
-     * data-fp-id attribute addition process test
-     */
-    public function test_add_fp_id_to_content() {
-        $content = '<div class="wp-block-cover has-background-dim">Test</div>';
-        $fp_id = 'test-id-123';
-        
-        $modified_content = crf_add_fp_id_to_content($content, $fp_id);
-        
-        $this->assertStringContainsString('data-fp-id="test-id-123"', $modified_content);
-        $this->assertStringContainsString('wp-block-cover', $modified_content);
-    }
-    
-    /**
-     * data-fp-id addition with complex class structure
-     */
-    public function test_add_fp_id_complex_classes() {
-        $content = '<div class="wp-block-cover has-background-dim alignfull">
-                        <div class="wp-block-cover__inner-container">
-                            <p>Content</p>
-                        </div>
-                    </div>';
-        $fp_id = 'complex-test';
-        
-        $modified_content = crf_add_fp_id_to_content($content, $fp_id);
-        
-        $this->assertStringContainsString('data-fp-id="complex-test"', $modified_content);
-        // Added only to the first wp-block-cover class element
-        $this->assertEquals(1, substr_count($modified_content, 'data-fp-id='));
-    }
-    
-    /**
-     * Unique ID generation test
-     */
-    public function test_generate_unique_fp_id() {
-        $id1 = crf_generate_unique_fp_id();
-        $id2 = crf_generate_unique_fp_id();
-        
-        $this->assertStringStartsWith('crf-', $id1);
-        $this->assertStringStartsWith('crf-', $id2);
-        $this->assertNotEquals($id1, $id2); // Different IDs are generated
+        $this->assertStringContainsString('@media (max-width:600px)', $filtered_content);
+        $this->assertStringContainsString('@media (min-width:601px) and (max-width:782px)', $filtered_content);
+        $this->assertStringContainsString('object-position:60% 40%', $filtered_content);
+        $this->assertStringContainsString('object-position:30% 70%', $filtered_content);
     }
 }

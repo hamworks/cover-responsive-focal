@@ -790,15 +790,15 @@ test.describe("Cover Block - Basic Responsive Focal Point Functionality", () => 
 		await coverBlock.addMediaToCover(TEST_IMAGES.LANDSCAPE);
 		await coverBlock.openResponsiveFocalSettings();
 
-		await coverBlock.addNewBreakpoint();
+		// 固定2デバイス（mobile/tablet）UI対応
+		// addNewBreakpoint() は廃止されたため不要
 
 		const testFocalPoint = TEST_FOCAL_POINTS.BASIC_RESPONSIVE[0];
-		await coverBlock.setResponsiveFocalPoint(0, testFocalPoint);
+		await coverBlock.setResponsiveFocalPoint('mobile', testFocalPoint);
 
 		// 設定が正しく反映されているか確認
-		const firstRow = page.locator(SELECTORS.RESPONSIVE_FOCAL_ROW).first();
-		const mediaTypeSelect = firstRow.locator("select");
-		await expect(mediaTypeSelect).toHaveValue(testFocalPoint.mediaType);
+		const mobileToggle = page.locator('[data-testid="mobile-focal-toggle"]');
+		await expect(mobileToggle).toBeChecked();
 	});
 });
 ```

@@ -480,6 +480,8 @@ docs/test-pre-prd.mdで定義された新しいテスト戦略に基づき、以
 └─────────────────┘
 ```
 
+**注意**: 上記の比率はテスト件数の割合を示します。コードカバレッジは全体で80%以上を目標とします。
+
 ### 1. 単体テスト（Unit Tests）- WordPress独立コンポーネント
 
 #### JavaScript/TypeScript 単体テスト（WordPress独立）
@@ -505,6 +507,8 @@ describe("CSS Generator", () => {
 	// 新規追加予定のテスト
 	describe("generateResponsiveFocalCSS", () => {
 		test("generates CSS for multiple focal points", () => {
+			// import { ResponsiveFocalPoint, generateResponsiveFocalCSS } from '../types';
+			// 期待仕様：無効デバイスのスキップ、!important付与、出力のミニファイ
 			const focals: ResponsiveFocalPoint[] = [
 				{ device: "mobile", x: 0.6, y: 0.4 },
 				{ device: "tablet", x: 0.3, y: 0.7 },
@@ -1102,7 +1106,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run Integration Tests (30%)
         run: |
-          npm test -- --testPathPattern="integration"
+          npm test -- --testPathPattern="__tests__/.*(integration|block-save|block-attributes)"
           phpunit --testsuite=integration
 
   critical-e2e:

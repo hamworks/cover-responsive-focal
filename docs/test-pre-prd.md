@@ -26,7 +26,7 @@ In WordPress custom block development, the tight coupling with WordPress core AP
 
 ### 3.1 Test Pyramid Structure
 
-```
+```text
 ┌─────────────────┐
 │   E2E Tests     │ ← 20% (Critical paths only)
 ├─────────────────┤

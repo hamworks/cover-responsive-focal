@@ -61,7 +61,7 @@ Cover Responsive Focalは、WordPressのGutenbergエディタにおける標準�
 2. WHEN PHPコードを記述する時 THEN PHPCS WordPress-Coreの規約に従う SHALL
 3. WHEN ビルドプロセスを実行する時 THEN @wordpress/scriptsを使用してESNext→ES5変換が行われる SHALL
 4. WHEN 開発環境をセットアップする時 THEN wp-envを使用してローカル環境でテストできる SHALL
-5. WHEN テストを実行する時 THEN テストピラミッド構造（50%単体、30%統合、20%E2E）に従う SHALL
+5. WHEN テストを実行する時 THEN 詳細は要件7「テスト戦略の受け入れ基準1〜3」を参照 SHALL
 
 ### 要件6
 

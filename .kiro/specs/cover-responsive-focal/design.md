@@ -470,7 +470,7 @@ const validateMediaQuery = (media: string): boolean => {
 
 docs/test-pre-prd.mdで定義された新しいテスト戦略に基づき、以下のテストピラミッド構造を採用します：
 
-```
+```text
 ┌─────────────────┐
 │   E2E Tests     │ ← 20% (Critical paths only)
 ├─────────────────┤

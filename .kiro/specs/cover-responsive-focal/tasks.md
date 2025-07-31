@@ -32,7 +32,7 @@
   - generateResponsiveFocalCSS 関数の実装
   - generateFocalPointSelector 関数の実装
   - sanitizeResponsiveFocalPoints 関数の実装
-  - _要件: 7.1_
+  - _要件: 7.1, 7.2_
 
 - [x] 3. ブロック拡張システムの実装
 

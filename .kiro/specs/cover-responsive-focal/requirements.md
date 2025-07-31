@@ -61,6 +61,7 @@ Cover Responsive Focalは、WordPressのGutenbergエディタにおける標準�
 2. WHEN PHPコードを記述する時 THEN PHPCS WordPress-Coreの規約に従う SHALL
 3. WHEN ビルドプロセスを実行する時 THEN @wordpress/scriptsを使用してESNext→ES5変換が行われる SHALL
 4. WHEN 開発環境をセットアップする時 THEN wp-envを使用してローカル環境でテストできる SHALL
+5. WHEN テストを実行する時 THEN 詳細は要件7「テスト戦略の受け入れ基準1〜3」を参照 SHALL
 
 ### 要件6
 
@@ -72,3 +73,16 @@ Cover Responsive Focalは、WordPressのGutenbergエディタにおける標準�
 2. WHEN タブレット用フォーカルポイントを設定する時 THEN 「タブレット（601px-782px）」のラベルと共にビジュアルなフォーカルポイントピッカーを使用できる SHALL
 3. WHEN 各デバイス用設定を無効にする時 THEN トグルコントロールで簡単にオン/オフできる SHALL
 4. WHEN 設定を保存した時 THEN data-fp-id属性とインラインCSS変数が適切に出力される SHALL
+
+### 要件7
+
+**ユーザーストーリー:** 開発者として、効率的で信頼性の高いテスト戦略を実行したいので、WordPressカスタムブロックに適したテスト手法を採用したプラグインが欲しい
+
+#### 受け入れ基準
+
+1. WHEN 単体テストを実行する時 THEN WordPress APIに依存しない純粋な関数のテストが全体の50%を占める SHALL
+2. WHEN 統合テストを実行する時 THEN save関数と属性解析のテストが全体の30%を占める SHALL
+3. WHEN E2Eテストを実行する時 THEN クリティカルパスのみのテストが全体の20%を占める SHALL
+4. WHEN E2Eテストを実行する時 THEN 実行時間が5分以内で完了する SHALL
+5. WHEN テストカバレッジを測定する時 THEN 全体で80%以上のカバレッジを達成する SHALL
+6. WHEN 偽陽性率を測定する時 THEN 5%以下に抑えられる SHALL

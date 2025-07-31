@@ -464,21 +464,31 @@ const validateMediaQuery = (media: string): boolean => {
 };
 ```
 
-## テスト戦略（TDD準拠）
+## テスト戦略（新方針準拠）
 
-### TDD開発サイクル
+### テスト方針の概要
 
-t-wadaのTDD（テスト駆動開発）に準拠し、以下のRed-Green-Refactorサイクルを厳密に実行します：
+docs/test-pre-prd.mdで定義された新しいテスト戦略に基づき、以下のテストピラミッド構造を採用します：
 
-1. **Red**: 失敗するテストを書く
-2. **Green**: テストを通す最小限のコードを書く
-3. **Refactor**: コードを改善する（テストは通ったまま）
+```text
+┌─────────────────┐
+│   E2E Tests     │ ← 20% (Critical paths only)
+├─────────────────┤
+│ Integration     │ ← 30% (Save function, attribute parsing)
+├─────────────────┤
+│   Unit Tests    │ ← 50% (Independent components)
+└─────────────────┘
+```
 
-### 1. 単体テスト（Unit Tests）- TDDファースト
+**注意**: 上記の比率はテスト件数の割合を示します。コードカバレッジは全体で80%以上を目標とします。
 
-#### JavaScript/TypeScript テスト（テストファースト）
+### 1. 単体テスト（Unit Tests）- WordPress独立コンポーネント
+
+#### JavaScript/TypeScript 単体テスト（WordPress独立）
 
 ##### CSS生成ユーティリティテスト (`tests/__tests__/css-generator.test.ts`)
+
+現在実装済みのテストを拡張し、WordPress APIに依存しない純粋な関数をテスト：
 
 ```typescript
 describe("CSS Generator", () => {
@@ -494,8 +504,11 @@ describe("CSS Generator", () => {
 		});
 	});
 
+	// 新規追加予定のテスト
 	describe("generateResponsiveFocalCSS", () => {
 		test("generates CSS for multiple focal points", () => {
+			// import { ResponsiveFocalPoint, generateResponsiveFocalCSS } from '../types';
+			// 期待仕様：無効デバイスのスキップ、!important付与、出力のミニファイ
 			const focals: ResponsiveFocalPoint[] = [
 				{ device: "mobile", x: 0.6, y: 0.4 },
 				{ device: "tablet", x: 0.3, y: 0.7 },
@@ -510,39 +523,12 @@ describe("CSS Generator", () => {
 			expect(result).toContain("object-position: 30% 70% !important");
 		});
 	});
-
-	describe("validateResponsiveFocalPoint", () => {
-		test("validates correct focal point", () => {
-			const focal: ResponsiveFocalPoint = {
-				device: "mobile",
-				x: 0.5,
-				y: 0.5,
-			};
-			expect(validateResponsiveFocalPoint(focal)).toBe(true);
-		});
-
-		test("rejects invalid device type", () => {
-			const focal = {
-				device: "invalid" as "mobile",
-				x: 0.5,
-				y: 0.5,
-			};
-			expect(validateResponsiveFocalPoint(focal)).toBe(false);
-		});
-
-		test("rejects out-of-range coordinates", () => {
-			const focal = {
-				device: "mobile" as const,
-				x: -0.1,
-				y: 0.5,
-			};
-			expect(validateResponsiveFocalPoint(focal)).toBe(false);
-		});
-	});
 });
 ```
 
 ##### エディタースタイルテスト (`tests/__tests__/editor-styles.test.ts`)
+
+現在実装済みのテストを継続し、WordPress独立のユーティリティ関数をテスト：
 
 ```typescript
 describe("Editor Styles", () => {
@@ -563,6 +549,7 @@ describe("Editor Styles", () => {
 		});
 	});
 
+	// WordPress独立のユーティリティ関数のテストを継続
 	describe("generateEditorPreviewCSS", () => {
 		test("generates CSS for mobile device", () => {
 			const result = generateEditorPreviewCSS(
@@ -575,36 +562,17 @@ describe("Editor Styles", () => {
 			expect(result).toContain(".wp-block-cover__image-background");
 			expect(result).toContain("object-position: 60% 40% !important");
 		});
-
-		test("returns null for desktop device", () => {
-			const result = generateEditorPreviewCSS(
-				mockResponsiveFocal,
-				"Desktop",
-				"desktop-block-id",
-			);
-			expect(result).toBeNull();
-		});
-	});
-
-	describe("shouldApplyResponsiveFocal", () => {
-		test("returns true when responsive focal should be applied for mobile", () => {
-			const result = shouldApplyResponsiveFocal(mockResponsiveFocal, "Mobile");
-			expect(result).toBe(true);
-		});
-
-		test("returns false for desktop device", () => {
-			const result = shouldApplyResponsiveFocal(mockResponsiveFocal, "Desktop");
-			expect(result).toBe(false);
-		});
 	});
 });
 ```
 
-##### 既存バリデーションテスト（継続）
+##### バリデーションテスト（継続・拡張）
+
+現在実装済みの`tests/__tests__/validation.test.ts`を継続し、WordPress独立の検証ロジックをテスト：
 
 ```typescript
-// tests/__tests__/validation.test.ts
-describe("フォーカルポイント検証（TDD）", () => {
+// tests/__tests__/validation.test.ts（現在実装済み）
+describe("フォーカルポイント検証", () => {
 	describe("validateFocalPoint関数", () => {
 		test("0.5, 0.5は有効なフォーカルポイント", () => {
 			expect(validateFocalPoint(0.5, 0.5)).toBe(true);
@@ -626,16 +594,6 @@ describe("フォーカルポイント検証（TDD）", () => {
 		});
 	});
 
-	// GREEN: テストを通す最小限の実装
-	// src/validation.ts
-	/*
-  export const validateFocalPoint = (x: number, y: number): boolean => {
-    if (typeof x !== 'number' || typeof y !== 'number') return false;
-    if (isNaN(x) || isNaN(y)) return false;
-    return x >= 0 && x <= 1 && y >= 0 && y <= 1;
-  };
-  */
-
 	describe("validateDeviceType関数（シンプル化）", () => {
 		test("mobileは有効なデバイスタイプ", () => {
 			expect(validateDeviceType("mobile")).toBe(true);
@@ -648,25 +606,11 @@ describe("フォーカルポイント検証（TDD）", () => {
 		test("無効なデバイスタイプは拒否", () => {
 			expect(validateDeviceType("desktop")).toBe(false);
 		});
-
-		test("空文字は無効", () => {
-			expect(validateDeviceType("")).toBe(false);
-		});
-
-		test("nullは無効", () => {
-			expect(validateDeviceType(null)).toBe(false);
-		});
 	});
 
-	// validateBreakpoint関数は削除（固定ブレークポイントのため不要）
-});
-
-// TDDサイクル例：ResponsiveFocalPoint型のテスト
-describe("ResponsiveFocalPoint型（TDD）", () => {
-	describe("createResponsiveFocalPoint関数（シンプル化）", () => {
+	describe("createResponsiveFocalPoint関数", () => {
 		test("有効な値でResponsiveFocalPointオブジェクトを作成", () => {
 			const result = createResponsiveFocalPoint("mobile", 0.6, 0.4);
-
 			expect(result).toEqual({
 				device: "mobile",
 				x: 0.6,
@@ -674,40 +618,23 @@ describe("ResponsiveFocalPoint型（TDD）", () => {
 			});
 		});
 
-		test("無効なフォーカルポイントでnullを返す", () => {
+		test("無効な値でnullを返す", () => {
 			const result = createResponsiveFocalPoint("mobile", -0.1, 0.4);
 			expect(result).toBeNull();
-		});
-
-		test("無効なデバイスタイプでnullを返す", () => {
-			const result = createResponsiveFocalPoint("desktop", 0.6, 0.4);
-			expect(result).toBeNull();
-		});
-	});
-
-	describe("getMediaQueryForDevice関数（シンプル化）", () => {
-		test("mobileメディアクエリを正しく生成", () => {
-			const result = getMediaQueryForDevice("mobile");
-			expect(result).toBe("(max-width: 600px)");
-		});
-
-		test("tabletメディアクエリを正しく生成", () => {
-			const result = getMediaQueryForDevice("tablet");
-			expect(result).toBe("(min-width: 601px) and (max-width: 782px)");
 		});
 	});
 });
 ```
 
-#### PHP テスト（TDDファースト）
+#### PHP 単体テスト（WordPress独立ロジック）
+
+現在実装済みの`tests/php/CRF_CSS_Generation_Test.php`を継続し、WordPress独立のPHPロジックをテスト：
 
 ```php
-// tests/test-css-generation.php
-class CRF_CSS_Generation_Test extends WP_UnitTestCase {
+// tests/php/CRF_CSS_Generation_Test.php（現在実装済み）
+class CRF_CSS_Generation_Test extends TestCase {
 
-    // RED: 失敗するテストから開始（シンプル化）
     public function test_generate_css_rules_single_focal_point() {
-        // まだ実装されていない関数をテスト
         $responsive_focal = [
             [
                 'device' => 'mobile',
@@ -716,9 +643,8 @@ class CRF_CSS_Generation_Test extends WP_UnitTestCase {
             ]
         ];
 
-        $css = crf_generate_css_rules($responsive_focal, 'test-id');
+        $css = $this->css_optimizer->generate_css_rules($responsive_focal, 'test-id');
 
-        // 期待する出力を明確に定義（!important付き）
         $expected_css = '@media (max-width: 600px) { [data-fp-id="test-id"] .wp-block-cover__image-background, [data-fp-id="test-id"] .wp-block-cover__video-background { object-position: 60% 40% !important; } }';
 
         $this->assertEquals($expected_css, $css);
@@ -738,113 +664,63 @@ class CRF_CSS_Generation_Test extends WP_UnitTestCase {
             ]
         ];
 
-        $css = crf_generate_css_rules($responsive_focal, 'multi-test');
+        $css = $this->css_optimizer->generate_css_rules($responsive_focal, 'multi-test');
 
-        $this->assertStringContains('@media (max-width: 600px)', $css);
-        $this->assertStringContains('@media (min-width: 601px) and (max-width: 782px)', $css);
-        $this->assertStringContains('object-position: 60% 40% !important', $css);
-        $this->assertStringContains('object-position: 30% 70% !important', $css);
-    }
-
-    public function test_generate_css_rules_empty_array() {
-        $css = crf_generate_css_rules([], 'empty-test');
-        $this->assertEquals('', $css);
-    }
-
-    // GREEN: 最小限の実装でテストを通す
-    /*
-    function crf_generate_css_rules($responsive_focal, $fp_id) {
-        if (empty($responsive_focal)) {
-            return '';
-        }
-
-        $rules = '';
-        foreach ($responsive_focal as $focal_point) {
-            $media = sanitize_text_field($focal_point['media']);
-            $x = floatval($focal_point['x']) * 100;
-            $y = floatval($focal_point['y']) * 100;
-
-            $rules .= sprintf(
-                '@media %s { [data-fp-id="%s"] .wp-block-cover__image-background, [data-fp-id="%s"] .wp-block-cover__video-background { object-position: %s%% %s%%; } }',
-                $media, esc_attr($fp_id), esc_attr($fp_id), $x, $y
-            );
-        }
-
-        return $rules;
-    }
-    */
-
-    public function test_sanitize_focal_point_values() {
-        $input = [
-            'device' => 'mobile',
-            'x' => '0.6',
-            'y' => 'invalid'
-        ];
-
-        $sanitized = crf_sanitize_focal_point($input);
-
-        $this->assertEquals('mobile', $sanitized['device']);
-        $this->assertEquals(0.6, $sanitized['x']);
-        $this->assertEquals(0, $sanitized['y']); // デフォルト値
+        $this->assertStringContainsString('@media (max-width: 600px)', $css);
+        $this->assertStringContainsString('@media (min-width: 601px) and (max-width: 782px)', $css);
+        $this->assertStringContainsString('object-position: 60% 40%', $css);
+        $this->assertStringContainsString('object-position: 30% 70%', $css);
     }
 
     public function test_validate_device_type() {
-        $this->assertTrue(crf_validate_device_type('mobile'));
-        $this->assertTrue(crf_validate_device_type('tablet'));
-        $this->assertFalse(crf_validate_device_type('desktop'));
-        $this->assertFalse(crf_validate_device_type(''));
-    }
-
-    // validateBreakpoint関数は削除（固定ブレークポイントのため不要）
-
-    // エッジケースのテスト
-    public function test_sanitize_focal_point_boundary_values() {
-        $input = [
-            'device' => 'tablet',
-            'x' => '1.0',
-            'y' => '0.0'
-        ];
-
-        $sanitized = crf_sanitize_focal_point($input);
-
-        $this->assertEquals('tablet', $sanitized['device']);
-        $this->assertEquals(1.0, $sanitized['x']);
-        $this->assertEquals(0.0, $sanitized['y']);
+        $this->assertTrue($this->validator->validate_device_type('mobile'));
+        $this->assertTrue($this->validator->validate_device_type('tablet'));
+        $this->assertFalse($this->validator->validate_device_type('desktop'));
+        $this->assertFalse($this->validator->validate_device_type(''));
     }
 }
 ```
 
-### 2. 統合テスト（Integration Tests）
+### 2. 統合テスト（Integration Tests）- Save関数・属性解析
 
-#### ブロックエディタ統合テスト
+#### ブロック保存機能テスト（スナップショットテスト）
 
 ```javascript
-// tests/integration/block-editor.test.js
-describe("カバーブロック拡張", () => {
-	beforeEach(() => {
-		// テスト用のブロックエディタ環境をセットアップ
-		setupBlockEditor();
+// tests/__tests__/block-save-simple.test.ts（現在実装済み）
+describe("Block Save Output", () => {
+	it("should generate correct markup", () => {
+		const attributes = {
+			responsiveFocal: [{ device: "mobile", x: 0.6, y: 0.4 }],
+			dataFpId: "test-123",
+		};
+		const output = save({ attributes });
+		expect(output).toMatchSnapshot();
 	});
 
-	test("レスポンシブフォーカル属性の追加", () => {
-		const block = createBlock("core/cover");
-		const extendedBlock = applyFilters(
-			"blocks.registerBlockType",
-			block,
-			"core/cover",
-		);
-
-		expect(extendedBlock.attributes).toHaveProperty("responsiveFocal");
-		expect(extendedBlock.attributes).toHaveProperty("dataFpId");
+	it("should maintain backward compatibility with empty responsiveFocal", () => {
+		const attributes = { responsiveFocal: [] };
+		const output = save({ attributes });
+		expect(output).toMatchSnapshot();
 	});
+});
+```
 
-	test("インスペクターコントロールの表示", () => {
-		const { getByText, getByRole } = render(<CoverBlockEdit />);
+#### ブロック属性解析テスト
 
-		expect(getByText("レスポンシブフォーカルポイント")).toBeInTheDocument();
-		expect(
-			getByRole("button", { name: "新しいブレークポイントを追加" }),
-		).toBeInTheDocument();
+```javascript
+// tests/__tests__/block-attributes.test.ts（現在実装済み）
+describe("Block Attributes", () => {
+	test("parses responsiveFocal attribute correctly", () => {
+		const blockContent =
+			'<!-- wp:core/cover {"responsiveFocal":[{"device":"mobile","x":0.6,"y":0.4}]} -->';
+		const parsed = parseBlockAttributes(blockContent);
+
+		expect(parsed.responsiveFocal).toHaveLength(1);
+		expect(parsed.responsiveFocal[0]).toEqual({
+			device: "mobile",
+			x: 0.6,
+			y: 0.4,
+		});
 	});
 });
 ```
@@ -852,8 +728,8 @@ describe("カバーブロック拡張", () => {
 #### WordPress フィルター統合テスト
 
 ```php
-// tests/integration/test-render-block.php
-class CRF_Render_Block_Test extends WP_UnitTestCase {
+// tests/php/CRF_Render_Block_Test.php（現在実装済み）
+class CRF_Render_Block_Test extends TestCase {
 
     public function test_render_block_filter() {
         $block = [
@@ -861,7 +737,7 @@ class CRF_Render_Block_Test extends WP_UnitTestCase {
             'attrs' => [
                 'responsiveFocal' => [
                     [
-                        'media' => '(max-width: 767px)',
+                        'device' => 'mobile',
                         'x' => 0.6,
                         'y' => 0.4
                     ]
@@ -873,64 +749,75 @@ class CRF_Render_Block_Test extends WP_UnitTestCase {
         $content = '<div class="wp-block-cover">Test Content</div>';
         $filtered_content = apply_filters('render_block', $content, $block);
 
-        $this->assertStringContains('data-fp-id="test-123"', $filtered_content);
-        $this->assertStringContains('<style id="test-123">', $filtered_content);
-        $this->assertStringContains('@media (max-width: 767px)', $filtered_content);
+        $this->assertStringContainsString('data-fp-id="test-123"', $filtered_content);
+        $this->assertStringContainsString('<style id="test-123">', $filtered_content);
+        $this->assertStringContainsString('@media (max-width: 600px)', $filtered_content);
     }
 }
 ```
 
-### 3. E2Eテスト（End-to-End Tests）
+### 3. E2Eテスト（End-to-End Tests）- クリティカルパスのみ
 
-#### Playwright テストスイート
+#### 重要な操作フローのテスト（20%）
+
+現在実装済みの`tests/e2e/specs/cover-block-basic.spec.ts`を基に、クリティカルパスに絞ったテストを実行：
 
 ```typescript
-// tests/e2e/cover-responsive-focal.spec.ts
-import { test, expect } from "@playwright/test";
+// tests/e2e/specs/cover-block-basic.spec.ts（現在実装済み）
+test.describe("Cover Block - Basic Responsive Focal Point Functionality", () => {
+	test("Verify plugin loads correctly", async ({ page }) => {
+		await coverBlock.selectCoverBlock();
 
-test.describe("Cover Responsive Focal E2E", () => {
-	test("カバーブロックにレスポンシブフォーカルポイントを設定", async ({
-		page,
-	}) => {
-		// WordPress管理画面にログイン
-		await page.goto("/wp-admin/post-new.php");
-
-		// カバーブロックを追加
-		await page.click('[aria-label="ブロックを追加"]');
-		await page.fill('[placeholder="ブロックを検索"]', "カバー");
-		await page.click('[data-type="core/cover"]');
-
-		// 画像を設定
-		await page.click("text=メディアライブラリ");
-		await page.click(".attachment:first-child");
-		await page.click("text=選択");
-
-		// インスペクターでレスポンシブフォーカル設定を開く
-		await page.click('[aria-label="設定"]');
-		await page.click("text=レスポンシブフォーカルポイント");
-
-		// 新しいブレークポイントを追加
-		await page.click("text=新しいブレークポイントを追加");
-
-		// メディアクエリを選択
-		await page.selectOption(
-			'[data-testid="media-query-select"]',
-			"(max-width: 767px)",
-		);
-
-		// フォーカルポイントを設定
-		await page.click('[data-testid="focal-point-picker"]', {
-			position: { x: 100, y: 50 },
+		const pluginScript = await page.evaluate(() => {
+			return Array.from(document.scripts).some((script) =>
+				script.src.includes("cover-responsive-focal"),
+			);
 		});
 
-		// 投稿を公開
-		await page.click("text=公開");
-		await page.click("text=公開", { nth: 1 });
+		expect(pluginScript).toBeTruthy();
+	});
 
-		// フロントエンドで確認
-		await page.click("text=投稿を表示");
+	test("Responsive focal point settings are displayed in cover block", async ({
+		page,
+	}) => {
+		await wpAdmin.insertCoverBlock();
+		await coverBlock.addMediaToCover(TEST_IMAGES.LANDSCAPE);
+		await coverBlock.openResponsiveFocalSettings();
 
-		// レスポンシブCSSが適用されているか確認
+		await expect(
+			page.locator(SELECTORS.RESPONSIVE_FOCAL_CONTROLS),
+		).toBeVisible();
+	});
+
+	test("Can configure responsive focal point", async ({ page }) => {
+		await wpAdmin.insertCoverBlock();
+		await coverBlock.addMediaToCover(TEST_IMAGES.LANDSCAPE);
+		await coverBlock.openResponsiveFocalSettings();
+
+		// 固定2デバイス（mobile/tablet）UI対応
+		// addNewBreakpoint() は廃止されたため不要
+
+		const testFocalPoint = TEST_FOCAL_POINTS.BASIC_RESPONSIVE[0];
+		await coverBlock.setResponsiveFocalPoint('mobile', testFocalPoint);
+
+		// 設定が正しく反映されているか確認
+		const mobileToggle = page.locator('[data-testid="mobile-focal-toggle"]');
+		await expect(mobileToggle).toBeChecked();
+	});
+});
+```
+
+#### フロントエンド表示確認テスト
+
+```typescript
+// tests/e2e/specs/frontend-display.spec.ts（現在実装済み）
+test.describe("Frontend Display Tests", () => {
+	test("Responsive focal points apply correctly on frontend", async ({
+		page,
+	}) => {
+		// 投稿を表示してレスポンシブCSSが適用されているか確認
+		await page.goto("/sample-cover-block-page/");
+
 		const coverBlock = page.locator(".wp-block-cover[data-fp-id]");
 		await expect(coverBlock).toBeVisible();
 
@@ -938,26 +825,17 @@ test.describe("Cover Responsive Focal E2E", () => {
 		await page.setViewportSize({ width: 375, height: 667 });
 
 		const style = await page.locator('style[id^="crf-"]').textContent();
-		expect(style).toContain("@media (max-width: 767px)");
+		expect(style).toContain("@media (max-width: 600px)");
 		expect(style).toContain("object-position:");
-	});
-
-	test("複数ブレークポイントの動作確認", async ({ page }) => {
-		// 複数のブレークポイントを設定するテスト
-		// モバイル、タブレット、デスクトップそれぞれでフォーカルポイントを確認
-	});
-
-	test("既存カバーブロックとの互換性確認", async ({ page }) => {
-		// レスポンシブフォーカル未設定のカバーブロックが正常動作するか確認
 	});
 });
 ```
 
-#### ビジュアル回帰テスト
+#### ビジュアル回帰テスト（最小限）
 
 ```typescript
-// tests/e2e/visual-regression.spec.ts
-test("レスポンシブフォーカルポイントのビジュアル確認", async ({ page }) => {
+// tests/e2e/specs/visual-regression.spec.ts（現在実装済み）
+test("Visual regression test for responsive focal points", async ({ page }) => {
 	const viewports = [
 		{ width: 375, height: 667, name: "mobile" },
 		{ width: 768, height: 1024, name: "tablet" },
@@ -968,7 +846,6 @@ test("レスポンシブフォーカルポイントのビジュアル確認", as
 		await page.setViewportSize(viewport);
 		await page.goto("/sample-cover-block-page/");
 
-		// スクリーンショット比較
 		await expect(page.locator(".wp-block-cover")).toHaveScreenshot(
 			`cover-block-${viewport.name}.png`,
 		);
@@ -976,39 +853,53 @@ test("レスポンシブフォーカルポイントのビジュアル確認", as
 });
 ```
 
-### 4. パフォーマンステスト
+### 4. パフォーマンステスト（要件準拠）
 
 #### CSS生成パフォーマンス
 
+現在実装済みの`tests/php/CRF_CSS_Optimization_Test.php`を継続：
+
 ```php
-// tests/performance/test-css-performance.php
-class CRF_Performance_Test extends WP_UnitTestCase {
+// tests/php/CRF_CSS_Optimization_Test.php（現在実装済み）
+class CRF_CSS_Optimization_Test extends TestCase {
 
     public function test_css_generation_performance() {
         // 大量のレスポンシブフォーカルポイントでのパフォーマンステスト
         $large_responsive_focal = array_fill(0, 100, [
-            'media' => '(max-width: 767px)',
+            'device' => 'mobile',
             'x' => 0.5,
             'y' => 0.5
         ]);
 
         $start_time = microtime(true);
-        $css = crf_generate_css_rules($large_responsive_focal, 'perf-test');
+        $css = $this->css_optimizer->generate_css_rules($large_responsive_focal, 'perf-test');
         $end_time = microtime(true);
 
         $execution_time = $end_time - $start_time;
         $this->assertLessThan(0.1, $execution_time, 'CSS生成が100ms以内で完了すること');
     }
+
+    public function test_css_minification() {
+        $responsive_focal = [
+            ['device' => 'mobile', 'x' => 0.6, 'y' => 0.4],
+            ['device' => 'tablet', 'x' => 0.3, 'y' => 0.7]
+        ];
+
+        $css = $this->css_optimizer->generate_css_rules($responsive_focal, 'minify-test');
+
+        // 不要な空白が除去されているか確認
+        $this->assertStringNotContainsString('  ', $css);
+        $this->assertStringNotContainsString("\n", $css);
+    }
 }
 ```
 
-#### フロントエンドパフォーマンス
+#### フロントエンドパフォーマンス（要件4.3, 4.4準拠）
 
 ```javascript
-// tests/performance/frontend-performance.test.js
-describe("フロントエンドパフォーマンス", () => {
-	test("CLS（Cumulative Layout Shift）の測定", async () => {
-		const page = await browser.newPage();
+// tests/e2e/specs/frontend-rendering.spec.ts（現在実装済み）
+test.describe("Frontend Performance Tests", () => {
+	test("CLS (Cumulative Layout Shift) measurement", async ({ page }) => {
 		await page.goto("/sample-cover-block-page/");
 
 		const cls = await page.evaluate(() => {
@@ -1023,18 +914,40 @@ describe("フロントエンドパフォーマンス", () => {
 			});
 		});
 
-		expect(cls).toBeLessThan(0.1); // Good CLS threshold
+		// 要件4.3: CLSが0.1以下
+		expect(cls).toBeLessThan(0.1);
+	});
+
+	test("LCP (Largest Contentful Paint) measurement", async ({ page }) => {
+		await page.goto("/sample-cover-block-page/");
+
+		const lcp = await page.evaluate(() => {
+			return new Promise((resolve) => {
+				new PerformanceObserver((list) => {
+					const entries = list.getEntries();
+					const lastEntry = entries[entries.length - 1];
+					resolve(lastEntry.startTime);
+				}).observe({ entryTypes: ["largest-contentful-paint"] });
+
+				setTimeout(() => resolve(5000), 5000);
+			});
+		});
+
+		// 要件4.4: LCPが2.5秒未満
+		expect(lcp).toBeLessThan(2500);
 	});
 });
 ```
 
 ### 5. セキュリティテスト
 
-#### XSS攻撃テスト
+#### XSS攻撃防止テスト
+
+現在実装済みの`tests/php/CRF_Sanitization_Test.php`を継続：
 
 ```php
-// tests/security/test-xss-prevention.php
-class CRF_Security_Test extends WP_UnitTestCase {
+// tests/php/CRF_Sanitization_Test.php（現在実装済み）
+class CRF_Sanitization_Test extends TestCase {
 
     public function test_xss_prevention_in_device_type() {
         $malicious_input = [
@@ -1043,10 +956,10 @@ class CRF_Security_Test extends WP_UnitTestCase {
             'y' => 0.5
         ];
 
-        $css = crf_generate_css_rules([$malicious_input], 'security-test');
+        $css = $this->css_optimizer->generate_css_rules([$malicious_input], 'security-test');
 
-        $this->assertStringNotContains('<script>', $css);
-        $this->assertStringNotContains('alert', $css);
+        $this->assertStringNotContainsString('<script>', $css);
+        $this->assertStringNotContainsString('alert', $css);
         $this->assertEquals('', $css); // 無効なデバイスタイプなのでCSS出力なし
     }
 
@@ -1057,28 +970,64 @@ class CRF_Security_Test extends WP_UnitTestCase {
             'y' => 0.5
         ];
 
-        $css = crf_generate_css_rules([$malicious_input], 'injection-test');
+        $css = $this->css_optimizer->generate_css_rules([$malicious_input], 'injection-test');
 
         $this->assertEquals('', $css); // 無効なデバイスタイプなのでCSS出力なし
+    }
+
+    public function test_css_escaping() {
+        $responsive_focal = [
+            [
+                'device' => 'mobile',
+                'x' => 0.5,
+                'y' => 0.5
+            ]
+        ];
+
+        // 特殊文字を含むIDでテスト
+        $malicious_id = 'test"id<script>';
+        $css = $this->css_optimizer->generate_css_rules($responsive_focal, $malicious_id);
+
+        // HTMLエスケープが適用されているか確認
+        $this->assertStringNotContainsString('<script>', $css);
+        $this->assertStringNotContainsString('"id<', $css);
     }
 }
 ```
 
-### 6. 互換性テスト
+### 6. 互換性テスト（要件3準拠）
 
 #### WordPress バージョン互換性
 
 ```php
-// tests/compatibility/test-wp-versions.php
-class CRF_Compatibility_Test extends WP_UnitTestCase {
+// tests/php/CRF_Compatibility_Test.php（新規追加予定）
+class CRF_Compatibility_Test extends TestCase {
 
     public function test_wordpress_6_5_compatibility() {
-        // WordPress 6.5での動作確認
+        // 要件3.3: WordPress 6.5以上での動作確認
         $this->assertTrue(version_compare(get_bloginfo('version'), '6.5', '>='));
 
         // 必要なフックが存在するか確認
         $this->assertTrue(has_filter('render_block'));
         $this->assertTrue(has_filter('blocks.registerBlockType'));
+    }
+
+    public function test_backward_compatibility_empty_responsive_focal() {
+        // 要件3.1: responsiveFocal配列が空の時の標準動作
+        $block = [
+            'blockName' => 'core/cover',
+            'attrs' => [
+                'responsiveFocal' => [],
+                'url' => 'test-image.jpg',
+                'focalPoint' => ['x' => 0.5, 'y' => 0.5]
+            ]
+        ];
+
+        $content = '<div class="wp-block-cover">Test Content</div>';
+        $filtered_content = apply_filters('render_block', $content, $block);
+
+        // 追加のスタイルやマークアップが出力されないことを確認
+        $this->assertEquals($content, $filtered_content);
     }
 }
 ```
@@ -1086,32 +1035,48 @@ class CRF_Compatibility_Test extends WP_UnitTestCase {
 #### ブラウザ互換性テスト
 
 ```typescript
-// tests/compatibility/browser-compatibility.spec.ts
-const browsers = ["chromium", "firefox", "webkit"];
+// tests/e2e/specs/plugin-integration.spec.ts（現在実装済み）
+test.describe("Browser Compatibility Tests", () => {
+	const browsers = ["chromium", "firefox", "webkit"];
 
-browsers.forEach((browserName) => {
-	test(`${browserName}でのobject-position対応確認`, async ({ browser }) => {
-		const context = await browser.newContext();
-		const page = await context.newPage();
+	browsers.forEach((browserName) => {
+		test(`${browserName} object-position support verification`, async ({
+			page,
+		}) => {
+			await page.goto("/sample-cover-block-page/");
 
-		await page.goto("/sample-cover-block-page/");
+			const objectPosition = await page
+				.locator(".wp-block-cover__image-background")
+				.evaluate((el) => getComputedStyle(el).objectPosition);
 
-		const objectPosition = await page
-			.locator(".wp-block-cover__image-background")
-			.evaluate((el) => getComputedStyle(el).objectPosition);
-
-		expect(objectPosition).not.toBe("initial");
+			expect(objectPosition).not.toBe("initial");
+		});
 	});
 });
 ```
 
-### 7. テスト環境とCI/CD
+### 7. テスト実行戦略（新方針準拠）
 
-#### テスト環境構成
+#### 優先順位付け
+
+新しいテスト方針に基づく実行優先順位：
+
+1. **クリティカルパスE2E**: メインユーザー操作フロー
+2. **保存スナップショット**: データ整合性保証
+3. **コンポーネント単体**: ビジネスロジック検証
+4. **フルE2E**: 包括的動作検証
+
+#### 実行タイミング
+
+- **PR時**: クリティカルパスE2E + スナップショット + 単体テスト
+- **メインブランチマージ時**: 全テスト
+- **リリース前**: フルE2E回帰テスト
+
+#### CI/CD環境構成
 
 ```yaml
-# .github/workflows/test.yml
-name: Test Suite
+# .github/workflows/test.yml（新方針対応）
+name: Test Suite (New Strategy)
 
 on: [push, pull_request]
 
@@ -1130,27 +1095,37 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
 
-      - name: Install WordPress Test Suite
+      - name: Run Unit Tests (50%)
         run: |
-          bash bin/install-wp-tests.sh wordpress_test root '' localhost ${{ matrix.wordpress-version }}
+          npm test -- --testPathPattern="__tests__"
+          phpunit --testsuite=unit
 
-      - name: Run PHPUnit
-        run: phpunit
-
-  e2e-tests:
+  integration-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "18"
+      - name: Run Integration Tests (30%)
+        run: |
+          npm test -- --testPathPattern="__tests__/.*(integration|block-save|block-attributes)"
+          phpunit --testsuite=integration
 
-      - name: Install dependencies
-        run: npm ci
+  critical-e2e:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Critical Path E2E (20%)
+        run: |
+          npx playwright test --grep="@critical"
 
-      - name: Install Playwright
-        run: npx playwright install
+  full-e2e:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Full E2E Suite
+        run: |
+          npx playwright test
 ```
 
 ## Issue #37 対応事項
